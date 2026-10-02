@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="assets/css/base.css">
+    <link rel="stylesheet" href="assets/css/toast.css">
+    <link rel="stylesheet" href="assets/css/navbar.css">
+    <link rel="stylesheet" href="assets/css/forms.css">
+    <link rel="stylesheet" href="assets/css/modal.css">
+    <title>Entrar | PC Forge — Peças de TI</title>
+</head>
+
+<body data-tipo-pagina="cliente">
+    <div id="topo-montagem" data-tipo="cliente" data-modo="login"></div>
+
+    <div class="tela">
+        <section class="vitrine">
+            <div class="vitrine-trajeto">
+                <svg viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M-50 460 Q 160 500 260 300 T 560 40" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 10" opacity="0.35"/>
+                    <circle cx="260" cy="300" r="70" fill="var(--accent)" opacity="0.06"/>
+                    <circle cx="500" cy="55" r="9" fill="var(--accent)" opacity="0.5"/>
+                </svg>
+            </div>
+            <span class="vitrine-eyebrow">Bem-vindo de volta</span>
+            <h2 class="vitrine-titulo">ENTRE NA<br><em>FORJA.</em></h2>
+            <p class="vitrine-texto">Entre na sua conta e continue de onde parou — seus pedidos e favoritos te esperam.</p>
+        </section>
+
+        <div class="pagina">
+            <main class="compacto">
+                <h1>Entrar</h1>
+                <p class="subtitulo">Acesse e continue forjando seu setup</p>
+
+                <form id="form-login">
+                    <label for="identificador">E-mail ou CPF</label>
+                    <input type="text" id="identificador" placeholder="exemplo@email.com" required>
+
+                    <label for="senha">Senha</label>
+                    <input type="password" id="senha" placeholder="Digite sua senha" required>
+
+                    <input type="submit" value="Entrar">
+
+                    <p id="mensagem-erro" class="mensagem-erro"></p>
+                </form>
+            </main>
+        </div>
+    </div>
+
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/toast.js"></script>
+    <script src="assets/js/demo.js"></script>
+    <script src="assets/js/admin-modal.js"></script>
+    <script src="assets/js/navbar.js"></script>
+    <script src="assets/js/login.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,25 @@
+{
+  "name": "loja-esportiva-backend",
+  "version": "1.0.0",
+  "description": "API da loja de artigos esportivos - cadastro e login de clientes",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "migrate": "node migration.js",
+    "migrate:seed": "node migration.js --seed",
+    "hash": "node gerar-hash.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "espress": "^0.0.0",
+    "express": "^4.19.2",
+    "init": "^0.1.2",
+    "mysql2": "^3.24.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}

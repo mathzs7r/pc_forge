@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="assets/css/base.css">
+    <link rel="stylesheet" href="assets/css/toast.css">
+    <link rel="stylesheet" href="assets/css/navbar.css">
+    <link rel="stylesheet" href="assets/css/forms.css">
+    <link rel="stylesheet" href="assets/css/modal.css">
+    <title>Entrar como loja | PC Forge — Peças de TI</title>
+</head>
+
+<body data-tipo-pagina="loja">
+    <div id="topo-montagem" data-tipo="loja" data-modo="login"></div>
+
+    <div class="tela">
+        <section class="vitrine">
+            <div class="vitrine-trajeto">
+                <svg viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M-50 40 Q 160 0 260 200 T 560 460" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 10" opacity="0.35"/>
+                    <circle cx="260" cy="200" r="70" fill="var(--accent)" opacity="0.06"/>
+                    <circle cx="500" cy="445" r="9" fill="var(--accent)" opacity="0.5"/>
+                </svg>
+            </div>
+            <span class="vitrine-eyebrow">Área da loja</span>
+            <h2 class="vitrine-titulo">PAINEL<br><em>DA LOJA.</em></h2>
+            <p class="vitrine-texto">Entre pra gerenciar seus produtos, pedidos e vendas.</p>
+        </section>
+
+        <div class="pagina">
+            <main class="compacto">
+                <h1>Painel da loja</h1>
+                <p class="subtitulo">Entre pra gerenciar seus produtos</p>
+
+                <form id="form-login-loja">
+                    <label for="identificador">E-mail ou CNPJ</label>
+                    <input type="text" id="identificador" placeholder="contato@sualoja.com" required>
+
+                    <label for="senha">Senha</label>
+                    <input type="password" id="senha" placeholder="Digite sua senha" required>
+
+                    <input type="submit" value="Entrar">
+
+                    <p id="mensagem-erro" class="mensagem-erro"></p>
+                </form>
+            </main>
+        </div>
+    </div>
+
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/toast.js"></script>
+    <script src="assets/js/demo.js"></script>
+    <script src="assets/js/admin-modal.js"></script>
+    <script src="assets/js/navbar.js"></script>
+    <script src="assets/js/loja-login.js"></script>
+</body>
+
+</html>

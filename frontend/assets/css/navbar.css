@@ -1,0 +1,259 @@
+/* ==========================================================
+   BARRA DO TOPO — PC Forge
+   ========================================================== */
+.topo {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    height: var(--topo-altura);
+    display: flex;
+    align-items: center;
+    background: rgba(10, 10, 12, 0.78);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.topo-conteudo {
+    width: 100%;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.marca-topo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+    font: inherit;
+}
+
+.marca-emblema {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: linear-gradient(145deg, var(--accent), var(--accent-dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+        0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent),
+        0 0 22px color-mix(in srgb, var(--accent) 45%, transparent),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    flex-shrink: 0;
+}
+
+.marca-emblema svg {
+    width: 20px;
+    height: 20px;
+}
+
+.marca-texto {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--chalk);
+    text-transform: uppercase;
+    line-height: 1;
+}
+
+.marca-texto span {
+    color: var(--accent);
+}
+
+.topo-acessos {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.link-inicio {
+    color: var(--muted);
+    font-size: 13.5px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.link-inicio:hover {
+    color: var(--chalk);
+}
+
+.alternador {
+    position: relative;
+    display: flex;
+    background: var(--glass-fill);
+    border: 1px solid var(--glass-border);
+    border-radius: 999px;
+    padding: 4px;
+}
+
+.alternador-opcao {
+    position: relative;
+    z-index: 1;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 8px 18px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: color 0.25s ease;
+    white-space: nowrap;
+}
+
+.alternador-opcao[aria-selected="true"] {
+    color: var(--on-accent);
+}
+
+.alternador-indicador {
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    left: 4px;
+    width: calc(50% - 4px);
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-glow));
+    transition: transform 0.25s ease, background 0.3s ease;
+}
+
+.alternador[data-ativo="loja"] .alternador-indicador {
+    transform: translateX(100%);
+}
+
+.usuario-logado {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 6px 14px 6px 6px;
+    border-radius: 999px;
+    background: var(--glass-fill);
+    border: 1px solid var(--glass-border);
+    color: var(--chalk);
+    font-size: 13.5px;
+    font-weight: 700;
+    white-space: nowrap;
+    max-width: 220px;
+}
+
+.usuario-logado-avatar {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12.5px;
+    font-weight: 800;
+    color: var(--on-accent);
+    background: linear-gradient(135deg, var(--accent), var(--accent-glow));
+    text-transform: uppercase;
+}
+
+.usuario-logado-nome {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.usuario-saudacao {
+    color: var(--muted);
+    font-weight: 500;
+    margin-right: 3px;
+}
+
+.botao-topo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 13.5px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.botao-fantasma {
+    color: var(--chalk);
+    border: 1px solid var(--glass-border);
+    background: var(--glass-fill);
+}
+
+.botao-fantasma:hover {
+    background: var(--glass-fill-strong);
+    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+    box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.botao-solido {
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+    color: var(--on-accent);
+    box-shadow: 0 4px 18px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+.botao-solido:hover {
+    filter: brightness(1.12);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 26px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+
+@media (max-width: 640px) {
+    .topo-conteudo {
+        justify-content: center;
+        text-align: center;
+    }
+
+    .topo-acessos {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}
+
+.aviso-demo {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 50;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(10, 10, 12, 0.92);
+    border: 1px solid var(--glass-border);
+    color: var(--chalk);
+    font-size: 12.5px;
+    font-weight: 700;
+    padding: 10px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.55);
+}
+
+.aviso-demo::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+}
+
+.aviso-demo:hover {
+    border-color: var(--accent);
+}

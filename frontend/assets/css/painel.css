@@ -1,0 +1,278 @@
+/* ==========================================================
+   PAINEL DA LOJA — cadastrar e gerenciar produtos
+   ========================================================== */
+.painel {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 44px 24px 90px;
+    width: 100%;
+    flex: 1;
+}
+
+.painel-cabecalho {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 34px;
+}
+
+.painel-cabecalho .vitrine-eyebrow {
+    display: block;
+    margin-bottom: 8px;
+}
+
+.painel-cabecalho h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(28px, 4vw, 40px);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--chalk);
+    margin: 0;
+    text-align: left;
+}
+
+.painel-sair {
+    border: 1px solid var(--glass-border);
+    background: var(--glass-fill);
+    color: var(--chalk);
+    padding: 10px 20px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.painel-sair:hover {
+    background: var(--glass-fill-strong);
+}
+
+.painel-grade {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 28px;
+    align-items: start;
+}
+
+@media (max-width: 860px) {
+    .painel-grade {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ---------- card de formulário (reaproveita "main" do forms.css) ---------- */
+.painel-form-card {
+    position: relative;
+    background: var(--glass-fill);
+    backdrop-filter: blur(18px) saturate(150%);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    padding: 30px 28px 26px;
+    overflow: hidden;
+}
+
+.painel-form-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, var(--accent), var(--lime), var(--accent));
+    background-size: 200% 100%;
+    animation: correr 5s linear infinite;
+}
+
+.painel-form-card h2 {
+    font-family: 'Orbitron', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 21px;
+    color: var(--chalk);
+    margin: 4px 0 4px;
+}
+
+.painel-form-card .subtitulo {
+    text-align: left;
+    margin-bottom: 18px;
+}
+
+select {
+    padding: 13px 14px;
+    margin-top: 6px;
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.06);
+    color: var(--chalk);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    outline: none;
+    width: 100%;
+}
+
+select:focus {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+textarea {
+    padding: 13px 14px;
+    margin-top: 6px;
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.06);
+    color: var(--chalk);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    outline: none;
+    width: 100%;
+    resize: vertical;
+    min-height: 76px;
+}
+
+textarea:focus {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.mensagem-sucesso {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--glass-border);
+    color: var(--chalk);
+    padding: 11px 14px;
+    border-radius: 12px;
+    margin-top: 16px;
+    font-size: 13.5px;
+    text-align: center;
+    display: none;
+}
+
+/* ---------- lista de produtos da loja ---------- */
+.painel-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.painel-lista h2 {
+    font-family: 'Orbitron', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 21px;
+    color: var(--chalk);
+    margin: 4px 0 14px;
+}
+
+.item-produto-loja {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    background: var(--glass-fill);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    flex-wrap: wrap;
+}
+
+.item-produto-loja .item-categoria {
+    display: block;
+    font-size: 10.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--accent);
+    margin-bottom: 3px;
+}
+
+.item-produto-loja .item-nome {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--chalk);
+}
+
+.item-produto-loja .item-descricao {
+    display: block;
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-top: 3px;
+    max-width: 340px;
+}
+
+.item-acoes {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.item-preco {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 18px;
+    color: var(--chalk);
+    white-space: nowrap;
+}
+
+.item-editar {
+    border: 1px solid var(--glass-border);
+    background: var(--glass-fill);
+    color: var(--chalk);
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.item-editar:hover {
+    background: var(--glass-fill-strong);
+}
+
+.item-excluir {
+    border: 1px solid rgba(255, 82, 82, 0.5);
+    background: rgba(255, 82, 82, 0.12);
+    color: var(--chalk);
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.item-excluir:hover {
+    background: rgba(255, 82, 82, 0.25);
+}
+
+/* ---------- botão de cancelar edição no formulário ---------- */
+.painel-cancelar-edicao {
+    width: 100%;
+    margin-top: 10px;
+    border: 1px solid var(--glass-border);
+    background: transparent;
+    color: var(--muted);
+    padding: 11px 14px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 13.5px;
+    cursor: pointer;
+}
+
+.painel-cancelar-edicao:hover {
+    background: var(--glass-fill);
+    color: var(--chalk);
+}
+
+.estado-vazio,
+.estado-carregando {
+    color: var(--muted);
+    padding: 30px 4px;
+    font-size: 14px;
+    line-height: 1.6;
+}

@@ -1,0 +1,17 @@
+{
+  "name": "loja-esportiva",
+  "version": "1.0.0",
+  "description": "Marketplace de peças de TI (PC Forge): clientes compram, lojas vendem. Duas frentes de login/cadastro (Cliente e Loja).",
+  "private": true,
+  "scripts": {
+    "setup": "npm --prefix backend install",
+    "migrate": "npm --prefix backend run migrate",
+    "migrate:seed": "npm --prefix backend run migrate:seed",
+    "start": "npm --prefix backend start",
+    "dev": "npm --prefix backend run dev"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}

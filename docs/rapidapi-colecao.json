@@ -1,0 +1,290 @@
+{
+  "info": {
+    "name": "PC Forge — cadastro e login",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base",
+      "value": "http://localhost:3000"
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Saúde (API + banco)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/saude",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "saude"
+          ]
+        }
+      }
+    },
+    {
+      "name": "1. Cadastrar cliente",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/cliente",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "cliente"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Maria Teste\",\n  \"cpf\": \"987.654.321-00\",\n  \"email\": \"maria@teste.com\",\n  \"celular\": \"(11) 98888-7777\",\n  \"nascimento\": \"1999-05-20\",\n  \"senha\": \"minhasenha\",\n  \"cep\": \"01001-000\",\n  \"rua\": \"Praça da Sé\",\n  \"numero\": \"50\",\n  \"bairro\": \"Sé\",\n  \"cidade\": \"São Paulo\",\n  \"uf\": \"SP\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "2. Login de cliente (e-mail)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/login",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"identificador\": \"maria@teste.com\",\n  \"senha\": \"minhasenha\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "2b. Login de cliente (CPF)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/login",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"identificador\": \"98765432100\",\n  \"senha\": \"minhasenha\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "2c. Login do cliente do seed",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/login",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"identificador\": \"cliente@teste.com\",\n  \"senha\": \"senha123\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "3. Cadastrar loja",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/loja",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "loja"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Minha Loja\",\n  \"cnpj\": \"11.222.333/0001-81\",\n  \"endereco\": \"Rua das Peças, 10 - São Paulo - SP\",\n  \"email\": \"minhaloja@teste.com\",\n  \"celular\": \"(11) 97777-6666\",\n  \"senha\": \"minhasenha\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "4. Login de loja (e-mail)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/loja/login",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "loja",
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"identificador\": \"minhaloja@teste.com\",\n  \"senha\": \"minhasenha\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "4b. Login da loja do seed",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/loja/login",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "loja",
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"identificador\": \"contato@pcforge.com\",\n  \"senha\": \"senha123\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "5. Listar produtos",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/produtos",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "produtos"
+          ]
+        }
+      }
+    },
+    {
+      "name": "6. Consultar cliente por CPF",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/cliente/98765432100",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "cliente",
+            "98765432100"
+          ]
+        }
+      }
+    }
+  ]
+}

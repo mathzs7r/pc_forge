@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="assets/css/base.css">
+    <link rel="stylesheet" href="assets/css/toast.css">
+    <link rel="stylesheet" href="assets/css/navbar.css">
+    <link rel="stylesheet" href="assets/css/forms.css">
+    <link rel="stylesheet" href="assets/css/painel.css">
+    <link rel="stylesheet" href="assets/css/modal.css">
+    <title>Meus produtos | PC Forge — Peças de TI</title>
+</head>
+
+<body data-tipo-pagina="loja">
+    <div id="topo-montagem" data-tipo="loja" data-modo="login"></div>
+
+    <section class="painel">
+        <div class="painel-cabecalho">
+            <div>
+                <span class="vitrine-eyebrow">Painel de vendedor · <span id="nome-loja">sua loja</span></span>
+                <h1>Meus produtos</h1>
+            </div>
+            <button type="button" class="painel-sair" id="botao-sair">Sair</button>
+        </div>
+
+        <div class="painel-grade">
+            <div class="painel-form-card">
+                <h2>Cadastrar produto</h2>
+                <p class="subtitulo">Preencha os dados do item que você quer vender</p>
+
+                <form id="form-produto">
+                    <label for="nome-produto">Nome do produto</label>
+                    <input type="text" id="nome-produto" placeholder="Ex: RTX 4060 8GB GDDR6" required>
+
+                    <label for="categoria-produto">Categoria</label>
+                    <select id="categoria-produto" required>
+                        <option value="" disabled selected>Selecione</option>
+                        <option value="Processadores">Processadores</option>
+                        <option value="Placas de Vídeo">Placas de Vídeo</option>
+                        <option value="Memória RAM">Memória RAM</option>
+                        <option value="Armazenamento">Armazenamento</option>
+                        <option value="Placas-mãe">Placas-mãe</option>
+                        <option value="Fontes">Fontes</option>
+                        <option value="Periféricos">Periféricos</option>
+                        <option value="Acessórios">Acessórios</option>
+                    </select>
+
+                    <label for="preco-produto">Preço (R$)</label>
+                    <input type="number" id="preco-produto" min="0" step="0.01" placeholder="0,00" required>
+
+                    <label for="descricao-produto">Descrição</label>
+                    <textarea id="descricao-produto" placeholder="Detalhes do produto: especificações, garantia, diferenciais..."></textarea>
+
+                    <input type="submit" id="botao-salvar-produto" value="Adicionar produto">
+                    <button type="button" id="botao-cancelar-edicao" class="painel-cancelar-edicao" hidden>Cancelar edição</button>
+
+                    <p id="mensagem-erro" class="mensagem-erro"></p>
+                    <p id="mensagem-produto" class="mensagem-sucesso"></p>
+                </form>
+            </div>
+
+            <div class="painel-lista">
+                <h2>Produtos cadastrados</h2>
+                <div id="lista-produtos">
+                    <p class="estado-carregando">Carregando produtos...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/toast.js"></script>
+    <script src="assets/js/demo.js"></script>
+    <script src="assets/js/admin-modal.js"></script>
+    <script src="assets/js/navbar.js"></script>
+    <script src="assets/js/painel-loja.js"></script>
+</body>
+
+</html>

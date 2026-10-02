@@ -1,0 +1,58 @@
+/* ==========================================================
+   MODAL DE ACESSO DE VISUALIZAÇÃO (secreto — clique na logo)
+   ========================================================== */
+.modal-fundo {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(4, 8, 8, 0.6);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal-fundo[hidden] {
+    display: none;
+}
+
+.modal-caixa {
+    position: relative;
+    background: var(--glass-fill-strong);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    padding: 34px 30px 28px;
+    max-width: 360px;
+    width: 100%;
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+}
+
+.modal-fechar {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 6px;
+}
+
+.modal-fechar:hover {
+    color: var(--chalk);
+}
+
+.modal-caixa h2 {
+    font-family: 'Anton', sans-serif;
+    text-transform: uppercase;
+    text-align: center;
+    font-size: 21px;
+    letter-spacing: 1px;
+    margin: 6px 0 6px;
+    color: var(--chalk);
+}
