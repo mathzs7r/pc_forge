@@ -7,6 +7,22 @@
     {
       "key": "base",
       "value": "http://localhost:3000"
+    },
+    {
+      "key": "id_cliente",
+      "value": "1"
+    },
+    {
+      "key": "token_cliente",
+      "value": "COLE_AQUI_O_TOKEN_DO_LOGIN_DE_CLIENTE"
+    },
+    {
+      "key": "id_loja",
+      "value": "1"
+    },
+    {
+      "key": "token_loja",
+      "value": "COLE_AQUI_O_TOKEN_DO_LOGIN_DE_LOJA"
     }
   ],
   "item": [
@@ -282,6 +298,538 @@
           "path": [
             "cliente",
             "98765432100"
+          ]
+        }
+      }
+    },
+    {
+      "name": "7. Cadastrar produto COM foto (loja 1 do seed)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/produtos",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "produtos"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id_loja\": 1,\n  \"nome\": \"Produto de teste com foto\",\n  \"categoria\": \"Acessórios\",\n  \"preco\": 99.9,\n  \"descricao\": \"Foto de 1 pixel só pra testar o BLOB\",\n  \"imagem\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "8. Ver a foto do produto 1 (troque o número pelo id)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/produtos/1/imagem",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "produtos",
+            "1",
+            "imagem"
+          ]
+        }
+      }
+    },
+    {
+      "name": "9. Trocar a foto do produto 1",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/produtos/1",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "produtos",
+            "1"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id_loja\": 1,\n  \"nome\": \"Intel Core i5-14400F\",\n  \"categoria\": \"Processadores\",\n  \"preco\": 1299.9,\n  \"descricao\": \"Processador 10 núcleos\",\n  \"imagem\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "10. Remover a foto do produto 1",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/produtos/1",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "produtos",
+            "1"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id_loja\": 1,\n  \"nome\": \"Intel Core i5-14400F\",\n  \"categoria\": \"Processadores\",\n  \"preco\": 1299.9,\n  \"descricao\": \"Processador 10 núcleos\",\n  \"remover_imagem\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "11. Carrinho — ver (token_cliente)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_cliente}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/carrinho/{{id_cliente}}",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "carrinho",
+            "{{id_cliente}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "12. Carrinho — adicionar produto",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_cliente}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/carrinho/{{id_cliente}}/itens",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "carrinho",
+            "{{id_cliente}}",
+            "itens"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id_produto\": 1,\n  \"quantidade\": 2\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "13. Carrinho — mudar quantidade",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_cliente}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/carrinho/{{id_cliente}}/itens/1",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "carrinho",
+            "{{id_cliente}}",
+            "itens",
+            "1"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"quantidade\": 3\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "14. Carrinho — remover item",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_cliente}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/carrinho/{{id_cliente}}/itens/1",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "carrinho",
+            "{{id_cliente}}",
+            "itens",
+            "1"
+          ]
+        }
+      }
+    },
+    {
+      "name": "15. Carrinho — finalizar compra",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_cliente}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/carrinho/{{id_cliente}}/finalizar",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "carrinho",
+            "{{id_cliente}}",
+            "finalizar"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id_endereco\": 1,\n  \"forma_pagamento\": \"pix\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "16. Perfil do cliente — dados",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_cliente}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/perfil/cliente/{{id_cliente}}",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "perfil",
+            "cliente",
+            "{{id_cliente}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "17. Perfil do cliente — editar (pede senha atual)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_cliente}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/perfil/cliente/{{id_cliente}}",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "perfil",
+            "cliente",
+            "{{id_cliente}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Cliente Teste\",\n  \"email\": \"cliente@teste.com\",\n  \"celular\": \"(11) 99999-0000\",\n  \"senha_atual\": \"senha123\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "18. Perfil do cliente — endereços",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_cliente}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/perfil/cliente/{{id_cliente}}/enderecos",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "perfil",
+            "cliente",
+            "{{id_cliente}}",
+            "enderecos"
+          ]
+        }
+      }
+    },
+    {
+      "name": "19. Perfil do cliente — pedidos",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_cliente}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/perfil/cliente/{{id_cliente}}/pedidos",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "perfil",
+            "cliente",
+            "{{id_cliente}}",
+            "pedidos"
+          ]
+        }
+      }
+    },
+    {
+      "name": "20. Perfil da loja — dados e resumo",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_loja}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/perfil/loja/{{id_loja}}",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "perfil",
+            "loja",
+            "{{id_loja}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "21. Perfil da loja — editar (pede senha atual)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_loja}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/perfil/loja/{{id_loja}}",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "perfil",
+            "loja",
+            "{{id_loja}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Loja Exemplo PC Forge\",\n  \"endereco\": \"Av. Tecnologia, 100 - São Paulo - SP\",\n  \"celular\": \"11999990000\",\n  \"email\": \"contato@pcforge.com\",\n  \"descricao\": \"Hardware novo e com garantia.\",\n  \"senha_atual\": \"senha123\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "22. Perfil da loja — vendas recentes",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token_loja}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/perfil/loja/{{id_loja}}/vendas",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "perfil",
+            "loja",
+            "{{id_loja}}",
+            "vendas"
+          ]
+        }
+      }
+    },
+    {
+      "name": "23. Loja — página pública (sem token)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/loja/{{id_loja}}/publico",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "loja",
+            "{{id_loja}}",
+            "publico"
+          ]
+        }
+      }
+    },
+    {
+      "name": "24. Vitrine só de uma loja",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/produtos?loja={{id_loja}}",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "produtos?loja={{id_loja}}"
           ]
         }
       }

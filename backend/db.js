@@ -22,11 +22,28 @@ const pool = mysql.createPool({
 // Usado na inicialização do servidor e na rota /saude: confere se o banco
 // responde e se as tabelas principais existem.
 pool.testarConexao = async function testarConexao() {
-  const tabelasNecessarias = ['CLIENTE', 'ENDERECO', 'LOJA', 'PRODUTO'];
+  const tabelasNecessarias = ['CLIENTE', 'ENDERECO', 'LOJA', 'PRODUTO', 'CARRINHO_ITEM'];
   const [linhas] = await pool.query('SHOW TABLES');
   const existentes = linhas.map((l) => String(Object.values(l)[0]).toUpperCase());
   const faltando = tabelasNecessarias.filter((t) => !existentes.includes(t));
-  return { banco: process.env.DB_NAME || 'pc_forge', tabelas: existentes, faltando };
+
+  // Colunas que as migrações adicionaram (PRODUTO.ATIVO = exclusão lógica,
+  // PRODUTO.IMAGEM/IMAGEM_TIPO = foto em BLOB, LOJA.DESCRICAO = "sobre a loja").
+  // Se faltar alguma, o banco é de antes dessas migrações e a pessoa precisa
+  // rodar "npm run migrate". Vem como "TABELA.COLUNA".
+  const colunasEsperadas = {
+    PRODUTO: ['ATIVO', 'IMAGEM', 'IMAGEM_TIPO'],
+    LOJA: ['DESCRICAO']
+  };
+  let colunasFaltando = [];
+  for (const [tabela, esperadas] of Object.entries(colunasEsperadas)) {
+    if (!existentes.includes(tabela)) continue;
+    const [colunas] = await pool.query(`SHOW COLUMNS FROM ${tabela}`);
+    const nomes = colunas.map((c) => String(c.Field).toUpperCase());
+    colunasFaltando.push(...esperadas.filter((c) => !nomes.includes(c)).map((c) => `${tabela}.${c}`));
+  }
+
+  return { banco: process.env.DB_NAME || 'pc_forge', tabelas: existentes, faltando, colunasFaltando };
 };
 
 module.exports = pool;

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="assets/css/base.css">
+    <link rel="stylesheet" href="assets/css/toast.css">
+    <link rel="stylesheet" href="assets/css/navbar.css">
+    <link rel="stylesheet" href="assets/css/forms.css">
+    <link rel="stylesheet" href="assets/css/painel.css">
+    <link rel="stylesheet" href="assets/css/carrinho.css">
+    <link rel="stylesheet" href="assets/css/modal.css">
+    <title>Meu carrinho | PC Forge — Peças de TI</title>
+</head>
+
+<body data-tipo-pagina="cliente">
+    <div id="topo-montagem" data-tipo="cliente" data-modo="login"></div>
+
+    <section class="painel">
+        <div class="painel-cabecalho">
+            <div>
+                <span class="vitrine-eyebrow">Seu carrinho</span>
+                <h1>Carrinho</h1>
+            </div>
+            <a href="produtos.html" class="painel-sair link-botao">Continuar comprando</a>
+        </div>
+
+        <div class="carrinho-grade" id="carrinho-conteudo">
+            <div class="carrinho-lista" id="carrinho-itens">
+                <p class="estado-carregando">Carregando seu carrinho...</p>
+            </div>
+
+            <aside class="painel-form-card carrinho-resumo" id="carrinho-resumo" hidden>
+                <h2>Resumo</h2>
+
+                <div class="resumo-linha"><span>Itens</span><strong id="resumo-itens">0</strong></div>
+                <div class="resumo-linha resumo-total"><span>Total</span><strong id="resumo-total">R$ 0,00</strong></div>
+
+                <form id="form-finalizar">
+                    <label for="endereco-entrega">Entregar em</label>
+                    <select id="endereco-entrega" required></select>
+                    <p class="resumo-aviso" id="aviso-sem-endereco" hidden>
+                        Você ainda não tem endereço. <a href="perfil-cliente.html#enderecos">Cadastre um no seu perfil</a>.
+                    </p>
+
+                    <label for="forma-pagamento">Forma de pagamento</label>
+                    <select id="forma-pagamento" required>
+                        <option value="pix">Pix</option>
+                        <option value="cartao_credito">Cartão de crédito</option>
+                        <option value="cartao_debito">Cartão de débito</option>
+                        <option value="boleto">Boleto</option>
+                    </select>
+
+                    <input type="submit" id="botao-finalizar" value="Finalizar compra">
+                    <button type="button" id="botao-esvaziar" class="painel-cancelar-edicao">Esvaziar carrinho</button>
+
+                    <p class="resumo-aviso">O pedido é registrado na sua conta, mas ainda não há cobrança de verdade (pagamento simulado).</p>
+                    <p id="mensagem-erro" class="mensagem-erro"></p>
+                </form>
+            </aside>
+        </div>
+
+        <div class="painel-form-card pedido-concluido" id="pedido-concluido" hidden>
+            <h2>Pedido realizado!</h2>
+            <p class="subtitulo" id="pedido-texto"></p>
+            <div class="pedido-concluido-acoes">
+                <a href="perfil-cliente.html#pedidos" class="botao-topo botao-solido" id="link-ver-pedidos">Ver meus pedidos</a>
+                <a href="produtos.html" class="botao-topo botao-fantasma">Continuar comprando</a>
+            </div>
+        </div>
+    </section>
+
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/util.js"></script>
+    <script src="assets/js/toast.js"></script>
+    <script src="assets/js/demo.js"></script>
+    <script src="assets/js/admin-modal.js"></script>
+    <script src="assets/js/carrinho-api.js"></script>
+    <script src="assets/js/navbar.js"></script>
+    <script src="assets/js/carrinho.js"></script>
+</body>
+
+</html>

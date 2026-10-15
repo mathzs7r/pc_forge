@@ -20,7 +20,8 @@ document.getElementById('form-login').addEventListener('submit', async function 
 
         try {
             const corpo = await apiPost('/login', { identificador, senha });
-            cliente = corpo.cliente;
+            // O token é a prova de login que o carrinho e o perfil exigem da API.
+            cliente = { ...corpo.cliente, token: corpo.token };
         } catch (error) {
             // Modo visualização: só simula o login se a API estiver mesmo fora
             // do ar. Se a API respondeu (mesmo "senha errada"), vale a resposta dela.
@@ -30,11 +31,12 @@ document.getElementById('form-login').addEventListener('submit', async function 
 
         sessionStorage.setItem('cliente', JSON.stringify(cliente));
 
+        // O produto pretendido NÃO é removido aqui: a vitrine (produtos.js) o coloca
+        // no carrinho assim que carregar, já com a sessão pronta.
         const pretendido = sessionStorage.getItem('produtoPretendido');
         if (pretendido) {
             const produto = JSON.parse(pretendido);
-            sessionStorage.removeItem('produtoPretendido');
-            mostrarToast(`Bem-vindo(a), ${cliente.nome}! Continuando a compra de "${produto.nome}".`, 'sucesso');
+            mostrarToast(`Bem-vindo(a), ${cliente.nome}! Vamos colocar "${produto.nome}" no seu carrinho.`, 'sucesso');
         } else {
             mostrarToast(`Bem-vindo(a), ${cliente.nome}!`, 'sucesso');
         }

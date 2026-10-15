@@ -11,11 +11,17 @@
 //      (dados de teste — não roda por padrão pra não sujar produção)
 //
 // Como usar:
+//   npm start                    -> roda ESTA migração e, só se der certo, sobe a API
+//                                   (o mesmo vale pro npm run dev)
+//   npm run start:api            -> sobe a API SEM rodar a migração
 //   cd backend
 //   node migration.js            -> só schema + migrações pendentes
 //   node migration.js --seed     -> além disso, popula com dados de teste
-//   npm run migrate              -> atalho pro primeiro comando
+//   npm run migrate              -> atalho pro comando acima
 //   npm run migrate:seed         -> atalho pro segundo
+//
+// Se algo der errado, o script termina com código de saída 1 — é isso que faz o
+// "npm start" NÃO subir a API com o banco desatualizado.
 //
 // Precisa de um backend/.env com DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
 // (veja o .env.example). É seguro rodar mais de uma vez: schema.sql usa

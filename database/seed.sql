@@ -26,9 +26,19 @@ INSERT INTO PRODUTO (ID_LOJA, NOME, DESCRICAO, CATEGORIA, PRECO, CAMINHO_IMG, QU
 (@id_loja, 'Headset Gamer 7.1 Surround', 'Som surround virtual 7.1, microfone removível, USB.', 'Acessórios', 199.90, 'placeholder.jpg', 1);
 
 -- Cliente de teste (mesma senha da loja: senha123) pra dar pra fazer login
--- sem precisar cadastrar antes.
-INSERT INTO CLIENTE (NOME, CPF, EMAIL, CELULAR, NASCIMENTO, SENHA) VALUES
-('Cliente Teste', '123.456.789-09', 'cliente@teste.com', '(11) 99999-0000', '2000-01-01', '$2b$10$bK2yK21Q4FUxfRHr6jncB.H.00oURgsM4XgzDRFmauUhHKbC0rF5u');
+-- sem precisar cadastrar antes. Idempotente: se a migração 002 já criou esse
+-- cliente, nada é inserido de novo (não dá erro de CPF/e-mail duplicado).
+INSERT INTO CLIENTE (NOME, CPF, EMAIL, CELULAR, NASCIMENTO, SENHA)
+SELECT 'Cliente Teste', '123.456.789-09', 'cliente@teste.com', '(11) 99999-0000', '2000-01-01',
+       '$2b$10$bK2yK21Q4FUxfRHr6jncB.H.00oURgsM4XgzDRFmauUhHKbC0rF5u'
+FROM DUAL
+WHERE NOT EXISTS (
+    SELECT 1 FROM CLIENTE
+    WHERE EMAIL = 'cliente@teste.com' OR CPF = '123.456.789-09'
+);
 
-INSERT INTO ENDERECO (ID_CLIENTE, CEP, RUA, NUMERO, BAIRRO, CIDADE, ESTADO) VALUES
-(LAST_INSERT_ID(), '01001-000', 'Praça da Sé', '100', 'Sé', 'São Paulo', 'SP');
+INSERT INTO ENDERECO (ID_CLIENTE, CEP, RUA, NUMERO, BAIRRO, CIDADE, ESTADO)
+SELECT C.ID, '01001-000', 'Praça da Sé', '100', 'Sé', 'São Paulo', 'SP'
+FROM CLIENTE C
+WHERE C.EMAIL = 'cliente@teste.com'
+  AND NOT EXISTS (SELECT 1 FROM ENDERECO E WHERE E.ID_CLIENTE = C.ID);

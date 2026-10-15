@@ -1,16 +1,24 @@
 -- ============================================================
 -- DUMP — banco pc_forge (schema atualizado + dados de exemplo)
 -- ============================================================
--- Gerado rodando de verdade: schema.sql -> migrations/001... -> seed.sql
--- (via `node migration.js --seed`), depois exportado com mysqldump.
--- Já inclui a correção da exclusão lógica de produto (coluna ATIVO).
+-- Reflete: schema.sql + migrações 001, 002, 003 e 004 + seed.sql.
+--   001 = exclusão lógica de produto (coluna ATIVO)
+--   002 = cliente de teste
+--   003 = foto do produto em BLOB (colunas IMAGEM e IMAGEM_TIPO)
+--   004 = carrinho de compras (tabela CARRINHO_ITEM) + LOJA.DESCRICAO
+-- Os produtos de exemplo vêm SEM foto (IMAGEM = NULL): a vitrine mostra o
+-- ícone da categoria até a loja adicionar uma foto pelo painel.
+--
+-- Este arquivo foi atualizado à mão no formato do mysqldump. Se quiser um
+-- dump 100% gerado pelo MySQL, rode "npm run migrate:seed" num banco novo e
+-- exporte com:  mysqldump -u root -p --databases pc_forge > pc_forge_dump.sql
 --
 -- Como importar (cria o banco pc_forge do zero com tudo dentro):
 --   mysql -u root -p < pc_forge_dump.sql
 --
--- Login de teste já cadastrado nesse dump:
---   Loja "Loja Exemplo PC Forge" — e-mail contato@pcforge.com  | senha: senha123
---   Cliente "Cliente Teste"       — e-mail cliente@teste.com    | senha: senha123
+-- Logins de teste já cadastrados nesse dump (senha de ambos: senha123):
+--   Loja:    contato@pcforge.com    ("Loja Exemplo PC Forge")
+--   Cliente: cliente@teste.com      (ou CPF 123.456.789-09)
 --
 -- ATENÇÃO: este dump começa cada tabela com DROP TABLE IF EXISTS — importar
 -- apaga o que você já tinha cadastrado nas tabelas do pc_forge.
@@ -37,6 +45,35 @@ USE pc_forge;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `CARRINHO_ITEM`
+--
+
+DROP TABLE IF EXISTS `CARRINHO_ITEM`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `CARRINHO_ITEM` (
+  `ID_CLIENTE` int(11) NOT NULL,
+  `ID_PRODUTO` int(11) NOT NULL,
+  `QUANTIDADE` int(11) NOT NULL DEFAULT 1,
+  `ADICIONADO_EM` timestamp NULL DEFAULT current_timestamp(),
+  `ATUALIZADO_EM` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`ID_CLIENTE`,`ID_PRODUTO`),
+  KEY `fk_carrinho_produto` (`ID_PRODUTO`),
+  CONSTRAINT `fk_carrinho_cliente` FOREIGN KEY (`ID_CLIENTE`) REFERENCES `CLIENTE` (`ID`) ON DELETE CASCADE,
+  CONSTRAINT `fk_carrinho_produto` FOREIGN KEY (`ID_PRODUTO`) REFERENCES `PRODUTO` (`ID`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `CARRINHO_ITEM`
+--
+
+LOCK TABLES `CARRINHO_ITEM` WRITE;
+/*!40000 ALTER TABLE `CARRINHO_ITEM` DISABLE KEYS */;
+/*!40000 ALTER TABLE `CARRINHO_ITEM` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `CLIENTE`
@@ -151,6 +188,7 @@ CREATE TABLE `LOJA` (
   `EMAIL` varchar(150) NOT NULL,
   `SENHA` varchar(255) NOT NULL,
   `CRIADO_EM` timestamp NULL DEFAULT current_timestamp(),
+  `DESCRICAO` varchar(500) DEFAULT NULL,
   PRIMARY KEY (`ID`),
   UNIQUE KEY `CNPJ` (`CNPJ`),
   UNIQUE KEY `EMAIL` (`EMAIL`)
@@ -164,7 +202,7 @@ CREATE TABLE `LOJA` (
 LOCK TABLES `LOJA` WRITE;
 /*!40000 ALTER TABLE `LOJA` DISABLE KEYS */;
 INSERT INTO `LOJA` VALUES
-(1,'Loja Exemplo PC Forge','00.000.000/0001-00','Av. Tecnologia, 100 - São Paulo - SP','11999990000','contato@pcforge.com','$2b$10$bK2yK21Q4FUxfRHr6jncB.H.00oURgsM4XgzDRFmauUhHKbC0rF5u','2026-09-29 12:40:36');
+(1,'Loja Exemplo PC Forge','00.000.000/0001-00','Av. Tecnologia, 100 - São Paulo - SP','11999990000','contato@pcforge.com','$2b$10$bK2yK21Q4FUxfRHr6jncB.H.00oURgsM4XgzDRFmauUhHKbC0rF5u','2026-09-29 12:40:36',NULL);
 /*!40000 ALTER TABLE `LOJA` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -215,6 +253,8 @@ CREATE TABLE `PRODUTO` (
   `ATIVO` tinyint(1) NOT NULL DEFAULT 1,
   `CRIADO_EM` timestamp NULL DEFAULT current_timestamp(),
   `ATUALIZADO_EM` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `IMAGEM` mediumblob DEFAULT NULL,
+  `IMAGEM_TIPO` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`ID`),
   KEY `idx_produto_loja_ativo` (`ID_LOJA`,`ATIVO`),
   CONSTRAINT `fk_produto_loja` FOREIGN KEY (`ID_LOJA`) REFERENCES `LOJA` (`ID`) ON DELETE CASCADE
@@ -228,16 +268,16 @@ CREATE TABLE `PRODUTO` (
 LOCK TABLES `PRODUTO` WRITE;
 /*!40000 ALTER TABLE `PRODUTO` DISABLE KEYS */;
 INSERT INTO `PRODUTO` VALUES
-(1,1,'Intel Core i5-14400F','Processador 10 núcleos, até 4.7 GHz, socket LGA 1700.','Processadores',1299.90,'placeholder.jpg',1,1,'2026-09-29 12:40:36','2026-09-29 12:40:36'),
-(2,1,'AMD Ryzen 5 7600','Processador 6 núcleos / 12 threads, até 5.1 GHz, AM5.','Processadores',1499.90,'placeholder.jpg',1,1,'2026-09-29 12:40:36','2026-09-29 12:40:36'),
-(3,1,'RTX 4060 8GB GDDR6','Placa de vídeo NVIDIA Ada Lovelace, DLSS 3, 115W.','Placas de Vídeo',1899.90,'placeholder.jpg',1,1,'2026-09-29 12:40:36','2026-09-29 12:40:36'),
-(4,1,'RX 7600 8GB','Placa de vídeo AMD RDNA 3, 8GB GDDR6, ótimo custo-benefício.','Placas de Vídeo',1699.90,'placeholder.jpg',1,1,'2026-09-29 12:40:36','2026-09-29 12:40:36'),
-(5,1,'Memória RAM 16GB DDR5 5600MHz','Kit 1x16GB DDR5, latência CL36, ideal para Ryzen 7000 / Intel 14ª gen.','Memória RAM',449.90,'placeholder.jpg',1,1,'2026-09-29 12:40:36','2026-09-29 12:40:36'),
-(6,1,'SSD NVMe 1TB Gen4','SSD M.2 NVMe PCIe 4.0, até 7000 MB/s leitura.','Armazenamento',399.90,'placeholder.jpg',1,1,'2026-09-29 12:40:36','2026-09-29 12:40:36'),
-(7,1,'Placa-mãe B650M WiFi','Chipset AMD B650, Wi-Fi 6, DDR5, PCIe 4.0.','Placas-mãe',899.90,'placeholder.jpg',1,1,'2026-09-29 12:40:36','2026-09-29 12:40:36'),
-(8,1,'Fonte 650W 80 Plus Bronze','Fonte modular, PFC ativo, proteção completa.','Fontes',349.90,'placeholder.jpg',1,1,'2026-09-29 12:40:36','2026-09-29 12:40:36'),
-(9,1,'Teclado Mecânico RGB Switch Red','Switch linear red, RGB por tecla, cabo USB-C destacável.','Periféricos',279.90,'placeholder.jpg',1,1,'2026-09-29 12:40:36','2026-09-29 12:40:36'),
-(10,1,'Headset Gamer 7.1 Surround','Som surround virtual 7.1, microfone removível, USB.','Acessórios',199.90,'placeholder.jpg',1,1,'2026-09-29 12:40:36','2026-09-29 12:40:36');
+(1,1,'Intel Core i5-14400F','Processador 10 núcleos, até 4.7 GHz, socket LGA 1700.','Processadores',1299.90,'placeholder.jpg',1,1,'2026-09-29 12:40:36','2026-09-29 12:40:36',NULL,NULL),
+(2,1,'AMD Ryzen 5 7600','Processador 6 núcleos / 12 threads, até 5.1 GHz, AM5.','Processadores',1499.90,'placeholder.jpg',1,1,'2026-09-29 12:40:36','2026-09-29 12:40:36',NULL,NULL),
+(3,1,'RTX 4060 8GB GDDR6','Placa de vídeo NVIDIA Ada Lovelace, DLSS 3, 115W.','Placas de Vídeo',1899.90,'placeholder.jpg',1,1,'2026-09-29 12:40:36','2026-09-29 12:40:36',NULL,NULL),
+(4,1,'RX 7600 8GB','Placa de vídeo AMD RDNA 3, 8GB GDDR6, ótimo custo-benefício.','Placas de Vídeo',1699.90,'placeholder.jpg',1,1,'2026-09-29 12:40:36','2026-09-29 12:40:36',NULL,NULL),
+(5,1,'Memória RAM 16GB DDR5 5600MHz','Kit 1x16GB DDR5, latência CL36, ideal para Ryzen 7000 / Intel 14ª gen.','Memória RAM',449.90,'placeholder.jpg',1,1,'2026-09-29 12:40:36','2026-09-29 12:40:36',NULL,NULL),
+(6,1,'SSD NVMe 1TB Gen4','SSD M.2 NVMe PCIe 4.0, até 7000 MB/s leitura.','Armazenamento',399.90,'placeholder.jpg',1,1,'2026-09-29 12:40:36','2026-09-29 12:40:36',NULL,NULL),
+(7,1,'Placa-mãe B650M WiFi','Chipset AMD B650, Wi-Fi 6, DDR5, PCIe 4.0.','Placas-mãe',899.90,'placeholder.jpg',1,1,'2026-09-29 12:40:36','2026-09-29 12:40:36',NULL,NULL),
+(8,1,'Fonte 650W 80 Plus Bronze','Fonte modular, PFC ativo, proteção completa.','Fontes',349.90,'placeholder.jpg',1,1,'2026-09-29 12:40:36','2026-09-29 12:40:36',NULL,NULL),
+(9,1,'Teclado Mecânico RGB Switch Red','Switch linear red, RGB por tecla, cabo USB-C destacável.','Periféricos',279.90,'placeholder.jpg',1,1,'2026-09-29 12:40:36','2026-09-29 12:40:36',NULL,NULL),
+(10,1,'Headset Gamer 7.1 Surround','Som surround virtual 7.1, microfone removível, USB.','Acessórios',199.90,'placeholder.jpg',1,1,'2026-09-29 12:40:36','2026-09-29 12:40:36',NULL,NULL);
 /*!40000 ALTER TABLE `PRODUTO` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -262,7 +302,10 @@ CREATE TABLE `_MIGRACOES` (
 LOCK TABLES `_MIGRACOES` WRITE;
 /*!40000 ALTER TABLE `_MIGRACOES` DISABLE KEYS */;
 INSERT INTO `_MIGRACOES` VALUES
-('001_produto_exclusao_logica.sql','2026-09-29 12:40:36');
+('001_produto_exclusao_logica.sql','2026-09-29 12:40:36'),
+('002_cliente_teste.sql','2026-09-29 12:40:36'),
+('003_produto_imagem_blob.sql','2026-09-29 12:40:36'),
+('004_carrinho_e_perfil.sql','2026-09-29 12:40:36');
 /*!40000 ALTER TABLE `_MIGRACOES` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

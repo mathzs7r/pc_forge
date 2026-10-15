@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="assets/css/base.css">
+    <link rel="stylesheet" href="assets/css/toast.css">
+    <link rel="stylesheet" href="assets/css/navbar.css">
+    <link rel="stylesheet" href="assets/css/forms.css">
+    <link rel="stylesheet" href="assets/css/catalog.css">
+    <link rel="stylesheet" href="assets/css/modal.css">
+    <title>Loja | PC Forge — Peças e Acessórios de TI</title>
+</head>
+
+<!-- Página pública de uma loja: loja.html?id=3. Reaproveita o catálogo (produtos.js),
+     que aqui filtra só os produtos dessa loja. -->
+<body data-tipo-pagina="cliente" data-pagina="loja-publica">
+    <div id="topo-montagem" data-tipo="cliente" data-modo="cadastro"></div>
+
+    <section class="hero-home" id="loja-cabecalho">
+        <div class="hero-home-trajeto">
+            <svg viewBox="0 0 1200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M-50 260 Q 300 320 600 160 T 1250 40" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 10" opacity="0.3"/>
+                <circle cx="600" cy="160" r="90" fill="var(--accent)" opacity="0.05"/>
+                <circle cx="1180" cy="55" r="10" fill="var(--accent)" opacity="0.45"/>
+            </svg>
+        </div>
+        <div class="hero-home-conteudo">
+            <span class="vitrine-eyebrow">Loja parceira</span>
+            <h1 id="loja-nome">Carregando loja...</h1>
+            <p class="loja-descricao" id="loja-descricao"></p>
+            <div class="loja-publica-meta" id="loja-meta"></div>
+        </div>
+    </section>
+
+    <div class="filtros" id="filtros"></div>
+
+    <section class="secao-produtos" id="secao-produtos">
+        <div class="grade-produtos" id="grade-produtos">
+            <p class="estado-carregando">Carregando produtos...</p>
+        </div>
+    </section>
+
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/util.js"></script>
+    <script src="assets/js/toast.js"></script>
+    <script src="assets/js/demo.js"></script>
+    <script src="assets/js/admin-modal.js"></script>
+    <script src="assets/js/carrinho-api.js"></script>
+    <script src="assets/js/navbar.js"></script>
+    <script src="assets/js/produtos.js"></script>
+    <script src="assets/js/loja-publica.js"></script>
+</body>
+
+</html>

@@ -15,6 +15,14 @@ function traduzirErro(error) {
             return { status: 503, resposta: 'A API não conseguiu entrar no MySQL: usuário ou senha do banco errados. Confira DB_USER e DB_PASSWORD no backend/.env.' };
         case 'ER_BAD_DB_ERROR':
             return { status: 503, resposta: 'O banco de dados não existe. Rode "npm run migrate" dentro da pasta backend (ou importe database/dump/pc_forge_dump.sql).' };
+        case 'ER_BAD_FIELD_ERROR':
+            return { status: 503, resposta: 'O banco está desatualizado (falta uma coluna, provavelmente a da foto). Rode "npm run migrate" dentro da pasta backend e reinicie a API.' };
+        case 'ER_NO_REFERENCED_ROW_2':
+            return { status: 404, resposta: 'Algo que você usou não existe mais (conta ou produto removido). Atualize a página e tente de novo.' };
+        case 'ER_ROW_IS_REFERENCED_2':
+            return { status: 409, resposta: 'Esse item já foi usado em uma compra e não pode ser excluído.' };
+        case 'ER_NET_PACKET_TOO_LARGE':
+            return { status: 413, resposta: 'A foto passou do limite de pacote do MySQL (max_allowed_packet). Use uma foto menor ou aumente esse valor no MySQL.' };
         case 'ER_NO_DB_ERROR':
             return { status: 503, resposta: 'Nenhum banco selecionado. Preencha DB_NAME no backend/.env.' };
         case 'ER_NO_SUCH_TABLE':

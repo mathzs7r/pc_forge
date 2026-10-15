@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="assets/css/base.css">
+    <link rel="stylesheet" href="assets/css/toast.css">
+    <link rel="stylesheet" href="assets/css/navbar.css">
+    <link rel="stylesheet" href="assets/css/forms.css">
+    <link rel="stylesheet" href="assets/css/painel.css">
+    <link rel="stylesheet" href="assets/css/perfil.css">
+    <link rel="stylesheet" href="assets/css/modal.css">
+    <title>Perfil da loja | PC Forge — Peças de TI</title>
+</head>
+
+<body data-tipo-pagina="loja">
+    <div id="topo-montagem" data-tipo="loja" data-modo="login"></div>
+
+    <section class="painel">
+        <div class="painel-cabecalho">
+            <div class="perfil-topo">
+                <div class="perfil-avatar" id="perfil-avatar">?</div>
+                <div>
+                    <span class="vitrine-eyebrow">Perfil da loja</span>
+                    <h1 id="perfil-nome">Minha loja</h1>
+                    <span class="perfil-desde" id="perfil-desde"></span>
+                </div>
+            </div>
+            <div class="perfil-acoes">
+                <a href="painel-loja.html" class="painel-sair link-botao">Meus produtos</a>
+                <a href="#" class="painel-sair link-botao" id="link-pagina-publica">Ver página pública</a>
+            </div>
+        </div>
+
+        <div class="painel-form-card aviso-demo-perfil" id="perfil-demo" hidden>
+            <h2>Modo visualização</h2>
+            <p class="subtitulo" style="text-align:left">Nesse modo não há banco de dados, então o perfil mostra só o nome e o e-mail usados no login de teste e não dá pra editar. Clique em "Modo visualização — sair" (canto da tela), ligue a API e entre com uma loja de verdade.</p>
+        </div>
+
+        <div id="perfil-conteudo" hidden>
+            <div class="stats-grid" id="stats"></div>
+
+            <div class="painel-grade">
+                <div class="painel-form-card">
+                    <h2>Dados do cadastro</h2>
+                    <p class="subtitulo">O que você informou ao criar a loja</p>
+
+                    <dl class="dados-cadastro" id="dados-cadastro"></dl>
+
+                    <hr class="perfil-divisor">
+                    <h3>Editar dados</h3>
+                    <form id="form-dados">
+                        <label for="perfil-campo-nome">Nome da loja</label>
+                        <input type="text" id="perfil-campo-nome" required>
+
+                        <label for="perfil-campo-endereco">Endereço</label>
+                        <input type="text" id="perfil-campo-endereco" required>
+
+                        <div class="row">
+                            <div class="col">
+                                <label for="perfil-campo-celular">Celular</label>
+                                <input type="tel" id="perfil-campo-celular" required>
+                            </div>
+                            <div class="col">
+                                <label for="perfil-campo-email">E-mail</label>
+                                <input type="email" id="perfil-campo-email" required>
+                            </div>
+                        </div>
+                        <p class="perfil-dica">O CNPJ não pode ser alterado.</p>
+
+                        <label for="perfil-campo-descricao">Sobre a loja <span class="campo-opcional">(aparece na página pública)</span></label>
+                        <textarea id="perfil-campo-descricao" maxlength="500" placeholder="Conte o que sua loja vende, garantia, diferenciais..."></textarea>
+                        <div class="contador-caracteres"><span id="contador-descricao">0</span>/500</div>
+
+                        <label for="perfil-nova-senha">Nova senha <span class="campo-opcional">(deixe em branco pra manter)</span></label>
+                        <input type="password" id="perfil-nova-senha" autocomplete="new-password" placeholder="Mínimo 4 caracteres">
+
+                        <label for="perfil-senha-atual">Senha atual <span class="campo-opcional">(obrigatória pra salvar)</span></label>
+                        <input type="password" id="perfil-senha-atual" autocomplete="current-password" required>
+
+                        <input type="submit" value="Salvar alterações">
+                        <p id="mensagem-erro" class="mensagem-erro"></p>
+                    </form>
+                </div>
+
+                <div class="perfil-secao" style="margin-top:0">
+                    <h2>Vendas recentes</h2>
+                    <div id="lista-vendas"><p class="estado-carregando">Carregando vendas...</p></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/util.js"></script>
+    <script src="assets/js/toast.js"></script>
+    <script src="assets/js/demo.js"></script>
+    <script src="assets/js/admin-modal.js"></script>
+    <script src="assets/js/carrinho-api.js"></script>
+    <script src="assets/js/navbar.js"></script>
+    <script src="assets/js/perfil-loja.js"></script>
+</body>
+
+</html>

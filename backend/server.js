@@ -5,16 +5,23 @@ const express = require('express');
 const cors = require('cors');
 const pool = require('./db');
 const { traduzirErro } = require('./utils/erros');
+const { segredoTemporario } = require('./utils/auth');
 
 const rotasClientes = require('./routes/clientes');
 const rotasLojas = require('./routes/lojas');
 const rotasProdutos = require('./routes/produtos');
+const rotasCarrinho = require('./routes/carrinho');
+const rotasPerfil = require('./routes/perfil');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 // CORS antes de tudo, pra o "preflight" (OPTIONS) do navegador sempre passar.
 app.use(cors());
+// Rotas de produto aceitam JSON maior, porque a foto vai junto em base64
+// (5 MB de imagem viram ~6,7 MB de texto). Esse parser tem que vir ANTES do
+// express.json() padrão (limite de 100 KB): o primeiro que ler o corpo vale.
+app.use('/produtos', express.json({ limit: '8mb' }));
 app.use(express.json());
 
 app.get('/ola', (req, res) => {
@@ -25,10 +32,10 @@ app.get('/ola', (req, res) => {
 app.get('/saude', async (req, res) => {
     try {
         const info = await pool.testarConexao();
-        const ok = info.faltando.length === 0;
+        const ok = info.faltando.length === 0 && info.colunasFaltando.length === 0;
         res.status(ok ? 200 : 503).json({
             api: 'ok',
-            banco: ok ? 'ok' : 'conectou, mas faltam tabelas (rode: npm run migrate)',
+            banco: ok ? 'ok' : 'conectou, mas o banco está desatualizado (rode: npm run migrate)',
             ...info
         });
     } catch (error) {
@@ -40,6 +47,8 @@ app.get('/saude', async (req, res) => {
 app.use(rotasClientes);
 app.use(rotasLojas);
 app.use(rotasProdutos);
+app.use(rotasCarrinho);
+app.use(rotasPerfil);
 
 // Rota que não existe -> JSON claro (em vez do HTML padrão do Express).
 app.use((req, res) => {
@@ -48,6 +57,9 @@ app.use((req, res) => {
 
 // Qualquer erro que escapar das rotas (ex: JSON inválido no corpo da requisição).
 app.use((error, req, res, next) => {
+    if (error.type === 'entity.too.large') {
+        return res.status(413).json({ resposta: 'O envio é grande demais. Use uma foto menor (máximo 5 MB).' });
+    }
     if (error.type === 'entity.parse.failed') {
         return res.status(400).json({ resposta: 'O corpo da requisição não é um JSON válido. Confira vírgulas e aspas.' });
     }
@@ -63,11 +75,19 @@ const servidor = app.listen(port, async () => {
         console.warn('    Copie o .env.example para .env e coloque a senha do seu MySQL.');
     }
 
+    if (segredoTemporario()) {
+        console.warn('⚠️  AUTH_SECRET não definido (ou com menos de 16 caracteres) no backend/.env — usando um segredo temporário.');
+        console.warn('    Funciona, mas todo mundo precisa entrar de novo toda vez que a API reinicia. Defina AUTH_SECRET no .env.');
+    }
+
     try {
         const info = await pool.testarConexao();
         console.log(`✅ Conectado ao MySQL — banco "${info.banco}"`);
         if (info.faltando.length > 0) {
             console.warn(`⚠️  Faltam tabelas: ${info.faltando.join(', ')}. Rode "npm run migrate" nesta pasta.`);
+        }
+        if (info.colunasFaltando.length > 0) {
+            console.warn(`⚠️  Faltam colunas no banco: ${info.colunasFaltando.join(', ')}. Rode "npm run migrate" nesta pasta (sem isso, fotos, vitrine e perfil da loja não funcionam).`);
         }
     } catch (error) {
         console.error(`❌ Não consegui usar o banco: ${traduzirErro(error).resposta}`);

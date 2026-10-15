@@ -132,7 +132,26 @@
     position: relative;
 }
 
+/* Foto do produto (vem do BLOB no banco) cobre o thumb; o ícone da categoria
+   só aparece quando não há foto (ou quando ela falha ao carregar). */
+.cartao-thumb {
+    overflow: hidden;
+}
+
+.cartao-thumb img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.cartao-thumb.com-foto .cartao-icone {
+    display: none;
+}
+
 .cartao-categoria {
+    z-index: 1;
     position: absolute;
     top: 10px;
     left: 10px;
@@ -160,6 +179,17 @@
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+
+.cartao-loja-link {
+    align-self: flex-start;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.cartao-loja-link:hover {
+    color: var(--accent);
+    text-decoration: underline;
 }
 
 .cartao-nome {
@@ -195,6 +225,12 @@
     font-family: 'Inter', sans-serif;
 }
 
+.cartao-comprar:disabled {
+    opacity: 0.6;
+    cursor: wait;
+    transform: none;
+}
+
 .cartao-comprar:hover {
     filter: brightness(1.12);
     transform: translateY(-1px);
@@ -214,4 +250,24 @@
 .estado-vazio code {
     color: var(--accent);
     font-size: 13px;
+}
+
+/* ---------- cabeçalho da página pública da loja (loja.html) ---------- */
+.loja-publica-meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px 22px;
+    margin-top: 18px;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.loja-publica-meta strong {
+    color: var(--chalk);
+}
+
+.hero-home .loja-descricao {
+    white-space: pre-line;
 }

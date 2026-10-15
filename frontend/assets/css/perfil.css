@@ -1,0 +1,329 @@
+/* ==========================================================
+   PERFIL — cliente e loja (reaproveita .painel, .painel-form-card,
+   .painel-grade e os estilos de formulário do painel.css / forms.css)
+   ========================================================== */
+.perfil-topo {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    min-width: 0;
+}
+
+.perfil-avatar {
+    flex: none;
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--on-accent);
+    background: linear-gradient(135deg, var(--accent), var(--accent-glow));
+    box-shadow: 0 0 26px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+.perfil-topo h1 {
+    overflow-wrap: anywhere;
+}
+
+.perfil-desde {
+    display: block;
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 13.5px;
+}
+
+.perfil-acoes {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* links com cara de botão (o .painel-sair foi feito pra <button>) */
+.link-botao {
+    text-decoration: none;
+    display: inline-flex;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+.painel-form-card h3,
+.perfil-secao h3 {
+    font-family: 'Orbitron', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 14px;
+    color: var(--accent);
+    margin: 26px 0 0;
+}
+
+.painel-form-card h3:first-of-type {
+    margin-top: 6px;
+}
+
+.perfil-colunas {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+/* ---------- "Dados do cadastro" (somente leitura) ---------- */
+.dados-cadastro {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 20px;
+    margin: 14px 0 0;
+}
+
+.dados-cadastro > div {
+    min-width: 0;
+}
+
+.dados-cadastro .largo {
+    grid-column: 1 / -1;
+}
+
+.dados-cadastro dt {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+}
+
+.dados-cadastro dd {
+    margin: 4px 0 0;
+    font-size: 15px;
+    color: var(--chalk);
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 480px) {
+    .dados-cadastro {
+        grid-template-columns: 1fr;
+    }
+}
+
+.perfil-divisor {
+    border: none;
+    border-top: 1px solid var(--glass-border);
+    margin: 24px 0 0;
+}
+
+.perfil-dica {
+    font-size: 12px;
+    color: var(--muted);
+    margin: 6px 0 0;
+}
+
+.contador-caracteres {
+    text-align: right;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+}
+
+/* ---------- endereços ---------- */
+.lista-enderecos {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.endereco-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    background: var(--glass-fill);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.endereco-card small {
+    display: block;
+    color: var(--muted);
+}
+
+.perfil-botao-secundario {
+    width: 100%;
+    margin-top: 14px;
+    border: 1px dashed var(--glass-border);
+    background: transparent;
+    color: var(--chalk);
+    padding: 11px 14px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 13.5px;
+    cursor: pointer;
+}
+
+.perfil-botao-secundario:hover {
+    background: var(--glass-fill);
+    border-color: var(--accent);
+}
+
+#form-endereco {
+    margin-top: 14px;
+    padding-top: 6px;
+    border-top: 1px solid var(--glass-border);
+}
+
+/* ---------- pedidos do cliente ---------- */
+.perfil-secao {
+    margin-top: 40px;
+}
+
+.perfil-secao h2 {
+    font-family: 'Orbitron', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 21px;
+    color: var(--chalk);
+    margin: 0 0 14px;
+}
+
+.perfil-secao h3 {
+    margin-top: 0;
+}
+
+.pedido {
+    background: var(--glass-fill);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    margin-bottom: 12px;
+}
+
+.pedido summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 14px 18px;
+}
+
+.pedido summary::-webkit-details-marker {
+    display: none;
+}
+
+.pedido summary:hover {
+    background: var(--glass-fill);
+}
+
+.pedido-id {
+    font-weight: 800;
+    color: var(--chalk);
+}
+
+.pedido-meta {
+    color: var(--muted);
+    font-size: 12.5px;
+}
+
+.pedido-total {
+    font-family: 'Orbitron', sans-serif;
+    color: var(--accent);
+    font-size: 16px;
+}
+
+.pedido-corpo {
+    border-top: 1px solid var(--glass-border);
+    padding: 12px 18px 16px;
+    font-size: 14px;
+}
+
+.pedido-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 0;
+}
+
+.pedido-item small {
+    color: var(--muted);
+}
+
+.pedido-entrega {
+    margin: 10px 0 0;
+    color: var(--muted);
+    font-size: 12.5px;
+}
+
+/* ---------- loja: números e vendas ---------- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 14px;
+    margin-bottom: 28px;
+}
+
+.stat-card {
+    background: var(--glass-fill);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    padding: 16px 18px;
+}
+
+.stat-card span {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+}
+
+.stat-card strong {
+    display: block;
+    margin-top: 6px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 22px;
+    color: var(--chalk);
+}
+
+.venda-linha {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    background: var(--glass-fill);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+}
+
+.venda-linha .venda-nome {
+    font-weight: 700;
+    color: var(--chalk);
+}
+
+.venda-linha small {
+    display: block;
+    color: var(--muted);
+    margin-top: 3px;
+}
+
+.venda-linha .venda-total {
+    font-family: 'Orbitron', sans-serif;
+    color: var(--accent);
+    white-space: nowrap;
+}
+
+.aviso-demo-perfil {
+    max-width: 620px;
+}

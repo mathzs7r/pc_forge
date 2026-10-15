@@ -4,6 +4,19 @@
         loja: { cadastro: 'loja-cadastro.html', login: 'loja-login.html' }
     };
 
+    // Pra onde leva o clique no nome da pessoa logada.
+    const DESTINO_PERFIL = {
+        cliente: 'perfil-cliente.html',
+        loja: 'perfil-loja.html'
+    };
+
+    const ICONE_CARRINHO = `
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M3 4h2l2.2 10.2a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.46-1.15L20.5 8H6.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="9.5" cy="19.5" r="1.4" fill="currentColor"/>
+            <circle cx="17" cy="19.5" r="1.4" fill="currentColor"/>
+        </svg>`;
+
     // Pra onde manda a pessoa quando ela clica em "Sair" na navbar.
     const DESTINO_SAIR = {
         cliente: 'produtos.html',
@@ -42,11 +55,18 @@
         }
 
         const nome = primeiroNome(sessao.nome);
+        const carrinho = tipo === 'cliente'
+            ? `<a href="carrinho.html" class="carrinho-link" id="carrinho-link" title="Carrinho" aria-label="Carrinho">
+                    ${ICONE_CARRINHO}
+                    <span class="carrinho-badge" id="carrinho-badge" hidden>0</span>
+               </a>`
+            : '';
         return `
-            <span class="usuario-logado" title="${escapeHtml(sessao.nome)}">
+            ${carrinho}
+            <a href="${DESTINO_PERFIL[tipo]}" class="usuario-logado" title="Meu perfil — ${escapeHtml(sessao.nome)}">
                 <span class="usuario-logado-avatar">${escapeHtml(nome.charAt(0) || '?')}</span>
                 <span class="usuario-logado-nome"><span class="usuario-saudacao">Olá,</span>${escapeHtml(nome)}</span>
-            </span>
+            </a>
             <button type="button" class="botao-topo botao-fantasma" id="botao-navbar-sair">Sair</button>
         `;
     }
@@ -108,6 +128,7 @@
         if (botaoSair) {
             botaoSair.addEventListener('click', function () {
                 sessionStorage.removeItem(tipo);
+                if (tipo === 'cliente') sessionStorage.removeItem('carrinho_qtd');
                 if (typeof window.mostrarToast === 'function') {
                     window.mostrarToast('Você saiu da sua conta.', 'info');
                 }
@@ -126,7 +147,30 @@
             });
             document.body.appendChild(aviso);
         }
+
+        // Contador do carrinho: mostra na hora o último número conhecido e depois
+        // confere com o servidor (carrinho-api.js). Só pra cliente logado.
+        if (tipo === 'cliente' && sessao && window.Carrinho) {
+            pintarContadorCarrinho(window.Carrinho.contagemGuardada());
+            window.Carrinho.atualizarContador();
+        }
     }
+
+    // Atualiza a bolinha do ícone do carrinho (some quando está vazio).
+    function pintarContadorCarrinho(quantidade) {
+        const selo = document.getElementById('carrinho-badge');
+        const link = document.getElementById('carrinho-link');
+        if (!selo || !link) return;
+        const n = Number(quantidade) || 0;
+        selo.textContent = n > 99 ? '99+' : String(n);
+        selo.hidden = n <= 0;
+        link.setAttribute('aria-label', n > 0 ? `Carrinho, ${n} ${n === 1 ? 'item' : 'itens'}` : 'Carrinho');
+    }
+
+    // carrinho-api.js avisa por aqui sempre que o carrinho muda.
+    document.addEventListener('carrinho:atualizado', function (evento) {
+        pintarContadorCarrinho(evento.detail && evento.detail.quantidade);
+    });
 
     // Além de montar no carregamento da página, remonta a navbar se outra
     // aba/página mexer no login (ex: fez logout em outra aba) — assim o

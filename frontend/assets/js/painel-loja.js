@@ -10,12 +10,19 @@
     let produtosLoja = [];
     let proximoIdDemo = 9000;
     let produtoEmEdicaoId = null; // null = formulário está cadastrando; senão, é o ID sendo editado
+    let fotoNova = null;          // foto escolhida agora (data URL já reduzida), ou null
+    let removerFoto = false;      // true = ao salvar, apagar a foto que o produto já tinha
+    let produtoTinhaFoto = false; // o produto em edição já tinha foto guardada?
 
     document.getElementById('nome-loja').textContent = loja.nome;
 
     const form = document.getElementById('form-produto');
     const botaoSalvar = document.getElementById('botao-salvar-produto');
     const botaoCancelarEdicao = document.getElementById('botao-cancelar-edicao');
+    const campoFoto = document.getElementById('foto-produto');
+    const blocoPreview = document.getElementById('foto-preview');
+    const imgPreview = document.getElementById('foto-preview-img');
+    const botaoRemoverFoto = document.getElementById('botao-remover-foto');
 
     function formatarPreco(valor) {
         return Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -45,6 +52,47 @@
         document.getElementById('mensagem-erro').style.display = 'none';
         document.getElementById('mensagem-produto').style.display = 'none';
     }
+
+    // ---------- foto do produto ----------
+    function mostrarPreview(url) {
+        imgPreview.src = url;
+        blocoPreview.hidden = false;
+    }
+
+    function limparFoto() {
+        fotoNova = null;
+        removerFoto = false;
+        produtoTinhaFoto = false;
+        campoFoto.value = '';
+        imgPreview.removeAttribute('src');
+        blocoPreview.hidden = true;
+    }
+
+    campoFoto.addEventListener('change', async function () {
+        const arquivo = campoFoto.files[0];
+        if (!arquivo) return;
+
+        try {
+            fotoNova = await prepararImagemParaUpload(arquivo);
+            removerFoto = false;
+            mostrarPreview(fotoNova);
+        } catch (error) {
+            // Escolha inválida: só avisa e limpa o campo de arquivo. Tudo o mais
+            // (preview e foto já escolhida antes, ou a foto atual do produto)
+            // continua exatamente como estava na tela.
+            campoFoto.value = '';
+            mostrarToast(error.message, 'erro');
+        }
+    });
+
+    botaoRemoverFoto.addEventListener('click', function () {
+        fotoNova = null;
+        campoFoto.value = '';
+        imgPreview.removeAttribute('src');
+        blocoPreview.hidden = true;
+        // Editando um produto que já tinha foto: avisa a API pra apagar ao salvar.
+        removerFoto = produtoEmEdicaoId !== null && produtoTinhaFoto;
+    });
 
     async function carregarProdutos() {
         const lista = document.getElementById('lista-produtos');
@@ -76,12 +124,20 @@
             return;
         }
 
-        lista.innerHTML = produtosLoja.map((produto) => `
+        lista.innerHTML = produtosLoja.map((produto) => {
+            const urlFoto = urlImagemProduto(produto);
+            return `
             <div class="item-produto-loja">
-                <div>
-                    <span class="item-categoria">${escapeHtml(produto.CATEGORIA)}</span>
-                    <span class="item-nome">${escapeHtml(produto.NOME)}</span>
-                    ${produto.DESCRICAO ? `<span class="item-descricao">${escapeHtml(produto.DESCRICAO)}</span>` : ''}
+                <div class="item-principal">
+                    <div class="item-thumb${urlFoto ? ' com-foto' : ''}">
+                        ${urlFoto ? `<img src="${escapeHtml(urlFoto)}" alt="" loading="lazy">` : ''}
+                        <span class="item-thumb-icone">📦</span>
+                    </div>
+                    <div>
+                        <span class="item-categoria">${escapeHtml(produto.CATEGORIA)}</span>
+                        <span class="item-nome">${escapeHtml(produto.NOME)}</span>
+                        ${produto.DESCRICAO ? `<span class="item-descricao">${escapeHtml(produto.DESCRICAO)}</span>` : ''}
+                    </div>
                 </div>
                 <div class="item-acoes">
                     <span class="item-preco">${formatarPreco(produto.PRECO)}</span>
@@ -89,7 +145,16 @@
                     <button type="button" class="item-excluir" data-id="${produto.ID}">Excluir</button>
                 </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
+
+        // Foto que falhou ao carregar (API caiu, produto sem foto...): volta pro ícone.
+        lista.querySelectorAll('.item-thumb img').forEach((img) => {
+            img.addEventListener('error', () => {
+                img.parentElement.classList.remove('com-foto');
+                img.remove();
+            });
+        });
 
         lista.querySelectorAll('.item-editar').forEach((botao) => {
             botao.addEventListener('click', () => iniciarEdicao(botao.dataset.id));
@@ -111,6 +176,11 @@
         document.getElementById('preco-produto').value = produto.PRECO;
         document.getElementById('descricao-produto').value = produto.DESCRICAO || '';
 
+        limparFoto();
+        const urlFoto = urlImagemProduto(produto);
+        produtoTinhaFoto = Boolean(urlFoto);
+        if (urlFoto) mostrarPreview(urlFoto);
+
         botaoSalvar.value = 'Salvar alterações';
         botaoCancelarEdicao.hidden = false;
         form.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -119,6 +189,7 @@
     function cancelarEdicao() {
         produtoEmEdicaoId = null;
         form.reset();
+        limparFoto();
         botaoSalvar.value = 'Adicionar produto';
         botaoCancelarEdicao.hidden = true;
         esconderMensagens();
@@ -180,6 +251,8 @@
                         produto.CATEGORIA = categoria;
                         produto.PRECO = Number(preco);
                         produto.DESCRICAO = descricao;
+                        if (fotoNova) produto.IMAGEM_URL = fotoNova;
+                        else if (removerFoto) delete produto.IMAGEM_URL;
                     }
                 } else {
                     produtosLoja.unshift({
@@ -187,7 +260,8 @@
                         NOME: nome,
                         CATEGORIA: categoria,
                         PRECO: Number(preco),
-                        DESCRICAO: descricao
+                        DESCRICAO: descricao,
+                        IMAGEM_URL: fotoNova || undefined
                     });
                 }
                 renderizarLista();
@@ -197,7 +271,9 @@
                     nome,
                     categoria,
                     descricao,
-                    preco: Number(preco)
+                    preco: Number(preco),
+                    imagem: fotoNova || undefined,          // só vai se escolheu foto nova
+                    remover_imagem: removerFoto || undefined // só vai se clicou em "Remover foto"
                 });
                 await carregarProdutos();
             } else {
@@ -206,7 +282,8 @@
                     nome,
                     categoria,
                     descricao,
-                    preco: Number(preco)
+                    preco: Number(preco),
+                    imagem: fotoNova || undefined
                 });
                 await carregarProdutos();
             }

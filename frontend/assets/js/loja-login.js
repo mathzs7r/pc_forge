@@ -20,7 +20,8 @@ document.getElementById('form-login-loja').addEventListener('submit', async func
 
         try {
             const corpo = await apiPost('/loja/login', { identificador, senha });
-            loja = corpo.loja;
+            // O token é a prova de login que o perfil da loja exige da API.
+            loja = { ...corpo.loja, token: corpo.token };
         } catch (error) {
             // Modo visualização: só simula o login se a API estiver fora do ar.
             if (!(error.rede && estaEmModoDemo())) throw error;

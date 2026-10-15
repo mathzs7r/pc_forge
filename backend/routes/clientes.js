@@ -3,6 +3,7 @@ const pool = require('../db');
 const { gerarHash, conferirSenha } = require('../utils/senha');
 const { soDigitos, normalizarEmail, emailValido, semMascara } = require('../utils/documentos');
 const { responderErro } = require('../utils/erros');
+const { gerarToken } = require('../utils/auth');
 
 const router = express.Router();
 
@@ -128,9 +129,12 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ resposta: 'Usuário ou senha inválidos.' });
         }
 
+        // "token": prova de login que o front manda nas rotas de carrinho e perfil
+        // (veja utils/auth.js). Quem não mandou token não acessa essas rotas.
         res.status(200).json({
             resposta: 'Login realizado com sucesso!',
-            cliente: { id: cliente.ID, nome: cliente.NOME, email: cliente.EMAIL }
+            cliente: { id: cliente.ID, nome: cliente.NOME, email: cliente.EMAIL },
+            token: gerarToken('cliente', cliente.ID)
         });
     } catch (error) {
         responderErro(res, error, 'POST /login');

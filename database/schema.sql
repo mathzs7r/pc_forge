@@ -52,6 +52,10 @@ CREATE TABLE IF NOT EXISTS LOJA (
     EMAIL      VARCHAR(150) NOT NULL,
     SENHA      VARCHAR(255) NOT NULL,
     CRIADO_EM  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    -- "Sobre a loja": texto opcional do perfil (aparece na página pública da loja).
+    -- Fica depois de CRIADO_EM de propósito, pra a ordem das colunas ser a mesma
+    -- de um banco atualizado pela migração 004.
+    DESCRICAO  VARCHAR(500) NULL,
     UNIQUE (CNPJ),
     UNIQUE (EMAIL)
 );
@@ -75,6 +79,13 @@ CREATE TABLE IF NOT EXISTS PRODUTO (
     ATIVO           TINYINT(1) NOT NULL DEFAULT 1,
     CRIADO_EM       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     ATUALIZADO_EM   TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    -- FOTO DO PRODUTO, guardada no próprio banco (BLOB = "binary large object").
+    -- Usamos MEDIUMBLOB (até 16 MB) e não o BLOB comum, que só guarda 64 KB —
+    -- pouco demais até pra uma foto pequena. IMAGEM_TIPO guarda o formato
+    -- (image/jpeg, image/png...) pra API responder com o Content-Type certo.
+    -- NULL = produto sem foto (a vitrine mostra o ícone da categoria).
+    IMAGEM          MEDIUMBLOB NULL,
+    IMAGEM_TIPO     VARCHAR(50) NULL,
     CONSTRAINT fk_produto_loja
         FOREIGN KEY (ID_LOJA) REFERENCES LOJA (ID)
         ON DELETE CASCADE,
@@ -115,4 +126,24 @@ CREATE TABLE IF NOT EXISTS POSSUI (
     -- (ATIVO = 0), e não um DELETE de verdade — veja PRODUTO.ATIVO acima.
     CONSTRAINT fk_possui_produto
         FOREIGN KEY (ID_PRODUTO) REFERENCES PRODUTO (ID)
+);
+
+-- ------------------------------------------------------------
+-- CARRINHO_ITEM (carrinho de compras de cada cliente)
+-- Uma linha por produto no carrinho; a chave é cliente + produto, então
+-- adicionar o mesmo produto de novo só soma na QUANTIDADE.
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS CARRINHO_ITEM (
+    ID_CLIENTE     INT NOT NULL,
+    ID_PRODUTO     INT NOT NULL,
+    QUANTIDADE     INT NOT NULL DEFAULT 1,
+    ADICIONADO_EM  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ATUALIZADO_EM  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (ID_CLIENTE, ID_PRODUTO),
+    CONSTRAINT fk_carrinho_cliente
+        FOREIGN KEY (ID_CLIENTE) REFERENCES CLIENTE (ID)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_carrinho_produto
+        FOREIGN KEY (ID_PRODUTO) REFERENCES PRODUTO (ID)
+        ON DELETE CASCADE
 );

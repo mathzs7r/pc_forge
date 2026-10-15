@@ -53,6 +53,14 @@
                     <label for="descricao-produto">Descrição</label>
                     <textarea id="descricao-produto" placeholder="Detalhes do produto: especificações, garantia, diferenciais..."></textarea>
 
+                    <label for="foto-produto">Foto do produto <span class="campo-opcional">(opcional)</span></label>
+                    <input type="file" id="foto-produto" accept="image/jpeg,image/png,image/webp,image/gif">
+                    <div class="foto-preview" id="foto-preview" hidden>
+                        <img id="foto-preview-img" alt="Pré-visualização da foto do produto">
+                        <button type="button" id="botao-remover-foto" class="foto-remover">Remover foto</button>
+                    </div>
+                    <p class="foto-dica">JPG, PNG, WEBP ou GIF. Fotos grandes são reduzidas automaticamente.</p>
+
                     <input type="submit" id="botao-salvar-produto" value="Adicionar produto">
                     <button type="button" id="botao-cancelar-edicao" class="painel-cancelar-edicao" hidden>Cancelar edição</button>
 
@@ -71,9 +79,11 @@
     </section>
 
     <script src="assets/js/api.js"></script>
+    <script src="assets/js/imagem.js"></script>
     <script src="assets/js/toast.js"></script>
     <script src="assets/js/demo.js"></script>
     <script src="assets/js/admin-modal.js"></script>
+    <script src="assets/js/carrinho-api.js"></script>
     <script src="assets/js/navbar.js"></script>
     <script src="assets/js/painel-loja.js"></script>
 </body>

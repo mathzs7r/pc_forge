@@ -3,6 +3,7 @@ const pool = require('../db');
 const { gerarHash, conferirSenha } = require('../utils/senha');
 const { soDigitos, normalizarEmail, emailValido, semMascara } = require('../utils/documentos');
 const { responderErro } = require('../utils/erros');
+const { gerarToken } = require('../utils/auth');
 
 const router = express.Router();
 
@@ -96,10 +97,39 @@ router.post('/loja/login', async (req, res) => {
 
         res.status(200).json({
             resposta: 'Login realizado com sucesso!',
-            loja: { id: loja.ID, nome: loja.NOME, email: loja.EMAIL }
+            loja: { id: loja.ID, nome: loja.NOME, email: loja.EMAIL },
+            token: gerarToken('loja', loja.ID)
         });
     } catch (error) {
         responderErro(res, error, 'POST /loja/login');
+    }
+});
+
+// ------------------------------------------------------------
+// PÁGINA PÚBLICA DA LOJA (qualquer visitante vê, não exige login)
+// Só dados que a loja aceita mostrar: nome, "sobre", desde quando existe e
+// quantos produtos tem à venda. CNPJ, e-mail, celular e endereço NÃO saem daqui
+// (esses ficam no perfil privado da loja, em GET /perfil/loja/:id).
+// ------------------------------------------------------------
+router.get('/loja/:id/publico', async (req, res) => {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+        return res.status(400).json({ resposta: 'Loja inválida.' });
+    }
+
+    try {
+        const [lojas] = await pool.query(
+            `SELECT L.ID, L.NOME, L.DESCRICAO, L.CRIADO_EM,
+                    (SELECT COUNT(*) FROM PRODUTO P WHERE P.ID_LOJA = L.ID AND P.ATIVO = 1) AS TOTAL_PRODUTOS
+             FROM LOJA L WHERE L.ID = ?`,
+            [id]
+        );
+        if (lojas.length === 0) {
+            return res.status(404).json({ resposta: 'Loja não encontrada.' });
+        }
+        res.json({ ...lojas[0], TOTAL_PRODUTOS: Number(lojas[0].TOTAL_PRODUTOS) });
+    } catch (error) {
+        responderErro(res, error, 'GET /loja/:id/publico');
     }
 });
 
