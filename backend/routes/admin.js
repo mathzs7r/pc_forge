@@ -1,105 +1,130 @@
+// ============================================================
+// ADMINISTRADOR — "Acesso restrito"
+//
+// O administrador é um (ADM_ID = 1): o que manda em tudo. Ele NÃO
+// vê os produtos em si — vê a visão de gestão:
+//   * lojas parceiras (quantas são, lista)
+//   * clientes (quantos são, lista)
+//   * acessos que o site teve (total e hoje)
+//   * quantos produtos foram vendidos (e o faturamento)
+//
+// O login sai do navegador (o modo visualização tinha "adm/1234"
+// aberto no front — agora a senha fica SÓ no servidor, como hash).
+// O token de sessão é o mesmo HMAC de cliente/loja, com t = "adm".
+// ============================================================
 const express = require('express');
-const router = express.Router();
+const bcrypt = require('bcryptjs');
 const pool = require('../db');
-const { autenticar, exigirAdmin } = require('../utils/auth');
-const { traduzirErro } = require('../utils/erros');
+const { responderErro } = require('../utils/erros');
+const { exigirLogin, gerarToken } = require('../utils/auth');
 
-// Todas as rotas de admin exigem login + papel admin
-router.use(autenticar, exigirAdmin);
+const router = express.Router();
 
-// GET /admin/dashboard — resumo geral
-router.get('/admin/dashboard', async (req, res) => {
+// Administrador único: usuario "adm" e a senha "Fa110809" (bcrypt).
+// Ela nunca viaja pro navegador — só este hash e a conferência aqui.
+const ADMIN_USUARIO = 'adm';
+const ADMIN_HASH = '$2a$10$9hvMRKC8yxnDqQwJZupBO.KWX9BLjTrkE2X93vcGaXmxsFxdWdaI.';
+const ADMIN_ID = 1;
+
+// As rotas de dados exigem o token do tipo "adm"
+const doAdmin = exigirLogin('adm');
+
+// ------------------------------------------------------------
+// LOGIN DO ADMINISTRADOR (posta do modal "Acesso restrito")
+// ------------------------------------------------------------
+router.post('/admin/login', async (req, res) => {
+    const { usuario, senha } = req.body || {};
+
+    if (String(usuario ?? '').trim() !== ADMIN_USUARIO ||
+        !(await bcrypt.compare(String(senha ?? ''), ADMIN_HASH))) {
+        return res.status(401).json({ resposta: 'Usuário ou senha incorretos.' });
+    }
+
+    res.json({
+        resposta: 'Acesso liberado.',
+        admin: { id: ADMIN_ID, nome: 'Administrador' },
+        token: gerarToken('adm', ADMIN_ID),
+    });
+});
+
+// ------------------------------------------------------------
+// REGISTRO DE ACESSO (público: a navbar chama a cada carregamento)
+// ------------------------------------------------------------
+router.post('/acesso', async (req, res) => {
+    const pagina = String((req.body || {}).pagina ?? '').slice(0, 200) || null;
     try {
-        const [[{ totalClientes }]] = await pool.query('SELECT COUNT(*) AS totalClientes FROM CLIENTE');
-        const [[{ totalLojas }]] = await pool.query('SELECT COUNT(*) AS totalLojas FROM LOJA');
-        const [[{ totalProdutos }]] = await pool.query('SELECT COUNT(*) AS totalProdutos FROM PRODUTO WHERE EXCLUIDO = 0 OR EXCLUIDO IS NULL');
-        const [[{ totalPedidos }]] = await pool.query('SELECT COUNT(*) AS totalPedidos FROM CARRINHO WHERE STATUS = "finalizado" OR STATUS = "pago"').catch(() => [[{ totalPedidos: 0 }]]);
+        await pool.query('INSERT INTO ACESSO_LOG (PAGINA) VALUES (?)', [pagina]);
+        res.json({ ok: true });
+    } catch (error) {
+        res.json({ ok: false });
+    }
+});
 
+// ------------------------------------------------------------
+// VISÃO GERAL (dashboard)
+// ------------------------------------------------------------
+router.get('/admin/visao', doAdmin, async (req, res) => {
+    try {
+        const [[n]] = await pool.query(
+            `SELECT
+                (SELECT COUNT(*) FROM LOJA) AS LOJAS,
+                (SELECT COUNT(*) FROM CLIENTE) AS CLIENTES,
+                (SELECT COALESCE(SUM(QUANTIDADE), 0) FROM POSSUI) AS PRODUTOS_VENDIDOS,
+                (SELECT COALESCE(SUM(QUANTIDADE * VALOR_UNITARIO), 0) FROM POSSUI) AS FATURAMENTO,
+                (SELECT COUNT(*) FROM ACESSO_LOG) AS ACESSOS_TOTAL,
+                (SELECT COUNT(*) FROM ACESSO_LOG WHERE DATA >= CURRENT_DATE) AS ACESSOS_HOJE,
+                (SELECT COUNT(*) FROM ACESSO_LOG WHERE DATA >= DATE_SUB(NOW(), INTERVAL 7 DAY)) AS ACESSOS_SEMANA`
+        );
         res.json({
-            totalClientes,
-            totalLojas,
-            totalProdutos,
-            totalPedidos: totalPedidos || 0
+            LOJAS: Number(n.LOJAS),
+            CLIENTES: Number(n.CLIENTES),
+            PRODUTOS_VENDIDOS: Number(n.PRODUTOS_VENDIDOS),
+            FATURAMENTO: Number(n.FATURAMENTO),
+            ACESSOS_TOTAL: Number(n.ACESSOS_TOTAL),
+            ACESSOS_HOJE: Number(n.ACESSOS_HOJE),
+            ACESSOS_SEMANA: Number(n.ACESSOS_SEMANA),
         });
     } catch (error) {
-        const { status, resposta } = traduzirErro(error);
-        res.status(status).json({ resposta });
+        responderErro(res, error, 'GET /admin/visao');
     }
 });
 
-// GET /admin/clientes
-router.get('/admin/clientes', async (req, res) => {
+// ------------------------------------------------------------
+// LOJAS PARCEIRAS
+// ------------------------------------------------------------
+router.get('/admin/lojas', doAdmin, async (req, res) => {
     try {
-        const [rows] = await pool.query(
-            'SELECT ID, NOME, EMAIL, CPF, TELEFONE, CRIADO_EM FROM CLIENTE ORDER BY ID DESC LIMIT 200'
+        const [lojas] = await pool.query(
+            `SELECT L.ID, L.NOME, L.EMAIL, L.CRIADO_EM,
+                    (SELECT COUNT(*) FROM PRODUTO P WHERE P.ID_LOJA = L.ID AND P.ATIVO = 1) AS PRODUTOS_ATIVOS,
+                    (SELECT COALESCE(SUM(X.QUANTIDADE), 0)
+                       FROM POSSUI X JOIN PRODUTO P ON P.ID = X.ID_PRODUTO
+                      WHERE P.ID_LOJA = L.ID) AS VENDIDOS
+             FROM LOJA L
+             ORDER BY L.ID`
         );
-        res.json(rows);
+        res.json(lojas);
     } catch (error) {
-        const { status, resposta } = traduzirErro(error);
-        res.status(status).json({ resposta });
+        responderErro(res, error, 'GET /admin/lojas');
     }
 });
 
-// GET /admin/lojas
-router.get('/admin/lojas', async (req, res) => {
+// ------------------------------------------------------------
+// CLIENTES CADASTRADOS
+// ------------------------------------------------------------
+router.get('/admin/clientes', doAdmin, async (req, res) => {
     try {
-        const [rows] = await pool.query(
-            'SELECT ID, NOME, EMAIL, CNPJ, TELEFONE, CRIADO_EM FROM LOJA ORDER BY ID DESC LIMIT 200'
+        const [clientes] = await pool.query(
+            `SELECT C.ID, C.NOME, C.EMAIL, C.CRIADO_EM,
+                    COUNT(DISTINCT CM.ID) AS COMPRAS
+             FROM CLIENTE C
+             LEFT JOIN COMPRA CM ON CM.ID_CLIENTE = C.ID
+             GROUP BY C.ID, C.NOME, C.EMAIL, C.CRIADO_EM
+             ORDER BY C.ID`
         );
-        res.json(rows);
+        res.json(clientes);
     } catch (error) {
-        const { status, resposta } = traduzirErro(error);
-        res.status(status).json({ resposta });
-    }
-});
-
-// GET /admin/produtos
-router.get('/admin/produtos', async (req, res) => {
-    try {
-        const [rows] = await pool.query(
-            `SELECT p.ID, p.NOME, p.PRECO, p.CATEGORIA, p.ESTOQUE, p.EXCLUIDO, l.NOME AS LOJA_NOME
-             FROM PRODUTO p
-             LEFT JOIN LOJA l ON l.ID = p.LOJA_ID
-             ORDER BY p.ID DESC LIMIT 300`
-        );
-        res.json(rows);
-    } catch (error) {
-        const { status, resposta } = traduzirErro(error);
-        res.status(status).json({ resposta });
-    }
-});
-
-// PATCH /admin/produtos/:id/restaurar — desfaz exclusão lógica
-router.patch('/admin/produtos/:id/restaurar', async (req, res) => {
-    try {
-        const id = Number(req.params.id);
-        const [result] = await pool.query(
-            'UPDATE PRODUTO SET EXCLUIDO = 0 WHERE ID = ?', [id]
-        );
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ resposta: 'Produto não encontrado' });
-        }
-        res.json({ resposta: 'Produto restaurado' });
-    } catch (error) {
-        const { status, resposta } = traduzirErro(error);
-        res.status(status).json({ resposta });
-    }
-});
-
-// DELETE /admin/produtos/:id — exclusão lógica
-router.delete('/admin/produtos/:id', async (req, res) => {
-    try {
-        const id = Number(req.params.id);
-        const [result] = await pool.query(
-            'UPDATE PRODUTO SET EXCLUIDO = 1 WHERE ID = ?', [id]
-        );
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ resposta: 'Produto não encontrado' });
-        }
-        res.json({ resposta: 'Produto excluído (lógico)' });
-    } catch (error) {
-        const { status, resposta } = traduzirErro(error);
-        res.status(status).json({ resposta });
+        responderErro(res, error, 'GET /admin/clientes');
     }
 });
 
