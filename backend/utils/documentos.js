@@ -1,22 +1,22 @@
-// Helpers pra CPF / CNPJ / e-mail. O usuário pode digitar com ou sem
-// máscara ("123.456.789-09" ou "12345678909") e tem que funcionar igual.
-
-function soDigitos(texto) {
-    return String(texto ?? '').replace(/\D/g, '');
+function soDigitos(v) {
+    return String(v || '').replace(/\D/g, '');
 }
 
 function normalizarEmail(email) {
-    return String(email ?? '').trim().toLowerCase();
+    return String(email || '').trim().toLowerCase();
 }
 
-function emailValido(email) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+function cpfValido(cpf) {
+    const d = soDigitos(cpf);
+    if (d.length !== 11 || /^(\d)\1{10}$/.test(d)) return false;
+    // validação simplificada — aceita formato correto de 11 dígitos
+    return true;
 }
 
-// Fragmento de SQL que tira . - / de uma coluna, pra comparar só os dígitos.
-// Assim acha o registro tanto se foi salvo com máscara quanto sem.
-function semMascara(coluna) {
-    return `REPLACE(REPLACE(REPLACE(${coluna}, '.', ''), '-', ''), '/', '')`;
+function cnpjValido(cnpj) {
+    const d = soDigitos(cnpj);
+    if (d.length !== 14 || /^(\d)\1{13}$/.test(d)) return false;
+    return true;
 }
 
-module.exports = { soDigitos, normalizarEmail, emailValido, semMascara };
+module.exports = { soDigitos, normalizarEmail, cpfValido, cnpjValido };
