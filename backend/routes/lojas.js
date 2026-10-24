@@ -120,16 +120,111 @@ router.get('/loja/:id/publico', async (req, res) => {
     try {
         const [lojas] = await pool.query(
             `SELECT L.ID, L.NOME, L.DESCRICAO, L.CRIADO_EM,
-                    (SELECT COUNT(*) FROM PRODUTO P WHERE P.ID_LOJA = L.ID AND P.ATIVO = 1) AS TOTAL_PRODUTOS
+                    (SELECT COUNT(*) FROM PRODUTO P WHERE P.ID_LOJA = L.ID AND P.ATIVO = 1) AS TOTAL_PRODUTOS,
+                    (SELECT ROUND(AVG(A.NOTA), 1) FROM AVALIACAO A
+                        JOIN PRODUTO P2 ON P2.ID = A.ID_PRODUTO
+                        WHERE P2.ID_LOJA = L.ID) AS NOTA_MEDIA,
+                    (SELECT COUNT(*) FROM AVALIACAO A
+                        JOIN PRODUTO P2 ON P2.ID = A.ID_PRODUTO
+                        WHERE P2.ID_LOJA = L.ID) AS AVALIACOES_QTD,
+                    (L.LOGO IS NOT NULL) AS TEM_LOGO,
+                    UNIX_TIMESTAMP(L.LOGO_ATUALIZADO_EM) AS LOGO_VERSAO
              FROM LOJA L WHERE L.ID = ?`,
             [id]
         );
         if (lojas.length === 0) {
             return res.status(404).json({ resposta: 'Loja não encontrada.' });
         }
-        res.json({ ...lojas[0], TOTAL_PRODUTOS: Number(lojas[0].TOTAL_PRODUTOS) });
+        res.json({
+            ...lojas[0],
+            TOTAL_PRODUTOS: Number(lojas[0].TOTAL_PRODUTOS),
+            NOTA_MEDIA: lojas[0].NOTA_MEDIA === null ? null : Number(lojas[0].NOTA_MEDIA),
+LOGO_VERSAO: Number(lojas[0].LOGO_VERSAO || 0),
+                TEM_LOGO: Number(lojas[0].TEM_LOGO || 0),
+                AVALIACOES_QTD: Number(lojas[0].AVALIACOES_QTD || 0)
+        });
     } catch (error) {
         responderErro(res, error, 'GET /loja/:id/publico');
+    }
+});
+
+// ------------------------------------------------------------
+// AVALIAÇÕES DA LOJA (o que os compradores falaram dos produtos dela)
+// Resumo (média + quantas de cada nota) e a lista, mais recente
+// primeiro. É o mesmo formato devolvido por GET /produtos/:id/avaliacoes.
+// ------------------------------------------------------------
+router.get('/loja/:id/avaliacoes', async (req, res) => {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+        return res.status(400).json({ resposta: 'Loja inválida.' });
+    }
+
+    try {
+        const [lojas] = await pool.query('SELECT ID FROM LOJA WHERE ID = ?', [id]);
+        if (lojas.length === 0) {
+            return res.status(404).json({ resposta: 'Loja não encontrada.' });
+        }
+
+        const [resumoLinhas] = await pool.query(
+            `SELECT ROUND(AVG(A.NOTA), 1) AS MEDIA, COUNT(*) AS TOTAL,
+                    SUM(A.NOTA = 5) AS CINCO, SUM(A.NOTA = 4) AS QUATRO,
+                    SUM(A.NOTA = 3) AS TRES, SUM(A.NOTA = 2) AS DOIS, SUM(A.NOTA = 1) AS UM
+             FROM AVALIACAO A JOIN PRODUTO P ON P.ID = A.ID_PRODUTO
+             WHERE P.ID_LOJA = ?`,
+            [id]
+        );
+
+        const [lista] = await pool.query(
+            `SELECT A.ID, A.NOME_CLIENTE, A.NOTA, A.COMENTARIO,
+                    DATE_FORMAT(A.DATA, '%d/%m/%Y') AS DATA_BR,
+                    P.NOME AS PRODUTO_NOME, P.ID AS PRODUTO_ID
+             FROM AVALIACAO A JOIN PRODUTO P ON P.ID = A.ID_PRODUTO
+             WHERE P.ID_LOJA = ?
+             ORDER BY A.DATA DESC
+             LIMIT 60`,
+            [id]
+        );
+
+        const r = resumoLinhas[0];
+        for (const chave of ['CINCO', 'QUATRO', 'TRES', 'DOIS', 'UM', 'TOTAL']) {
+            r[chave] = Number(r[chave] || 0);
+        }
+        r.MEDIA = r.MEDIA === null ? null : Number(r.MEDIA);
+
+        res.json({ resumo: r, lista });
+    } catch (error) {
+        responderErro(res, error, 'GET /loja/:id/avaliacoes');
+    }
+});
+
+// ------------------------------------------------------------
+// LOGO DA LOJA (devolve os bytes da imagem guardada no BLOB)
+// Usada direto no <img src="http://localhost:3000/loja/1/logo">
+// 404 quando a loja não cadastrou logo (o front mostra o fallback).
+// ------------------------------------------------------------
+router.get('/loja/:id/logo', async (req, res) => {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+        return res.status(400).json({ resposta: 'Loja inválida.' });
+    }
+
+    try {
+        const [linhas] = await pool.query(
+            'SELECT LOGO, LOGO_TIPO FROM LOJA WHERE ID = ?',
+            [id]
+        );
+        if (linhas.length === 0 || !linhas[0].LOGO) {
+            return res.status(404).json({ resposta: 'Essa loja não tem logo.' });
+        }
+
+        res.set('Content-Type', linhas[0].LOGO_TIPO || 'application/octet-stream');
+        res.set('X-Content-Type-Options', 'nosniff');
+        // A URL leva ?v=<LOGO_VERSAO>, então cada troca de logo gera URL nova
+        // e o navegador pode guardar a imagem por um bom tempo.
+        res.set('Cache-Control', 'public, max-age=86400');
+        res.send(linhas[0].LOGO);
+    } catch (error) {
+        responderErro(res, error, 'GET /loja/:id/logo');
     }
 });
 

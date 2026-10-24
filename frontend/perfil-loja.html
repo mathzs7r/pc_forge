@@ -11,13 +11,15 @@
     <link rel="stylesheet" href="assets/css/painel.css">
     <link rel="stylesheet" href="assets/css/perfil.css">
     <link rel="stylesheet" href="assets/css/modal.css">
+    <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
     <title>Perfil da loja | PC Forge — Peças de TI</title>
+    <meta name="description" content="Dados, logo e descrição pública da sua loja parceira na PC Forge.">
 </head>
 
 <body data-tipo-pagina="loja">
     <div id="topo-montagem" data-tipo="loja" data-modo="login"></div>
 
-    <section class="painel">
+    <main class="painel">
         <div class="painel-cabecalho">
             <div class="perfil-topo">
                 <div class="perfil-avatar" id="perfil-avatar">?</div>
@@ -73,6 +75,16 @@
                         <textarea id="perfil-campo-descricao" maxlength="500" placeholder="Conte o que sua loja vende, garantia, diferenciais..."></textarea>
                         <div class="contador-caracteres"><span id="contador-descricao">0</span>/500</div>
 
+                        <label for="perfil-campo-logo">Logo da loja <span class="campo-opcional">(aparece na página pública)</span></label>
+                        <div class="logo-editor">
+                            <img class="logo-preview" id="logo-preview" alt="" hidden>
+                            <span class="logo-fallback" id="logo-fallback" aria-hidden="true">🔥</span>
+                            <div class="logo-acoes">
+                                <input type="file" id="perfil-campo-logo" accept="image/jpeg,image/png,image/webp,image/gif">
+                                <button type="button" id="perfil-botao-remover-logo" class="painel-cancelar-edicao">Remover logo</button>
+                            </div>
+                        </div>
+
                         <label for="perfil-nova-senha">Nova senha <span class="campo-opcional">(deixe em branco pra manter)</span></label>
                         <input type="password" id="perfil-nova-senha" autocomplete="new-password" placeholder="Mínimo 4 caracteres">
 
@@ -90,7 +102,7 @@
                 </div>
             </div>
         </div>
-    </section>
+    </main>
 
     <script src="assets/js/api.js"></script>
     <script src="assets/js/util.js"></script>

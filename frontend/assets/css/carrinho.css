@@ -1,5 +1,5 @@
 /* ==========================================================
-   CARRINHO — PC Forge
+   CARRINHO — estética Mercado Livre (claro)
    (reaproveita .painel, .painel-form-card e .item-thumb do painel.css)
    ========================================================== */
 .link-botao {
@@ -10,7 +10,7 @@
 .carrinho-grade {
     display: grid;
     grid-template-columns: 1.7fr 1fr;
-    gap: 28px;
+    gap: 24px;
     align-items: start;
 }
 
@@ -37,10 +37,11 @@
     grid-template-columns: 1fr auto auto;
     align-items: center;
     gap: 16px;
-    background: var(--glass-fill);
+    background: var(--bg-court);
     border: 1px solid var(--glass-border);
-    border-radius: 14px;
+    border-radius: var(--radius);
     padding: 14px 16px;
+    box-shadow: var(--sombra-card);
 }
 
 @media (max-width: 640px) {
@@ -53,15 +54,13 @@
     display: block;
     font-size: 11px;
     color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
     margin-top: 3px;
 }
 
 .item-carrinho .item-nome {
     font-weight: 700;
     font-size: 15px;
-    color: var(--chalk);
+    color: var(--texto-forte);
 }
 
 .item-carrinho .item-preco-unit {
@@ -74,8 +73,8 @@
 .qtd-controle {
     display: inline-flex;
     align-items: center;
-    border: 1px solid var(--glass-border);
-    border-radius: 999px;
+    border: 1px solid var(--glass-border-neutro);
+    border-radius: var(--radius);
     background: var(--glass-fill);
     overflow: hidden;
 }
@@ -85,13 +84,13 @@
     height: 34px;
     border: none;
     background: transparent;
-    color: var(--chalk);
+    color: var(--accent);
     font-size: 18px;
     cursor: pointer;
 }
 
 .qtd-controle button:hover:not(:disabled) {
-    background: var(--glass-fill-strong);
+    background: var(--azul-suave);
 }
 
 .qtd-controle button:disabled {
@@ -104,6 +103,7 @@
     text-align: center;
     font-weight: 800;
     font-size: 14px;
+    color: var(--texto-forte);
 }
 
 .item-carrinho-direita {
@@ -114,12 +114,14 @@
 }
 
 .item-subtotal {
-    font-family: 'Orbitron', sans-serif;
+    font-family: 'Nunito Sans', sans-serif;
     font-size: 16px;
-    color: var(--accent);
+    font-weight: 800;
+    color: var(--texto-forte);
     white-space: nowrap;
 }
 
+/* resumo da compra: estilo ML */
 .carrinho-resumo {
     position: sticky;
     top: calc(var(--topo-altura) + 16px);
@@ -134,7 +136,7 @@
 }
 
 .resumo-linha strong {
-    color: var(--chalk);
+    color: var(--texto-forte);
 }
 
 .resumo-total {
@@ -145,9 +147,10 @@
 }
 
 .resumo-total strong {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 21px;
-    color: var(--accent);
+    color: var(--mais-vendido);
+    font-size: 22px;
+    font-weight: 900;
+    font-family: 'Nunito Sans', sans-serif;
 }
 
 .resumo-aviso {

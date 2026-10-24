@@ -1,6 +1,7 @@
 /* ==========================================================
    PERFIL — cliente e loja (reaproveita .painel, .painel-form-card,
    .painel-grade e os estilos de formulário do painel.css / forms.css)
+   Estética Mercado Livre (claro)
    ========================================================== */
 .perfil-topo {
     display: flex;
@@ -17,9 +18,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: 'Orbitron', sans-serif;
+    font-family: 'Nunito Sans', sans-serif;
     font-size: 28px;
-    font-weight: 800;
+    font-weight: 900;
     text-transform: uppercase;
     color: var(--on-accent);
     background: linear-gradient(135deg, var(--accent), var(--accent-glow));
@@ -55,10 +56,10 @@
 
 .painel-form-card h3,
 .perfil-secao h3 {
-    font-family: 'Orbitron', sans-serif;
+    font-family: 'Nunito Sans', sans-serif;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    font-size: 14px;
+    letter-spacing: 0.5px;
+    font-size: 13px;
     color: var(--accent);
     margin: 26px 0 0;
 }
@@ -93,14 +94,14 @@
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.8px;
+    letter-spacing: 0.5px;
     color: var(--muted);
 }
 
 .dados-cadastro dd {
     margin: 4px 0 0;
     font-size: 15px;
-    color: var(--chalk);
+    color: var(--texto-forte);
     overflow-wrap: anywhere;
 }
 
@@ -143,12 +144,13 @@
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
-    background: var(--glass-fill);
+    background: var(--glass-fill-strong);
     border: 1px solid var(--glass-border);
-    border-radius: 12px;
+    border-radius: var(--radius);
     padding: 12px 14px;
     font-size: 14px;
     line-height: 1.5;
+    color: var(--texto-forte);
 }
 
 .endereco-card small {
@@ -161,16 +163,16 @@
     margin-top: 14px;
     border: 1px dashed var(--glass-border);
     background: transparent;
-    color: var(--chalk);
+    color: var(--accent);
     padding: 11px 14px;
-    border-radius: 12px;
+    border-radius: var(--radius);
     font-weight: 700;
     font-size: 13.5px;
     cursor: pointer;
 }
 
 .perfil-botao-secundario:hover {
-    background: var(--glass-fill);
+    background: var(--azul-suave);
     border-color: var(--accent);
 }
 
@@ -186,11 +188,10 @@
 }
 
 .perfil-secao h2 {
-    font-family: 'Orbitron', sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-size: 21px;
-    color: var(--chalk);
+    font-family: 'Nunito Sans', sans-serif;
+    font-weight: 900;
+    font-size: 19px;
+    color: var(--texto-forte);
     margin: 0 0 14px;
 }
 
@@ -199,10 +200,11 @@
 }
 
 .pedido {
-    background: var(--glass-fill);
+    background: var(--bg-court);
     border: 1px solid var(--glass-border);
-    border-radius: 14px;
+    border-radius: var(--radius);
     margin-bottom: 12px;
+    box-shadow: var(--sombra-card);
 }
 
 .pedido summary {
@@ -214,6 +216,7 @@
     gap: 12px;
     flex-wrap: wrap;
     padding: 14px 18px;
+    border-radius: var(--radius);
 }
 
 .pedido summary::-webkit-details-marker {
@@ -221,12 +224,12 @@
 }
 
 .pedido summary:hover {
-    background: var(--glass-fill);
+    background: var(--glass-fill-strong);
 }
 
 .pedido-id {
     font-weight: 800;
-    color: var(--chalk);
+    color: var(--accent);
 }
 
 .pedido-meta {
@@ -235,15 +238,17 @@
 }
 
 .pedido-total {
-    font-family: 'Orbitron', sans-serif;
-    color: var(--accent);
+    font-family: 'Nunito Sans', sans-serif;
+    color: var(--mais-vendido);
     font-size: 16px;
+    font-weight: 800;
 }
 
 .pedido-corpo {
     border-top: 1px solid var(--glass-border);
     padding: 12px 18px 16px;
     font-size: 14px;
+    color: var(--texto-forte);
 }
 
 .pedido-item {
@@ -272,10 +277,11 @@
 }
 
 .stat-card {
-    background: var(--glass-fill);
+    background: var(--bg-court);
     border: 1px solid var(--glass-border);
-    border-radius: 14px;
+    border-radius: var(--radius);
     padding: 16px 18px;
+    box-shadow: var(--sombra-card);
 }
 
 .stat-card span {
@@ -283,16 +289,17 @@
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.8px;
+    letter-spacing: 0.5px;
     color: var(--muted);
 }
 
 .stat-card strong {
     display: block;
     margin-top: 6px;
-    font-family: 'Orbitron', sans-serif;
+    font-family: 'Nunito Sans', sans-serif;
     font-size: 22px;
-    color: var(--chalk);
+    font-weight: 900;
+    color: var(--texto-forte);
 }
 
 .venda-linha {
@@ -300,16 +307,17 @@
     justify-content: space-between;
     align-items: center;
     gap: 14px;
-    background: var(--glass-fill);
+    background: var(--bg-court);
     border: 1px solid var(--glass-border);
-    border-radius: 14px;
+    border-radius: var(--radius);
     padding: 12px 16px;
     margin-bottom: 10px;
+    box-shadow: var(--sombra-card);
 }
 
 .venda-linha .venda-nome {
     font-weight: 700;
-    color: var(--chalk);
+    color: var(--texto-forte);
 }
 
 .venda-linha small {
@@ -319,11 +327,130 @@
 }
 
 .venda-linha .venda-total {
-    font-family: 'Orbitron', sans-serif;
-    color: var(--accent);
+    font-family: 'Nunito Sans', sans-serif;
+    color: var(--mais-vendido);
+    font-weight: 800;
     white-space: nowrap;
 }
 
 .aviso-demo-perfil {
     max-width: 620px;
+}
+
+/* ==========================================================
+   EDITOR DE LOGO DA LOJA (perfil-loja.html)
+   Preview circular + arquivo + remover; mesma linguagem visual
+   do upload de foto de produto (vidro + âmbar).
+   ========================================================== */
+.logo-editor {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px;
+    border: 1px solid var(--glass-border-neutro);
+    border-radius: 10px;
+    background: var(--glass-fill);
+    margin: 14px 0;
+}
+
+.logo-preview,
+.logo-fallback {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    flex: none;
+    object-fit: cover;
+    border: 2px solid var(--glass-border);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.logo-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(145deg, var(--accent), var(--accent-dark));
+    font-size: 30px;
+}
+
+.logo-acoes {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+    flex: 1;
+}
+
+.logo-acoes input[type="file"] {
+    font-size: 12.5px;
+}
+
+/* ==========================================================
+   PAINEL DO ADMINISTRADOR (painel-admin.html) — "acesso restrito"
+   ========================================================== */
+/* marca com selo "ADMINISTRADOR" no topo */
+.adm-marca {
+    cursor: default;
+}
+
+.adm-marca span:last-child {
+    color: var(--texto-forte);
+}
+
+.adm-marca em {
+    font-style: normal;
+    color: var(--accent);
+}
+
+.adm-selo {
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-fill);
+    color: var(--accent);
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+}
+
+/* linhas das listas (lojas/clientes), como as linhas de venda */
+.adm-linha {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.adm-linha:last-child {
+    border-bottom: none;
+}
+
+.adm-linha small {
+    display: block;
+    color: var(--muted);
+    margin-top: 2px;
+    font-size: 12px;
+}
+
+.adm-linha .venda-total {
+    font-size: 12.5px;
+    color: var(--accent);
+    font-weight: 700;
+    text-align: right;
+}
+
+/* listas longas rodam dentro do card (não esticam a página) */
+.rolagem-lista {
+    max-height: 380px;
+    overflow-y: auto;
+    padding-right: 6px;
+}
+
+.stat-extra {
+    display: block;
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 600;
 }

@@ -60,5 +60,17 @@ window.PCForgeUtil = (function () {
         }, 1200);
     }
 
-    return { escapeHtml, formatarPreco, formatarData, mesAno, dataIsoParaBr, primeiroNome, lerSessao, salvarSessao, exigirLogin };
+    // 5 estrelas (cheias/vazias) a partir de uma média 0–5. Reuso em
+    // qualquer página: vitrine, produto, perfil público da loja.
+    function estrelasHtml(media, extras) {
+        const m = Number(media) || 0;
+        const cheias = Math.round(m);
+        let html = `<span class="estrelas ${extras || ''}" aria-label="${m.toFixed(1)} de 5">`;
+        for (let i = 1; i <= 5; i++) {
+            html += `<span class="estrela${i <= cheias ? ' cheia' : ''}">★</span>`;
+        }
+        return html + '</span>';
+    }
+
+    return { escapeHtml, formatarPreco, formatarData, mesAno, dataIsoParaBr, primeiroNome, lerSessao, salvarSessao, exigirLogin, estrelasHtml };
 })();

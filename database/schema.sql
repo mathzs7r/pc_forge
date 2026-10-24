@@ -56,6 +56,11 @@ CREATE TABLE IF NOT EXISTS LOJA (
     -- Fica depois de CRIADO_EM de propósito, pra a ordem das colunas ser a mesma
     -- de um banco atualizado pela migração 004.
     DESCRICAO  VARCHAR(500) NULL,
+    -- Logo da loja (migração 007): mesma estratégia da foto de produto (003) —
+    -- bytes no banco + tipo + timestamp de versão (?v= na URL do <img>).
+    LOGO       MEDIUMBLOB NULL,
+    LOGO_TIPO  VARCHAR(50) NULL,
+    LOGO_ATUALIZADO_EM TIMESTAMP NULL,
     UNIQUE (CNPJ),
     UNIQUE (EMAIL)
 );
@@ -86,6 +91,10 @@ CREATE TABLE IF NOT EXISTS PRODUTO (
     -- NULL = produto sem foto (a vitrine mostra o ícone da categoria).
     IMAGEM          MEDIUMBLOB NULL,
     IMAGEM_TIPO     VARCHAR(50) NULL,
+    -- Foto REAL externa por produto (migração 009): URL de uma foto real
+    -- do produto (ex.: Wikimedia Commons). TEm prioridade sobre o BLOB,
+    -- que fica como placeholder/backup se a URL não existir ou quebrar.
+    IMAGEM_URL      VARCHAR(500) NULL,
     CONSTRAINT fk_produto_loja
         FOREIGN KEY (ID_LOJA) REFERENCES LOJA (ID)
         ON DELETE CASCADE,
@@ -146,4 +155,42 @@ CREATE TABLE IF NOT EXISTS CARRINHO_ITEM (
     CONSTRAINT fk_carrinho_produto
         FOREIGN KEY (ID_PRODUTO) REFERENCES PRODUTO (ID)
         ON DELETE CASCADE
+);
+
+-- ------------------------------------------------------------
+-- AVALIACAO (estrelas de produtos, migração 006)
+-- Uma avaliação por cliente por produto (chave única). Nas
+-- avaliações de exemplo o ID_CLIENTE é NULL, e no MySQL valores
+-- NULL não colidem nesse índice — por isso elas podem existir em
+-- quantidade. O back-end usa ON DUPLICATE KEY UPDATE nessa chave,
+-- então o cliente "edita" a review dele em vez de duplicar.
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS AVALIACAO (
+    ID           INT AUTO_INCREMENT PRIMARY KEY,
+    ID_PRODUTO   INT NOT NULL,
+    ID_CLIENTE   INT NULL,
+    NOME_CLIENTE VARCHAR(120) NOT NULL,
+    NOTA         INT NOT NULL,
+    COMENTARIO   VARCHAR(1000) NULL,
+    DATA         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT ck_avaliacao_nota CHECK (NOTA BETWEEN 1 AND 5),
+    CONSTRAINT uk_avaliacao_cliente_produto UNIQUE (ID_CLIENTE, ID_PRODUTO),
+    CONSTRAINT fk_avaliacao_produto
+        FOREIGN KEY (ID_PRODUTO) REFERENCES PRODUTO (ID),
+    CONSTRAINT fk_avaliacao_cliente
+        FOREIGN KEY (ID_CLIENTE) REFERENCES CLIENTE (ID)
+        ON DELETE SET NULL,
+    INDEX ix_avaliacao_produto (ID_PRODUTO)
+);
+
+-- ------------------------------------------------------------
+-- ACESSO_LOG (migração 008) — "X acessos que o site teve"
+-- Uma linha por carregamento de página; o painel do administrador
+-- soma. Anônimo: só página e horário.
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS ACESSO_LOG (
+    ID     INT AUTO_INCREMENT PRIMARY KEY,
+    PAGINA VARCHAR(200) NULL,
+    DATA   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX ix_acesso_data (DATA)
 );

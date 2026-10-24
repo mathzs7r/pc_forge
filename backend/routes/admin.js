@@ -49,30 +49,37 @@ router.post('/admin/login', async (req, res) => {
 
 // ------------------------------------------------------------
 // REGISTRO DE ACESSO (público: a navbar chama a cada carregamento)
+// Anônimo: só a página. Erros daqui não podem interromper o strap
+// do site, então roda "de preferência" (falha em silêncio).
 // ------------------------------------------------------------
 router.post('/acesso', async (req, res) => {
     const pagina = String((req.body || {}).pagina ?? '').slice(0, 200) || null;
+
     try {
-        await pool.query('INSERT INTO ACESSO_LOG (PAGINA) VALUES (?)', [pagina]);
-        res.json({ ok: true });
-    } catch (error) {
-        res.json({ ok: false });
+        // execute(): mesmo padrão do resto do projeto pra escrita simples
+        await pool.execute('INSERT INTO ACESSO_LOG (PAGINA) VALUES (?)', [pagina]);
+    } catch (_) {
+        // log de acesso falhou? não derruba a página de ninguém
     }
+    res.status(201).json({ resposta: 'Acesso registrado.' });
 });
 
 // ------------------------------------------------------------
-// VISÃO GERAL (dashboard)
+// VISÃO GERAL (números do painel)
+// AQUI NÃO TEM PRODUTO: o administrador não operacionaliza o
+// catálogo — ele supervisiona parceiros, clientes e métricas.
 // ------------------------------------------------------------
 router.get('/admin/visao', doAdmin, async (req, res) => {
     try {
         const [[n]] = await pool.query(
             `SELECT
-                (SELECT COUNT(*) FROM LOJA) AS LOJAS,
-                (SELECT COUNT(*) FROM CLIENTE) AS CLIENTES,
-                (SELECT COALESCE(SUM(QUANTIDADE), 0) FROM POSSUI) AS PRODUTOS_VENDIDOS,
+                (SELECT COUNT(*) FROM LOJA)                                        AS LOJAS,
+                (SELECT COUNT(*) FROM CLIENTE)                                     AS CLIENTES,
+                (SELECT COUNT(*) FROM POSSUI)                                      AS PEDIDOS_ITENS,
+                (SELECT COALESCE(SUM(QUANTIDADE), 0) FROM POSSUI)                  AS PRODUTOS_VENDIDOS,
                 (SELECT COALESCE(SUM(QUANTIDADE * VALOR_UNITARIO), 0) FROM POSSUI) AS FATURAMENTO,
-                (SELECT COUNT(*) FROM ACESSO_LOG) AS ACESSOS_TOTAL,
-                (SELECT COUNT(*) FROM ACESSO_LOG WHERE DATA >= CURRENT_DATE) AS ACESSOS_HOJE,
+                (SELECT COUNT(*) FROM ACESSO_LOG)                                  AS ACESSOS_TOTAL,
+                (SELECT COUNT(*) FROM ACESSO_LOG WHERE DATA >= CURRENT_DATE)       AS ACESSOS_HOJE,
                 (SELECT COUNT(*) FROM ACESSO_LOG WHERE DATA >= DATE_SUB(NOW(), INTERVAL 7 DAY)) AS ACESSOS_SEMANA`
         );
         res.json({
@@ -90,7 +97,7 @@ router.get('/admin/visao', doAdmin, async (req, res) => {
 });
 
 // ------------------------------------------------------------
-// LOJAS PARCEIRAS
+// LOJAS PARCEIRAS (as parcerias da forja)
 // ------------------------------------------------------------
 router.get('/admin/lojas', doAdmin, async (req, res) => {
     try {

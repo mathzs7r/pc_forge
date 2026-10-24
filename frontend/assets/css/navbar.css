@@ -1,5 +1,5 @@
 /* ==========================================================
-   BARRA DO TOPO — PC Forge
+   BARRA DO TOPO — tema escuro de forja (vidro + âmbar)
    ========================================================== */
 .topo {
     position: sticky;
@@ -8,7 +8,7 @@
     height: var(--topo-altura);
     display: flex;
     align-items: center;
-    background: rgba(10, 10, 12, 0.78);
+    background: rgba(10, 10, 12, 0.82);
     backdrop-filter: blur(18px) saturate(140%);
     -webkit-backdrop-filter: blur(18px) saturate(140%);
     border-bottom: 1px solid var(--glass-border);
@@ -21,11 +21,22 @@
     padding: 0 24px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: 20px;
     flex-wrap: wrap;
 }
 
+/* os acessos (alternador, carrinho, perfil) ficam colados à direita */
+.topo-acessos {
+    margin-left: auto;
+}
+
+/* link de retorno à vitrine, ao lado da logo */
+.link-vitrine {
+    color: var(--accent);
+}
+
+/* ---------- logo ---------- */
 .marca-topo {
     display: flex;
     align-items: center;
@@ -38,17 +49,16 @@
 }
 
 .marca-emblema {
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
     border-radius: 8px;
     background: linear-gradient(145deg, var(--accent), var(--accent-dark));
+    box-shadow:
+        0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent),
+        0 0 20px color-mix(in srgb, var(--accent) 40%, transparent);
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow:
-        0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent),
-        0 0 22px color-mix(in srgb, var(--accent) 45%, transparent),
-        inset 0 1px 0 rgba(255, 255, 255, 0.25);
     flex-shrink: 0;
 }
 
@@ -58,10 +68,10 @@
 }
 
 .marca-texto {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 17px;
-    font-weight: 700;
-    letter-spacing: 2px;
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: 19px;
+    font-weight: 900;
+    letter-spacing: 1px;
     color: var(--chalk);
     text-transform: uppercase;
     line-height: 1;
@@ -74,7 +84,7 @@
 .topo-acessos {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
 }
 
 .link-inicio {
@@ -89,13 +99,14 @@
     color: var(--chalk);
 }
 
+/* ---------- alternador Cliente / Loja ---------- */
 .alternador {
     position: relative;
     display: flex;
     background: var(--glass-fill);
     border: 1px solid var(--glass-border);
     border-radius: 999px;
-    padding: 4px;
+    padding: 3px;
 }
 
 .alternador-opcao {
@@ -104,40 +115,41 @@
     border: none;
     background: transparent;
     color: var(--muted);
-    font-family: 'Inter', sans-serif;
+    font-family: 'Nunito Sans', sans-serif;
     font-weight: 700;
     font-size: 13px;
-    padding: 8px 18px;
+    padding: 7px 16px;
     border-radius: 999px;
     cursor: pointer;
     transition: color 0.25s ease;
     white-space: nowrap;
 }
 
-.alternador-opcao[aria-selected="true"] {
+.alternador-opcao[aria-pressed="true"] {
     color: var(--on-accent);
 }
 
 .alternador-indicador {
     position: absolute;
-    top: 4px;
-    bottom: 4px;
-    left: 4px;
-    width: calc(50% - 4px);
+    top: 3px;
+    bottom: 3px;
+    left: 3px;
+    width: calc(50% - 3px);
     border-radius: 999px;
     background: linear-gradient(135deg, var(--accent), var(--accent-glow));
-    transition: transform 0.25s ease, background 0.3s ease;
+    transition: transform 0.25s ease;
 }
 
 .alternador[data-ativo="loja"] .alternador-indicador {
     transform: translateX(100%);
 }
 
+/* ---------- usuário logado ---------- */
 .usuario-logado {
     display: inline-flex;
     align-items: center;
     gap: 9px;
-    padding: 6px 14px 6px 6px;
+    padding: 5px 14px 5px 5px;
     border-radius: 999px;
     background: var(--glass-fill);
     border: 1px solid var(--glass-border);
@@ -177,7 +189,7 @@
 
 .usuario-logado {
     text-decoration: none;
-    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .usuario-logado:hover {
@@ -192,8 +204,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 42px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     color: var(--chalk);
     text-decoration: none;
@@ -236,11 +248,12 @@
     display: none;
 }
 
+/* ---------- botões da navbar ---------- */
 .botao-topo {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 10px 20px;
+    padding: 9px 18px;
     border-radius: 999px;
     font-weight: 700;
     font-size: 13.5px;
@@ -261,9 +274,11 @@
     box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 25%, transparent);
 }
 
+/* Botão destacado: âmbar com texto escuro */
 .botao-solido {
     background: linear-gradient(135deg, var(--accent), var(--accent-dark));
     color: var(--on-accent);
+    border: none;
     box-shadow: 0 4px 18px color-mix(in srgb, var(--accent) 40%, transparent);
 }
 
@@ -277,6 +292,7 @@
     .topo-conteudo {
         justify-content: center;
         text-align: center;
+        padding: 0 12px;
     }
 
     .topo-acessos {
@@ -311,10 +327,15 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 12px var(--accent);
+    background: var(--mais-vendido);
+    box-shadow: 0 0 12px var(--mais-vendido);
 }
 
 .aviso-demo:hover {
     border-color: var(--accent);
+}
+
+/* o aviso "modo visualização" pisca de leve pra ser notado */
+.aviso-demo {
+    animation: pulsar-suave 2.4s ease-in-out infinite;
 }

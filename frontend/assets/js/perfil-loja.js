@@ -37,6 +37,56 @@
     function atualizarContador() { $('contador-descricao').textContent = campoDescricao.value.length; }
     campoDescricao.addEventListener('input', atualizarContador);
 
+    // ------------------------------------------------------------
+    // Logo da loja: escolha/preview/remoção, enviada no mesmo PUT
+    // dos outros dados (campo "logo" em base64, ou "remover_logo").
+    // ------------------------------------------------------------
+    let logoNova = null;       // base64 do arquivo escolhido
+    let removerLogo = false;   // clicou em "Remover logo" (e a loja tinha)
+    let logoTinhaAntes = false;
+
+    const campoLogo = $('perfil-campo-logo');
+    const imgLogo = $('logo-preview');
+    const fallbackLogo = $('logo-fallback');
+
+    function mostrarLogo(urlOuDataUrl) {
+        if (urlOuDataUrl) {
+            imgLogo.src = urlOuDataUrl;
+            imgLogo.hidden = false;
+            fallbackLogo.hidden = true;
+        } else {
+            imgLogo.removeAttribute('src');
+            imgLogo.hidden = true;
+            fallbackLogo.hidden = false;
+        }
+    }
+
+    function limparEscolhaLogo() {
+        logoNova = null;
+        campoLogo.value = '';
+    }
+
+    campoLogo.addEventListener('change', async function () {
+        const arquivo = campoLogo.files[0];
+        if (!arquivo) return;
+        try {
+            logoNova = await prepararImagemParaUpload(arquivo);
+            removerLogo = false;
+            mostrarLogo(logoNova); // preview local, antes de salvar
+        } catch (error) {
+            limparEscolhaLogo();
+            mostrarToast(error.message, 'erro');
+        }
+    });
+
+    $('perfil-botao-remover-logo').addEventListener('click', function () {
+        limparEscolhaLogo();
+        mostrarLogo(null);
+        // Só manda "remover" de verdade se a loja JÁ tinha logo salva;
+        // remover uma logo que só existia no preview local não manda nada.
+        removerLogo = logoTinhaAntes;
+    });
+
     function renderPerfil(p) {
         pintarCabecalho(p.NOME, `Loja desde ${U.mesAno(p.CRIADO_EM)}`);
 
@@ -62,6 +112,12 @@
         $('perfil-campo-email').value = p.EMAIL;
         campoDescricao.value = p.DESCRICAO || '';
         atualizarContador();
+
+        // Logo atual (ou fallback) — e anota se já tinha pra lógica de remover
+        logoTinhaAntes = Boolean(p.TEM_LOGO);
+        limparEscolhaLogo();
+        removerLogo = false;
+        mostrarLogo(urlImagemLoja(p));
     }
 
     $('form-dados').addEventListener('submit', async function (evento) {
@@ -75,7 +131,9 @@
                 email: $('perfil-campo-email').value,
                 descricao: campoDescricao.value,
                 nova_senha: $('perfil-nova-senha').value,
-                senha_atual: $('perfil-senha-atual').value
+                senha_atual: $('perfil-senha-atual').value,
+                logo: logoNova || undefined,          // só vai se escolheu logo nova
+                remover_logo: removerLogo || undefined // só vai se clicou em "Remover logo"
             });
             sessao = { ...sessao, nome: r.loja.nome, email: r.loja.email };
             U.salvarSessao('loja', sessao);

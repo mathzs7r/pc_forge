@@ -1,0 +1,695 @@
+/* ==========================================================
+   PRODUTO — página de detalhe (estilo Mercado Livre, tema forja)
+
+   Sumário:
+     1. Migalhas (Vitrine › Categoria › Nome)
+     2. Grade principal: foto | compra | vendedor
+     3. Foto do produto
+     4. Coluna de compra (preço, ações)
+     5. Coluna do vendedor
+     6. Descrição + avaliações (cardes gêmeos)
+     7. Resumo de estrelas e barras
+     8. Lista de avaliações
+     9. Formulário de avaliação
+     10. Rodapé / estados
+     11. Acessibilidade + responsividade (980 / 768 / 480)
+   ========================================================== */
+
+/* ------------------------------------------------------------
+   1. MIGALHAS
+   ------------------------------------------------------------ */
+.produto-pagina {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 20px 24px 80px;
+    width: 100%;
+}
+
+.migalhas {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 13px;
+    margin: 4px 0 18px;
+    animation: surgir 0.35s ease backwards;
+}
+
+.migalhas a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.migalhas a:hover {
+    text-decoration: underline;
+}
+
+.migalhas strong {
+    color: var(--texto-forte);
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 340px;
+}
+
+/* ------------------------------------------------------------
+   2. GRADE PRINCIPAL: foto | compra | vendedor
+   ------------------------------------------------------------ */
+.produto-ml {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) 280px;
+    gap: 22px;
+    animation: surgir 0.45s ease backwards 0.05s;
+}
+
+/* ------------------------------------------------------------
+   3. FOTO — grande, quadrada, com zoom suave
+   ------------------------------------------------------------ */
+.produto-foto {
+    margin: 0;
+    background: var(--thumb-fundo);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-shadow: var(--sombra-card);
+}
+
+.produto-foto img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s ease;
+}
+
+.produto-foto:hover img {
+    transform: scale(1.05);
+}
+
+.produto-foto-icone {
+    font-size: 120px;
+    filter: drop-shadow(0 0 26px color-mix(in srgb, var(--accent) 35%, transparent));
+    animation: pulsar-suave 2.4s ease-in-out infinite;
+}
+
+/* ------------------------------------------------------------
+   4. COLUNA DE COMPRA
+   ------------------------------------------------------------ */
+.produto-compra {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+
+.produto-categoria {
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+.produto-compra h1 {
+    font-family: 'Nunito Sans', sans-serif;
+    font-weight: 900;
+    font-size: clamp(20px, 2.6vw, 28px);
+    color: var(--texto-forte);
+    line-height: 1.25;
+    margin: 0;
+    letter-spacing: -0.4px;
+}
+
+.produto-nota-resumo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--muted);
+    font-size: 13px;
+    flex-wrap: wrap;
+}
+
+.produto-nota-resumo:hover strong {
+    text-decoration: underline;
+}
+
+/* estrelas (amarelo cheio, cinza vazio) */
+.estrelas {
+    display: inline-flex;
+    gap: 1px;
+    font-size: 16px;
+    line-height: 1;
+}
+
+.estrelas.grande {
+    font-size: 20px;
+    gap: 2px;
+}
+
+.estrela {
+    color: var(--glass-border-neutro);
+}
+
+.estrela.cheia {
+    color: var(--estrela-ouro);
+    text-shadow: 0 0 8px color-mix(in srgb, var(--estrela-ouro) 45%, transparent);
+}
+
+/* preço grande, estilo ML */
+.produto-preco {
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: clamp(30px, 3.6vw, 42px);
+    font-weight: 300;
+    color: var(--texto-forte);
+    letter-spacing: -1px;
+    line-height: 1;
+}
+
+.produto-compra .cartao-frete {
+    font-size: 13.5px;
+}
+
+.produto-acoes {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 6px;
+    max-width: 360px;
+}
+
+/* base comum dos dois botões de ação; o estilo individual vem depois */
+.produto-comprar,
+.produto-carrinho {
+    border-radius: var(--raio-pastilha);
+    color: var(--on-accent);
+    font-weight: 800;
+    font-size: 15px;
+    cursor: pointer;
+    font-family: 'Nunito Sans', sans-serif;
+}
+
+/* Comprar agora: âmbar sólido */
+.produto-comprar {
+    border: none;
+    padding: 13px;
+    background: var(--gradiente-turbo);
+    color: var(--on-accent);
+    transition: filter 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.produto-comprar:hover {
+    filter: var(--brilho-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+/* Adicionar ao carrinho: vidro */
+.produto-carrinho {
+    border: 1px solid var(--accent);
+    padding: 12px;
+    background: var(--glass-fill);
+    color: var(--accent);
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.produto-carrinho:hover {
+    background: var(--glass-fill-strong);
+    transform: translateY(-1px);
+}
+
+.produto-acoes button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+    transform: none;
+}
+
+/* ------------------------------------------------------------
+   5. COLUNA DO VENDEDOR
+   ------------------------------------------------------------ */
+.produto-vendedor {
+    background: var(--bg-court);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    padding: 18px;
+    box-shadow: var(--sombra-card);
+    align-self: start;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.produto-vendedor h2 {
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--muted);
+    margin: 0;
+}
+
+.vendedor-link {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-decoration: none;
+    padding: 10px;
+    border-radius: var(--raio-pastilha);
+    border: 1px solid transparent;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.vendedor-link:hover {
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+    background: var(--glass-fill-strong);
+}
+
+.vendedor-nome {
+    color: var(--accent);
+    font-weight: 800;
+    font-size: 15px;
+}
+
+.vendedor-meta {
+    color: var(--muted);
+    font-size: 12.5px;
+    line-height: 1.4;
+}
+
+.vendedor-ver {
+    color: var(--texto-forte);
+    font-size: 12.5px;
+    font-weight: 700;
+    margin-top: 2px;
+}
+
+.vendedor-descricao {
+    color: var(--muted);
+    font-size: 12.5px;
+    line-height: 1.5;
+    margin: 0;
+    white-space: pre-line;
+}
+
+/* ------------------------------------------------------------
+   6. DESCRIÇÃO + AVALIAÇÕES (cardes gêmeos: mesmo estilo)
+   ------------------------------------------------------------ */
+.produto-descricao,
+.produto-avaliacoes {
+    background: var(--bg-court);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    margin-top: 22px;
+    box-shadow: var(--sombra-card);
+    animation: surgir 0.45s ease backwards 0.12s;
+}
+
+.produto-descricao h2,
+.produto-avaliacoes h2 {
+    font-family: 'Nunito Sans', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    color: var(--texto-forte);
+    margin: 0 0 12px;
+}
+
+.produto-descricao p {
+    color: var(--chalk);
+    font-size: 14.5px;
+    line-height: 1.7;
+    white-space: pre-line;
+    margin: 0;
+}
+
+/* ------------------------------------------------------------
+   7. AVALIAÇÕES: RESUMO + BARRAS
+   ------------------------------------------------------------ */
+.avaliacao-resumo {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.avaliacao-media {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.avaliacao-big {
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: 44px;
+    font-weight: 300;
+    color: var(--texto-forte);
+    line-height: 1;
+}
+
+.avaliacao-total {
+    color: var(--muted);
+    font-size: 12.5px;
+}
+
+.avaliacao-barras {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 240px;
+    flex: 1;
+    max-width: 340px;
+}
+
+.avaliacao-barra {
+    display: grid;
+    grid-template-columns: 44px 1fr 34px;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.barra-estrela {
+    color: var(--estrela-ouro);
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.barra-trilho {
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+}
+
+.barra-cor {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-dark));
+    box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 40%, transparent);
+    animation: barra-crescer 0.7s ease backwards;
+}
+
+/* cada barra "cresce" com um tiquinho de defasagem */
+.avaliacao-barra:nth-child(2) .barra-cor { animation-delay: 0.08s; }
+.avaliacao-barra:nth-child(3) .barra-cor { animation-delay: 0.16s; }
+.avaliacao-barra:nth-child(4) .barra-cor { animation-delay: 0.24s; }
+.avaliacao-barra:nth-child(5) .barra-cor { animation-delay: 0.32s; }
+
+@keyframes barra-crescer {
+    from { width: 0 !important; }
+}
+
+/* ------------------------------------------------------------
+   8. LISTA DE AVALIAÇÕES
+   ------------------------------------------------------------ */
+.avaliacao-lista {
+    display: flex;
+    flex-direction: column;
+    margin-top: 4px;
+}
+
+.avaliacao-item {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--glass-border);
+    animation: surgir 0.4s ease backwards;
+}
+
+/* entrada em cascata */
+.avaliacao-item:nth-child(1) { animation-delay: 0.05s; }
+.avaliacao-item:nth-child(2) { animation-delay: 0.1s; }
+.avaliacao-item:nth-child(3) { animation-delay: 0.15s; }
+.avaliacao-item:nth-child(4) { animation-delay: 0.2s; }
+.avaliacao-item:nth-child(5) { animation-delay: 0.25s; }
+
+.avaliacao-item:last-child {
+    border-bottom: none;
+}
+
+.avaliacao-item header {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+
+.avaliacao-autor {
+    color: var(--texto-forte);
+    font-size: 13.5px;
+}
+
+.avaliacao-data {
+    color: var(--muted);
+    font-size: 12px;
+    margin-left: auto;
+}
+
+.avaliacao-texto {
+    color: var(--chalk);
+    font-size: 14px;
+    line-height: 1.65;
+    margin: 0;
+}
+
+.avaliacao-sem-texto {
+    color: var(--muted);
+    font-style: italic;
+}
+
+.sem-avaliacoes {
+    color: var(--muted);
+    font-size: 14px;
+    padding: 14px 0;
+    margin: 0;
+}
+
+/* ------------------------------------------------------------
+   9. FORMULÁRIO DE AVALIAÇÃO
+   ------------------------------------------------------------ */
+.avaliacao-form,
+.avaliacao-entrar {
+    margin-top: 22px;
+    padding: 18px;
+    border: 1px dashed color-mix(in srgb, var(--accent) 40%, transparent);
+    border-radius: var(--radius);
+    background: var(--glass-fill);
+}
+
+.avaliacao-form h3 {
+    font-size: 14.5px;
+    font-weight: 800;
+    color: var(--texto-forte);
+    margin: 0 0 10px;
+}
+
+.avaliacao-form textarea {
+    width: 100%;
+    min-height: 84px;
+    resize: vertical;
+    border: 1px solid var(--glass-border-neutro);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--chalk);
+    padding: 10px 12px;
+    border-radius: var(--raio-pastilha);
+    font-size: 13.5px;
+    font-family: 'Nunito Sans', sans-serif;
+    outline: none;
+    margin: 12px 0;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.avaliacao-form textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--azul-suave);
+}
+
+.avaliacao-form .produto-carrinho {
+    padding: 10px 18px;
+    font-size: 13.5px;
+}
+
+/* estrelas clicáveis do form */
+.estrelas-escolher {
+    display: flex;
+    gap: 4px;
+}
+
+.estrela-escolher {
+    border: none;
+    background: none;
+    color: var(--glass-border-neutro);
+    font-size: 30px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 2px;
+    transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.estrela-escolher:hover {
+    transform: scale(1.2);
+}
+
+.estrela-escolher.escolhida {
+    color: var(--estrela-ouro);
+    text-shadow: 0 0 10px color-mix(in srgb, var(--estrela-ouro) 50%, transparent);
+}
+
+.avaliacao-entrar {
+    color: var(--chalk);
+    font-size: 14px;
+}
+
+.avaliacao-entrar a {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.avaliacao-entrar small {
+    display: block;
+    color: var(--muted);
+    margin-top: 6px;
+    font-size: 12px;
+}
+
+/* ------------------------------------------------------------
+   10. RODAPÉ E ESTADOS DA PÁGINA
+   ------------------------------------------------------------ */
+.voltar-vitrine {
+    display: inline-block;
+    margin-top: 26px;
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 13.5px;
+    text-decoration: none;
+}
+
+.voltar-vitrine:hover {
+    text-decoration: underline;
+}
+
+.produto-pagina .estado-vazio,
+.produto-pagina .estado-carregando {
+    color: var(--muted);
+    text-align: center;
+    padding: 80px 20px;
+    font-size: 14.5px;
+    line-height: 1.7;
+}
+
+.produto-pagina .estado-vazio code {
+    color: var(--accent);
+}
+
+/* ------------------------------------------------------------
+   11. ACESSIBILIDADE + RESPONSIVIDADE
+   Desktop: 3 colunas (foto | compra | vendedor).
+   Tablet ≤980: foto em cima, compra+vendedor embaixo.
+   Mobile: tudo empilhado com espaçamentos internos menores.
+   (a ordem 980 → 768 → 480 importa: a posterior vence)
+   ------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+    .migalhas,
+    .produto-ml,
+    .produto-descricao,
+    .produto-avaliacoes,
+    .avaliacao-item,
+    .barra-cor,
+    .produto-foto-icone {
+        animation: none !important;
+    }
+
+    .produto-foto:hover img,
+    .estrela-escolher:hover {
+        transform: none;
+    }
+}
+
+@media (max-width: 980px) {
+    .produto-ml {
+        grid-template-columns: 1fr;
+    }
+
+    .produto-foto {
+        min-height: 320px;
+        max-width: 560px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    .produto-acoes {
+        max-width: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .produto-pagina {
+        padding: 14px 16px 60px;
+    }
+
+    .migalhas {
+        font-size: 12px;
+        margin-bottom: 14px;
+    }
+
+    .migalhas strong {
+        max-width: 240px;
+    }
+
+    .produto-foto {
+        min-height: 260px;
+        max-height: 340px;
+    }
+
+    .produto-foto-icone {
+        font-size: 88px;
+    }
+
+    .produto-descricao,
+    .produto-avaliacoes {
+        padding: 16px 18px;
+        margin-top: 16px;
+    }
+
+    .produto-vendedor {
+        padding: 14px;
+    }
+
+    .avaliacao-form,
+    .avaliacao-entrar {
+        padding: 14px;
+    }
+
+    .avaliacao-data {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .produto-preco {
+        font-size: 34px;
+    }
+
+    .avaliacao-big {
+        font-size: 38px;
+    }
+
+    .avaliacao-barra {
+        grid-template-columns: 40px 1fr 28px;
+        gap: 6px;
+    }
+
+    .produto-acoes button {
+        font-size: 14px;
+    }
+}

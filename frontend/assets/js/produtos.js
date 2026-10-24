@@ -1,5 +1,29 @@
-let produtosCache = [];
-let categoriaAtiva = 'todas';
+// ============================================================
+// produtos.js — vitrine/catálogo com filtros NO SERVIDOR
+//
+// A própria API agora aceita os parâmetros em GET /produtos:
+//   nome=        -> busca por parte do nome
+//   ordem=       -> menor_preco | maior_preco  (padrão: mais recentes)
+//   categoria=   -> categoria exata
+//   preco_min= / preco_max= -> faixa de preço
+//   pagina=      -> 10 produtos por página (pág. 1 = 1º ao 10º)
+// Este arquivo só monta esses parâmetros e exibe o resultado.
+// ============================================================
+
+const LIMITE_POR_PAGINA = 10; // tem que bater com o LIMITE do backend
+
+const filtros = {
+    nome: '',
+    categoria: '',      // '' = todas
+    ordem: '',          // '' = padrão (ID DESC), ou menor_preco/maior_preco
+    preco_min: '',
+    preco_max: '',
+    pagina: 1
+};
+
+let produtosCache = [];      // produtos da página atual
+let categoriasCache = null;  // lista de categorias (buscada 1 vez na API)
+let totalResultados = 0;     // total achado pelos filtros (todas as páginas)
 
 // Na página pública de uma loja (loja.html?id=3) esta mesma lógica de catálogo
 // mostra só os produtos daquela loja. Na vitrine geral (produtos.html) não filtra.
@@ -39,24 +63,57 @@ function escapeHtml(texto) {
     return div.innerHTML;
 }
 
+// ------------------------------------------------------------
+// Monta a query string com base nos filtros atuais
+// ------------------------------------------------------------
+function construirQuery() {
+    const parametros = [];
+    if (idLojaFiltro) parametros.push(`loja=${encodeURIComponent(idLojaFiltro)}`);
+    if (filtros.nome) parametros.push(`nome=${encodeURIComponent(filtros.nome)}`);
+    if (filtros.categoria && filtros.categoria !== 'todas') {
+        parametros.push(`categoria=${encodeURIComponent(filtros.categoria)}`);
+    }
+    if (filtros.ordem) parametros.push(`ordem=${filtros.ordem}`);
+    if (filtros.preco_min !== '') parametros.push(`preco_min=${filtros.preco_min}`);
+    if (filtros.preco_max !== '') parametros.push(`preco_max=${filtros.preco_max}`);
+    parametros.push(`pagina=${filtros.pagina}`);
+    return `/produtos?${parametros.join('&')}`;
+}
+
+// ------------------------------------------------------------
+// Carrega uma página de produtos da API (ou do modo demo)
+// ------------------------------------------------------------
 async function carregarProdutos() {
     const grade = document.getElementById('grade-produtos');
-    try {
-        const caminho = idLojaFiltro ? `/produtos?loja=${encodeURIComponent(idLojaFiltro)}` : '/produtos';
-        produtosCache = estaEmModoDemo() ? PRODUTOS_DEMO : await apiGet(caminho);
 
-        if (produtosCache.length === 0) {
-            grade.innerHTML = idLojaFiltro
-                ? `<p class="estado-vazio">Essa loja ainda não tem produtos à venda.</p>`
-                : `<p class="estado-vazio">
-                    Ainda não tem nenhum produto cadastrado.<br>
-                    Crie uma conta de loja e cadastre seus produtos no painel da loja.
-                </p>`;
-            return;
+    if (estaEmModoDemo()) {
+        // Modo visualização: filtra localmente sobre os produtos de exemplo
+        carregarCategoriasDemo();
+        produtosCache = paginarProdutosDemo();
+        totalResultados = contarProdutosDemo();
+        montarFiltros();
+        montarContador();
+        renderizarProdutos();
+        montarPaginacao();
+        adicionarProdutoPretendido();
+        return;
+    }
+
+    try {
+        // Traz os produtos E o total de resultados (header X-Resultados-Total)
+        const { dados, headers } = await apiGetComMeta(construirQuery());
+        produtosCache = dados;
+        totalResultados = Number(headers.get('x-resultados-total')) || produtosCache.length;
+
+        // Busca a lista de categorias uma única vez (pra montar os chips)
+        if (categoriasCache === null) {
+            categoriasCache = await apiGet('/produtos/categorias');
         }
 
         montarFiltros();
+        montarContador();
         renderizarProdutos();
+        montarPaginacao();
         adicionarProdutoPretendido();
     } catch (error) {
         grade.innerHTML = `<p class="estado-vazio">
@@ -68,34 +125,217 @@ async function carregarProdutos() {
     }
 }
 
+// ------------------------------------------------------------
+// Modo demo: mesma filtragem, mas feita aqui no navegador
+// ------------------------------------------------------------
+function carregarCategoriasDemo() {
+    if (categoriasCache === null) {
+        categoriasCache = [...new Set(PRODUTOS_DEMO.map((p) => p.CATEGORIA))];
+    }
+}
+
+function filtrarProdutosDemo() {
+    let lista = [...PRODUTOS_DEMO];
+
+    if (idLojaFiltro) lista = lista.filter((p) => String(p.ID_LOJA) === String(idLojaFiltro));
+    if (filtros.categoria && filtros.categoria !== 'todas') {
+        lista = lista.filter((p) => p.CATEGORIA === filtros.categoria);
+    }
+    if (filtros.nome) {
+        const alvo = filtros.nome.toLowerCase();
+        lista = lista.filter((p) => p.NOME.toLowerCase().includes(alvo));
+    }
+    if (filtros.preco_min !== '') lista = lista.filter((p) => Number(p.PRECO) >= Number(filtros.preco_min));
+    if (filtros.preco_max !== '') lista = lista.filter((p) => Number(p.PRECO) <= Number(filtros.preco_max));
+
+    if (filtros.ordem === 'menor_preco') lista.sort((a, b) => a.PRECO - b.PRECO);
+    if (filtros.ordem === 'maior_preco') lista.sort((a, b) => b.PRECO - a.PRECO);
+
+    return lista; // SEM slice: quem corta a página é quem chama
+}
+
+// Conta quantos produtos o filtro do modo demo acharia (pra saber se há próxima página)
+function contarProdutosDemo() {
+    return filtrarProdutosDemo().length;
+}
+
+function paginarProdutosDemo() {
+    const inicio = (filtros.pagina - 1) * LIMITE_POR_PAGINA;
+    return filtrarProdutosDemo().slice(inicio, inicio + LIMITE_POR_PAGINA);
+}
+
+// ------------------------------------------------------------
+// Monta os controles: busca, ordenação, preço e chips de categoria
+// ------------------------------------------------------------
 function montarFiltros() {
-    const categorias = ['todas', ...new Set(produtosCache.map((p) => p.CATEGORIA))];
     const container = document.getElementById('filtros');
     container.innerHTML = '';
 
+    // --- barra de busca / ordenação / faixa de preço ---
+    const barra = document.createElement('div');
+    barra.className = 'filtros-barra';
+    barra.innerHTML = `
+        <input class="filtro-input filtro-busca" type="search" aria-label="Buscar produto pelo nome"
+            placeholder="Buscar produto pelo nome..." value="${escapeHtml(filtros.nome)}">
+        <select class="filtro-input filtro-select" aria-label="Ordenar por preço">
+            <option value="">Mais recentes</option>
+            <option value="menor_preco" ${filtros.ordem === 'menor_preco' ? 'selected' : ''}>Menor preço</option>
+            <option value="maior_preco" ${filtros.ordem === 'maior_preco' ? 'selected' : ''}>Maior preço</option>
+        </select>
+        <span class="filtro-preco-grupo">
+            <label class="filtro-label" for="filtro-preco-min">R$</label>
+            <input id="filtro-preco-min" class="filtro-input filtro-preco" type="number" min="0"
+                placeholder="mín" value="${escapeHtml(filtros.preco_min)}">
+            <span class="filtro-label">até</span>
+            <input id="filtro-preco-max" class="filtro-input filtro-preco" type="number" min="0"
+                placeholder="máx" aria-label="Preço máximo" value="${escapeHtml(filtros.preco_max)}">
+        </span>
+        <button class="filtro-chip filtro-aplicar" type="button">Filtrar</button>
+        <button class="filtro-chip filtro-limpar" type="button">Limpar</button>
+    `;
+    container.appendChild(barra);
+
+    const buscar = barra.querySelector('.filtro-busca');
+    const ordenar = barra.querySelector('.filtro-select');
+    const precoMin = barra.querySelector('#filtro-preco-min');
+    const precoMax = barra.querySelector('#filtro-preco-max');
+
+    // Enter no campo de busca aplica os filtros
+    [buscar, precoMin, precoMax].forEach((campo) => {
+        campo.addEventListener('keydown', (evento) => {
+            if (evento.key === 'Enter') aplicarFiltrosDaInterface();
+        });
+    });
+    ordenar.addEventListener('change', aplicarFiltrosDaInterface);
+
+    barra.querySelector('.filtro-aplicar').addEventListener('click', aplicarFiltrosDaInterface);
+    barra.querySelector('.filtro-limpar').addEventListener('click', () => {
+        filtros.nome = '';
+        filtros.categoria = '';
+        filtros.ordem = '';
+        filtros.preco_min = '';
+        filtros.preco_max = '';
+        filtros.pagina = 1;
+        carregarProdutos();
+    });
+
+    // --- chips/cards de categoria (com ícone, estilo botão) ---
+    const categorias = categoriasCache === null ? [] : ['todas', ...categoriasCache];
     categorias.forEach((categoria) => {
         const botao = document.createElement('button');
         botao.type = 'button';
-        botao.className = 'filtro-chip';
-        botao.textContent = categoria === 'todas' ? 'Todas' : categoria;
-        botao.setAttribute('aria-pressed', categoria === categoriaAtiva ? 'true' : 'false');
+        botao.className = 'filtro-chip filtro-cat';
+        const rotulo = categoria === 'todas' ? 'Todas' : categoria;
+        const icone = categoria === 'todas' ? '🛒' : iconeDe(categoria);
+        botao.innerHTML = `<span class="filtro-cat-icone" aria-hidden="true">${icone}</span>${escapeHtml(rotulo)}`;
+        botao.setAttribute('aria-pressed', categoria === filtros.categoria ? 'true' : 'false');
         botao.addEventListener('click', () => {
-            categoriaAtiva = categoria;
+            filtros.categoria = categoria;
+            filtros.pagina = 1;
             montarFiltros();
-            renderizarProdutos();
+            carregarProdutos();
         });
         container.appendChild(botao);
     });
 }
 
+// Lê os campos da barra e recarrega do servidor
+function aplicarFiltrosDaInterface() {
+    const barra = document.querySelector('.filtros-barra');
+    if (!barra) return;
+
+    filtros.nome = barra.querySelector('.filtro-busca').value.trim();
+    filtros.ordem = barra.querySelector('.filtro-select').value;
+
+    const min = barra.querySelector('#filtro-preco-min').value.trim();
+    const max = barra.querySelector('#filtro-preco-max').value.trim();
+    filtros.preco_min = min === '' ? '' : min;
+    filtros.preco_max = max === '' ? '' : max;
+
+    filtros.pagina = 1;
+    carregarProdutos();
+}
+
+// ------------------------------------------------------------
+// Contador de resultados, estilo Mercado Livre ("X resultados")
+// ------------------------------------------------------------
+function montarContador() {
+    const secao = document.getElementById('grade-produtos').parentElement;
+
+    let contador = document.getElementById('contador-resultados');
+    if (!contador) {
+        contador = document.createElement('p');
+        contador.id = 'contador-resultados';
+        contador.className = 'contador-resultados';
+        contador.setAttribute('aria-live', 'polite'); /* leitor de tela anuncia when muda */
+        secao.insertBefore(contador, document.getElementById('grade-produtos'));
+    }
+
+    const numero = totalResultados.toLocaleString('pt-BR');
+    contador.textContent = `${numero} ${totalResultados === 1 ? 'resultado' : 'resultados'}`;
+}
+
+// ------------------------------------------------------------
+// Paginação: "Página X" + botões Anterior/Próxima
+// ------------------------------------------------------------
+function montarPaginacao() {
+    const secao = document.getElementById('grade-produtos').parentElement;
+
+    let rodape = document.getElementById('paginacao');
+    if (!rodape) {
+        rodape = document.createElement('nav');
+        rodape.id = 'paginacao';
+        rodape.className = 'paginacao';
+        rodape.setAttribute('aria-label', 'Paginação de resultados');
+        secao.appendChild(rodape);
+    }
+    rodape.innerHTML = '';
+
+    const anterior = document.createElement('button');
+    anterior.type = 'button';
+    anterior.className = 'paginacao-botao';
+    anterior.textContent = '‹ Anterior';
+    anterior.disabled = filtros.pagina <= 1;
+    anterior.addEventListener('click', () => mudarPagina(-1));
+    rodape.appendChild(anterior);
+
+    const indicador = document.createElement('span');
+    indicador.className = 'paginacao-indicador';
+    indicador.textContent = `Página ${filtros.pagina}`;
+    rodape.appendChild(indicador);
+
+    const proxima = document.createElement('button');
+    proxima.type = 'button';
+    proxima.className = 'paginacao-botao';
+    proxima.textContent = 'Próxima ›';
+    // Se veio menos produtos que o LIMITE, não existe página seguinte.
+    proxima.disabled = estaEmModoDemo()
+        ? contarProdutosDemo() <= filtros.pagina * LIMITE_POR_PAGINA
+        : produtosCache.length < LIMITE_POR_PAGINA;
+    proxima.addEventListener('click', () => mudarPagina(1));
+    rodape.appendChild(proxima);
+}
+
+function mudarPagina(delta) {
+    filtros.pagina = Math.max(1, filtros.pagina + delta);
+    carregarProdutos();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ------------------------------------------------------------
+// Renderização dos cards (igual antes, só com paginação)
+// ------------------------------------------------------------
 function renderizarProdutos() {
     const grade = document.getElementById('grade-produtos');
-    const filtrados = categoriaAtiva === 'todas'
-        ? produtosCache
-        : produtosCache.filter((p) => p.CATEGORIA === categoriaAtiva);
+    const filtrados = produtosCache;
 
     if (filtrados.length === 0) {
-        grade.innerHTML = '<p class="estado-vazio">Nenhum produto encontrado nessa categoria.</p>';
+        grade.innerHTML = filtros.pagina > 1
+            ? '<p class="estado-vazio">Não há produtos nessa página — volte uma página.</p>'
+            : `<p class="estado-vazio">
+                Nenhum produto encontrado com esses filtros.<br>
+                Tente outra busca ou categoria.
+            </p>`;
         return;
     }
 
@@ -103,17 +343,28 @@ function renderizarProdutos() {
         const urlFoto = urlImagemProduto(produto);
         return `
         <div class="cartao-produto">
-            <div class="cartao-thumb${urlFoto ? ' com-foto' : ''}">
-                ${urlFoto ? `<img src="${escapeHtml(urlFoto)}" alt="${escapeHtml(produto.NOME)}" loading="lazy">` : ''}
-                <span class="cartao-categoria">${escapeHtml(produto.CATEGORIA)}</span>
-                <span class="cartao-icone">${iconeDe(produto.CATEGORIA)}</span>
-            </div>
+            <a class="cartao-thumb-link" href="produto.html?id=${encodeURIComponent(produto.ID)}" title="Ver detalhes de ${escapeHtml(produto.NOME)}">
+                <div class="cartao-thumb${urlFoto ? ' com-foto' : ''}">
+                    ${urlFoto ? `<img src="${escapeHtml(urlFoto)}" alt="${escapeHtml(produto.NOME)}" loading="lazy">` : ''}
+                    <span class="cartao-categoria">${escapeHtml(produto.CATEGORIA)}</span>
+                    <span class="cartao-icone">${iconeDe(produto.CATEGORIA)}</span>
+                </div>
+            </a>
             <div class="cartao-corpo">
                 ${produto.ID_LOJA
                     ? `<a class="cartao-loja cartao-loja-link" href="loja.html?id=${encodeURIComponent(produto.ID_LOJA)}" title="Ver a página da loja">${escapeHtml(produto.LOJA_NOME)}</a>`
                     : `<span class="cartao-loja">${escapeHtml(produto.LOJA_NOME)}</span>`}
-                <span class="cartao-nome">${escapeHtml(produto.NOME)}</span>
+                <h3 class="cartao-nome"><a class="cartao-nome-link" href="produto.html?id=${encodeURIComponent(produto.ID)}">${escapeHtml(produto.NOME)}</a></h3>
                 <span class="cartao-preco">${formatarPreco(produto.PRECO)}</span>
+                <span class="cartao-frete">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M2 6h11v10H2z" stroke="currentColor" stroke-width="1.6"/>
+                        <path d="M13 9h4l3 3.5V16h-7z" stroke="currentColor" stroke-width="1.6"/>
+                        <circle cx="6" cy="18" r="1.8" fill="currentColor"/>
+                        <circle cx="16.5" cy="18" r="1.8" fill="currentColor"/>
+                    </svg>
+                    Frete grátis
+                </span>
                 <button class="cartao-comprar" type="button" data-id="${produto.ID}">Adicionar ao carrinho</button>
             </div>
         </div>

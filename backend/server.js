@@ -80,18 +80,47 @@ async function iniciar() {
         console.error('[api] Não subi a API porque a migração do banco falhou. Corrija o problema acima e tente de novo.');
         process.exit(1);
     }
+    const servidor = app.listen(port, async () => {
+    console.log(`API rodando na porta: ${port}`);
 
-    if (segredoTemporario()) {
-        console.warn('[api] AUTH_SECRET não definido no .env — usando segredo temporário. Tokens de login serão invalidados a cada reinício.');
+    if (!fs.existsSync(path.join(__dirname, '.env'))) {
+        console.warn('⚠️  Não achei o arquivo backend/.env — usando valores padrão (root, sem senha, banco "pc_forge").');
+        console.warn('    Copie o .env.example para .env e coloque a senha do seu MySQL.');
     }
 
-    app.listen(port, () => {
-        console.log(`[api] Rodando em http://localhost:${port}`);
-        console.log('[api] Diagnóstico: http://localhost:' + port + '/saude');
+    if (segredoTemporario()) {
+        console.warn('⚠️  AUTH_SECRET não definido (ou com menos de 16 caracteres) no backend/.env — usando um segredo temporário.');
+        console.warn('    Funciona, mas todo mundo precisa entrar de novo toda vez que a API reinicia. Defina AUTH_SECRET no .env.');
+    }
+
+    try {
+        const info = await pool.testarConexao();
+        console.log(`✅ Conectado ao MySQL — banco "${info.banco}"`);
+        if (info.faltando.length > 0) {
+            console.warn(`⚠️  Faltam tabelas: ${info.faltando.join(', ')}. Rode "npm run migrate" nesta pasta.`);
+        }
+        if (info.colunasFaltando.length > 0) {
+            console.warn(`⚠️  Faltam colunas no banco: ${info.colunasFaltando.join(', ')}. Rode "npm run migrate" nesta pasta (sem isso, fotos, vitrine e perfil da loja não funcionam).`);
+        }
+    } catch (error) {
+        console.error(`❌ Não consegui usar o banco: ${traduzirErro(error).resposta}`);
+        console.error(`   (detalhe técnico: ${error.code || error.message})`);
+    }
+});
+
+    servidor.on('error', (error) => {
+        if (error.code === 'EADDRINUSE') {
+            console.error(`❌ A porta ${port} já está em uso (provavelmente outra cópia da API rodando). Feche o outro terminal ou mude PORT no .env.`);
+        } else {
+            console.error(error);
+        }
+        process.exit(1);
     });
 }
 
-iniciar().catch((err) => {
-    console.error('[api] Falha ao iniciar:', err);
-    process.exit(1);
+// Rede de segurança: uma promise rejeitada não derruba mais o servidor inteiro.
+process.on('unhandledRejection', (motivo) => {
+    console.error('[unhandledRejection]', motivo);
 });
+
+iniciar();

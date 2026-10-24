@@ -4,6 +4,7 @@ const { gerarHash, conferirSenha } = require('../utils/senha');
 const { normalizarEmail, emailValido } = require('../utils/documentos');
 const { responderErro } = require('../utils/erros');
 const { exigirLogin } = require('../utils/auth');
+const { lerImagem } = require('../utils/imagem');
 
 const router = express.Router();
 const doCliente = exigirLogin('cliente');
@@ -287,7 +288,10 @@ router.get('/perfil/loja/:id', daLoja, async (req, res) => {
     const id = Number(req.params.id);
     try {
         const [lojas] = await pool.query(
-            'SELECT ID, NOME, CNPJ, ENDERECO, CELULAR, EMAIL, DESCRICAO, CRIADO_EM FROM LOJA WHERE ID = ?',
+            `SELECT ID, NOME, CNPJ, ENDERECO, CELULAR, EMAIL, DESCRICAO, CRIADO_EM,
+                    (LOGO IS NOT NULL) AS TEM_LOGO,
+                    UNIX_TIMESTAMP(LOGO_ATUALIZADO_EM) AS LOGO_VERSAO
+             FROM LOJA WHERE ID = ?`,
             [id]
         );
         if (lojas.length === 0) {
@@ -378,9 +382,27 @@ router.put('/perfil/loja/:id', daLoja, async (req, res) => {
             trechoSenha = ', SENHA = ?';
             parametros.push(await gerarHash(novaSenha));
         }
+
+        // Logo da loja (migração 007): chega em base64 opcional.
+        let logo = null;
+        if (corpo.logo) {
+            try {
+                logo = lerImagem(corpo.logo);
+            } catch (erro) {
+                if (erro.deImagem) return res.status(erro.status || 400).json({ resposta: erro.message });
+                throw erro;
+            }
+            trechoSenha += ', LOGO = ?, LOGO_TIPO = ?, LOGO_ATUALIZADO_EM = CURRENT_TIMESTAMP';
+            parametros.push(logo.buffer, logo.tipo);
+        } else if (corpo.remover_logo) {
+            trechoSenha += ', LOGO = NULL, LOGO_TIPO = NULL, LOGO_ATUALIZADO_EM = CURRENT_TIMESTAMP';
+        }
+
         parametros.push(id);
 
-        await pool.query(
+        // execute() (e não query()) porque a logo viaja como BLOB binário;
+        // o query() escreveria os bytes como texto hexadecimal.
+        await pool.execute(
             `UPDATE LOJA SET NOME = ?, ENDERECO = ?, CELULAR = ?, EMAIL = ?, DESCRICAO = ?${trechoSenha} WHERE ID = ?`,
             parametros
         );

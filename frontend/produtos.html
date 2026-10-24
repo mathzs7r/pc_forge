@@ -10,34 +10,21 @@
     <link rel="stylesheet" href="assets/css/forms.css">
     <link rel="stylesheet" href="assets/css/catalog.css">
     <link rel="stylesheet" href="assets/css/modal.css">
+    <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
     <title>PC Forge | Peças e Acessórios de TI</title>
+    <meta name="description" content="Catálogo de peças de informática — processadores, placas de vídeo, SSDs, memórias e periféricos de lojas parceiras. Filtre por preço e categoria na PC Forge.">
 </head>
 
 <body data-tipo-pagina="cliente">
     <div id="topo-montagem" data-tipo="cliente" data-modo="cadastro"></div>
 
-    <section class="hero-home">
-        <div class="hero-home-trajeto">
-            <svg viewBox="0 0 1200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M-50 260 Q 300 320 600 160 T 1250 40" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 10" opacity="0.3"/>
-                <circle cx="600" cy="160" r="90" fill="var(--accent)" opacity="0.05"/>
-                <circle cx="1180" cy="55" r="10" fill="var(--accent)" opacity="0.45"/>
-            </svg>
-        </div>
-        <div class="hero-home-conteudo">
-            <span class="vitrine-eyebrow">A forja do seu setup</span>
-            <h1>FORJE SEU <em>PC.</em></h1>
-            <p>Processadores, GPUs, SSDs, memória e periféricos forjados por lojas de todo o Brasil. Escolha, compre — e se ainda não tiver conta, é rapidinho criar uma.</p>
-        </div>
-    </section>
-
     <div class="filtros" id="filtros"></div>
 
-    <section class="secao-produtos">
+    <main class="secao-produtos">
         <div class="grade-produtos" id="grade-produtos">
             <p class="estado-carregando">Carregando produtos...</p>
         </div>
-    </section>
+    </main>
 
     <script src="assets/js/api.js"></script>
     <script src="assets/js/toast.js"></script>

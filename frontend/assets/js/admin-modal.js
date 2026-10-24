@@ -1,23 +1,24 @@
-// Modal de acesso de visualização — aberto ao clicar na logo (ver
-// navbar.js). Usuário "adm" / senha "1234" ativa o modo visualização
-// (assets/js/demo.js), que troca as chamadas de API por dados fixos.
+// Modal de ACESSO RESTRITO — aberto ao clicar na logo (navbar.js).
 //
-// De novo: isso é só um atalho de teste, não é autenticação de verdade.
-// Qualquer pessoa que olhar o código-fonte vê usuário e senha aqui embaixo.
+// Login do ADMINISTRADOR (usuário "adm"). A senha NÃO fica aqui:
+// o form envia pra POST /admin/login no backend, que confere contra
+// um hash bcrypt no servidor e devolve um token de sessão tipo "adm".
+// Com a sessão ativa, a logo leva direto ao painel (painel-admin.html),
+// o que supervisiona lojas parceiras, clientes, acessos e vendas.
 (function () {
-    const USUARIO_ADM = 'adm';
-    const SENHA_ADM = '1234';
-
     function criarModal() {
         const modal = document.createElement('div');
         modal.className = 'modal-fundo';
         modal.id = 'modal-admin';
         modal.hidden = true;
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('aria-labelledby', 'titulo-modal-admin');
         modal.innerHTML = `
             <div class="modal-caixa">
                 <button type="button" class="modal-fechar" id="fechar-modal-admin" aria-label="Fechar">&times;</button>
-                <h2>Acesso restrito</h2>
-                <p class="subtitulo">Login de visualização — funciona sem a API rodando</p>
+                <h2 id="titulo-modal-admin">Acesso restrito</h2>
+                <p class="subtitulo">Área do administrador — o que manda em tudo</p>
                 <form id="form-admin">
                     <label for="admin-usuario">Usuário</label>
                     <input type="text" id="admin-usuario" autocomplete="off" required>
@@ -45,6 +46,11 @@
         }
 
         window.abrirModalAdmin = function () {
+            // Sessão de administrador ativa: a logo leva direto ao painel
+            if (sessionStorage.getItem('adm')) {
+                window.location.href = 'painel-admin.html';
+                return;
+            }
             erro.style.display = 'none';
             form.reset();
             modal.hidden = false;
@@ -59,18 +65,27 @@
             if (evento.key === 'Escape' && !modal.hidden) fechar();
         });
 
-        form.addEventListener('submit', function (evento) {
+        form.addEventListener('submit', async function (evento) {
             evento.preventDefault();
-            const usuario = modal.querySelector('#admin-usuario').value.trim();
-            const senha = modal.querySelector('#admin-senha').value;
+            erro.style.display = 'none';
+            erro.textContent = '';
 
-            if (usuario === USUARIO_ADM && senha === SENHA_ADM) {
-                ativarModoDemo();
+            const botao = form.querySelector('input[type="submit"]');
+            botao.disabled = true;
+            try {
+                const r = await apiPost('/admin/login', {
+                    usuario: modal.querySelector('#admin-usuario').value.trim(),
+                    senha: modal.querySelector('#admin-senha').value,
+                });
+                sessionStorage.setItem('adm', JSON.stringify({ id: r.admin.id, nome: r.admin.nome, token: r.token }));
                 fechar();
-                window.location.href = 'produtos.html';
-            } else {
-                erro.textContent = 'Usuário ou senha incorretos.';
+                mostrarToast(r.resposta, 'sucesso');
+                window.location.href = 'painel-admin.html';
+            } catch (error) {
+                erro.textContent = error.message;
                 erro.style.display = 'block';
+            } finally {
+                botao.disabled = false;
             }
         });
     });

@@ -1,5 +1,6 @@
 /* ==========================================================
    TELA: painel de vitrine (esquerda) + formulário (direita)
+   Tema escuro de forja
    ========================================================== */
 .tela {
     flex: 1;
@@ -16,6 +17,7 @@
     justify-content: center;
     padding: 60px clamp(28px, 6vw, 72px);
     overflow: hidden;
+    background: linear-gradient(160deg, var(--bg-deep) 0%, #14100c 90%);
 }
 
 .vitrine-trajeto {
@@ -46,13 +48,13 @@
 .vitrine-titulo {
     position: relative;
     z-index: 1;
-    font-family: 'Orbitron', sans-serif;
-    font-size: clamp(38px, 5.4vw, 68px);
-    line-height: 0.96;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: clamp(34px, 5vw, 58px);
+    line-height: 1.05;
+    font-weight: 900;
+    letter-spacing: -0.5px;
     margin: 0 0 20px;
-    color: var(--chalk);
+    color: var(--texto-forte);
 }
 
 .vitrine-titulo em {
@@ -91,9 +93,11 @@
 }
 
 /* ==========================================================
-   CARD DE VIDRO / FORMULÁRIO
+   CARD DO FORMULÁRIO (vidro escuro)
    ========================================================== */
-main {
+/* card do formulário de LOGIN/CADASTRO: main dentro de .pagina (as
+   outras páginas também usam <main> como landmark, mas sem esse estilo) */
+.pagina main {
     position: relative;
     background: var(--glass-fill);
     backdrop-filter: blur(18px) saturate(150%);
@@ -112,14 +116,15 @@ main.compacto {
     max-width: 380px;
 }
 
-main::before {
+/* faixa âmbar no topo do card */
+.pagina main::before {
     content: "";
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 5px;
-    background: linear-gradient(90deg, var(--accent), var(--lime), var(--accent));
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-glow), var(--accent));
     background-size: 200% 100%;
     animation: correr 5s linear infinite;
 }
@@ -129,27 +134,28 @@ main::before {
     100% { background-position: 200% 0; }
 }
 
-main:hover {
+.pagina main:hover {
     transform: translateY(-4px);
-    border-color: rgba(255, 255, 255, 0.3);
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {
-    main::before {
+    .pagina main::before {
         animation: none;
     }
-    main:hover {
+    .pagina main:hover {
         transform: none;
     }
 }
 
 h1 {
-    font-family: 'Orbitron', sans-serif;
+    font-family: 'Nunito Sans', sans-serif;
     text-align: center;
-    color: var(--chalk);
+    color: var(--texto-forte);
     text-transform: uppercase;
-    letter-spacing: 1.5px;
-    font-size: 26px;
+    letter-spacing: 1px;
+    font-size: 24px;
+    font-weight: 900;
     margin: 4px 0 10px;
 }
 
@@ -178,21 +184,21 @@ form {
 
 label {
     margin-top: 14px;
-    font-weight: 700;
+    font-weight: 600;
     color: var(--muted);
-    font-size: 11px;
+    font-size: 12px;
     text-transform: uppercase;
-    letter-spacing: 0.8px;
+    letter-spacing: 0.7px;
 }
 
 input:not([type="submit"]) {
     padding: 13px 14px;
     margin-top: 6px;
-    border: 1px solid var(--glass-border);
-    border-radius: 12px;
+    border: 1px solid var(--glass-border-neutro);
+    border-radius: 10px;
     background-color: rgba(255, 255, 255, 0.06);
     color: var(--chalk);
-    font-family: 'Inter', sans-serif;
+    font-family: 'Nunito Sans', sans-serif;
     font-size: 15px;
     outline: none;
     transition: all 0.25s ease;
@@ -200,27 +206,26 @@ input:not([type="submit"]) {
 }
 
 input:not([type="submit"]):focus {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.09);
     border-color: var(--accent);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 15%, transparent);
+    box-shadow: 0 0 0 4px var(--azul-suave);
 }
 
 input::placeholder {
-    color: rgba(245, 247, 244, 0.4);
+    color: rgba(245, 240, 232, 0.4);
 }
 
+/* botão principal: âmbar com texto escuro */
 input[type="submit"] {
     margin-top: 28px;
     background: linear-gradient(135deg, var(--accent), var(--accent-dark));
     color: var(--on-accent);
     border: none;
-    padding: 15px;
-    border-radius: 12px;
+    padding: 14px;
+    border-radius: 10px;
     cursor: pointer;
     font-weight: 800;
     font-size: 15px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
     box-shadow: 0 12px 24px color-mix(in srgb, var(--accent) 30%, transparent);
     transition: all 0.25s ease;
 }
@@ -236,11 +241,11 @@ input[type="submit"]:active {
 }
 
 .mensagem-erro {
-    background: rgba(255, 82, 82, 0.15);
-    border: 1px solid rgba(255, 82, 82, 0.5);
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.5);
     color: var(--chalk);
     padding: 11px 14px;
-    border-radius: 12px;
+    border-radius: 10px;
     margin-top: 16px;
     font-size: 13.5px;
     text-align: center;
@@ -248,11 +253,11 @@ input[type="submit"]:active {
 }
 
 @media (max-width: 480px) {
-    main {
+    .pagina main {
         padding: 30px 22px 24px;
     }
 
-    h1 {
-        font-size: 22px;
+    .pagina h1 {
+        font-size: 21px;
     }
 }

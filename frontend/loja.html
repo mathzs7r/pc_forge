@@ -9,8 +9,11 @@
     <link rel="stylesheet" href="assets/css/navbar.css">
     <link rel="stylesheet" href="assets/css/forms.css">
     <link rel="stylesheet" href="assets/css/catalog.css">
+    <link rel="stylesheet" href="assets/css/produto.css">
     <link rel="stylesheet" href="assets/css/modal.css">
+    <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
     <title>Loja | PC Forge — Peças e Acessórios de TI</title>
+    <meta name="description" content="Página pública da loja parceira na PC Forge: produtos à venda, avaliações de clientes e informações da loja.">
 </head>
 
 <!-- Página pública de uma loja: loja.html?id=3. Reaproveita o catálogo (produtos.js),
@@ -18,20 +21,12 @@
 <body data-tipo-pagina="cliente" data-pagina="loja-publica">
     <div id="topo-montagem" data-tipo="cliente" data-modo="cadastro"></div>
 
-    <section class="hero-home" id="loja-cabecalho">
-        <div class="hero-home-trajeto">
-            <svg viewBox="0 0 1200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M-50 260 Q 300 320 600 160 T 1250 40" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 10" opacity="0.3"/>
-                <circle cx="600" cy="160" r="90" fill="var(--accent)" opacity="0.05"/>
-                <circle cx="1180" cy="55" r="10" fill="var(--accent)" opacity="0.45"/>
-            </svg>
-        </div>
-        <div class="hero-home-conteudo">
-            <span class="vitrine-eyebrow">Loja parceira</span>
-            <h1 id="loja-nome">Carregando loja...</h1>
-            <p class="loja-descricao" id="loja-descricao"></p>
-            <div class="loja-publica-meta" id="loja-meta"></div>
-        </div>
+    <main>
+    <section class="loja-cabecalho" id="loja-cabecalho" aria-labelledby="loja-nome">
+        <span class="vitrine-eyebrow">Loja parceira</span>
+        <h1 id="loja-nome">Carregando loja...</h1>
+        <p class="loja-descricao" id="loja-descricao"></p>
+        <div class="loja-publica-meta" id="loja-meta"></div>
     </section>
 
     <div class="filtros" id="filtros"></div>
@@ -41,6 +36,14 @@
             <p class="estado-carregando">Carregando produtos...</p>
         </div>
     </section>
+
+    <section class="produto-avaliacoes loja-avaliacoes" id="loja-avaliacoes" aria-labelledby="titulo-avaliacoes-loja">
+        <h2 id="titulo-avaliacoes-loja">Avaliações da loja</h2>
+        <div id="loja-avaliacoes-corpo">
+            <p class="estado-carregando">Carregando avaliações...</p>
+        </div>
+    </section>
+    </main>
 
     <script src="assets/js/api.js"></script>
     <script src="assets/js/util.js"></script>

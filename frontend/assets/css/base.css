@@ -1,38 +1,59 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800;900&display=swap');
 
 /* ==========================================================
-   TOKENS — PC Forge (Cliente)
-   Forja: aço escuro + âmbar derretido
+   TOKENS — PC Forge (tema ESCURO de forja)
+   Aço escuro + âmbar derretido; detalhes em verde de destaque
    ========================================================== */
 :root {
-    --bg-deep: #0a0a0c;
-    --bg-court: #141218;
-    --accent: #f59e0b;
+    /* fundo e superfície */
+    --bg-deep: #0a0a0c;          /* fundo geral da página */
+    --bg-court: #17161d;         /* cartões / superfícies */
+    --thumb-fundo: #211f28;      /* fundo do "sem foto" dos cartões */
+
+    /* marcas de cor */
+    --amarelo-ml: #f59e0b;       /* destaque da marca ( formermente amarelo ML ) */
+    --amarelo-hover: #d97706;
+    --accent: #f59e0b;           /* âmbar: links, focos, valores de destaque */
     --accent-dark: #d97706;
     --accent-glow: #fbbf24;
-    --lime: #fb923c;
-    --chalk: #f5f0e8;
+    --azul-suave: rgba(245, 158, 11, 0.12);  /* "focus halo" translúcido */
+    --mais-vendido: #22c55e;     /* verde: frete grátis, totais */
+
+    /* texto */
+    --chalk: #f5f0e8;            /* texto principal */
+    --texto-forte: #f5f0e8;      /* títulos / preços */
     --muted: #a89f94;
-    --on-accent: #1a0f05;
-    --glass-fill: rgba(255, 255, 255, 0.04);
-    --glass-fill-strong: rgba(255, 255, 255, 0.09);
-    --glass-border: rgba(245, 158, 11, 0.2);
+    --on-accent: #1a0f05;        /* texto sobre os botões âmbar */
+
+    /* "superfície de vidro" (o site dark usa transparências) */
+    --glass-fill: rgba(255, 255, 255, 0.05);
+    --glass-fill-strong: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(245, 158, 11, 0.22);
+    --glass-border-neutro: rgba(255, 255, 255, 0.14);
+
+    /* estados */
     --danger: #ef4444;
+
+    /* sombras */
+    --sombra-card: 0 3px 12px rgba(0, 0, 0, 0.4);
+    --sombra-card-hover: 0 10px 26px rgba(0, 0, 0, 0.55), 0 0 18px color-mix(in srgb, var(--accent) 22%, transparent);
+
+    /* padrões repetidos nas páginas (botões, chips, estrelas...)
+       — trocar aqui muda o site inteiro */
+    --gradiente-turbo: linear-gradient(135deg, var(--accent), var(--accent-dark));
+    --raio-pastilha: 10px;                     /* botões/campos menores que o --radius */
+    --estrela-ouro: #f5c518;                   /* estrela "cheia" de avaliação */
+    --brilho-hover: brightness(1.12);          /* hover dos botões âmbar */
+
     --radius: 14px;
-    --topo-altura: 72px;
+    --topo-altura: 64px;
 }
 
-/* Tema Loja: cobre / bronze forjado */
+/* Tema da loja: mesma paleta dark (identidade única) */
 body[data-tipo-pagina="loja"] {
-    --bg-deep: #08070a;
-    --bg-court: #12101a;
-    --accent: #ea580c;
-    --accent-dark: #c2410c;
-    --accent-glow: #fb923c;
-    --lime: #f97316;
-    --muted: #a8a09a;
-    --on-accent: #ffffff;
-    --glass-border: rgba(234, 88, 12, 0.22);
+    --accent: #f59e0b;
+    --accent-dark: #d97706;
+    --amarelo-ml: #f59e0b;
 }
 
 /* ==========================================================
@@ -46,6 +67,24 @@ html {
     scroll-behavior: smooth;
 }
 
+/* Controles nativos (selects como "Mais recentes" e "Forma de pagamento")
+   em tema escuro: sem isso o Windows/Chrome desenha o fundo BRANCO e a
+   letra branca do site fica invisível. color-scheme avisa o navegador que
+   o site é dark; o fundo sólido garante contraste mesmo assim. */
+html,
+select,
+option,
+input,
+textarea {
+    color-scheme: dark;
+}
+
+select,
+option {
+    background-color: var(--bg-court);
+    color: var(--chalk);
+}
+
 html,
 body {
     min-height: 100%;
@@ -54,7 +93,7 @@ body {
 body {
     margin: 0;
     min-height: 100vh;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Nunito Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     color: var(--chalk);
     display: flex;
     flex-direction: column;
@@ -62,31 +101,28 @@ body {
     transition: background-color 0.3s ease;
 }
 
-/* Fundo forja — brasas + aço */
+/* Fundo forja — brasas discretas + grade de aço */
 body::before {
     content: "";
     position: fixed;
     inset: 0;
     z-index: -1;
     background-image:
-        radial-gradient(ellipse at 15% 5%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 48%),
-        radial-gradient(ellipse at 85% 95%, color-mix(in srgb, var(--lime) 12%, transparent), transparent 42%),
-        radial-gradient(circle at 50% 100%, rgba(120, 40, 10, 0.15), transparent 55%),
-        linear-gradient(rgba(255, 255, 255, 0.012) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.012) 1px, transparent 1px),
-        linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-court) 45%, #0d0a08 100%);
+        radial-gradient(ellipse at 15% 5%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 48%),
+        radial-gradient(ellipse at 85% 95%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 42%),
+        linear-gradient(rgba(255, 255, 255, 0.014) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.014) 1px, transparent 1px),
+        linear-gradient(180deg, var(--bg-deep) 0%, #121016 45%, var(--bg-deep) 100%);
     background-size:
-        100% 100%,
         100% 100%,
         100% 100%,
         40px 40px,
         40px 40px,
         100% 100%;
-    transition: background-image 0.4s ease;
 }
 
 a {
-    color: inherit;
+    color: var(--accent);
 }
 
 a:focus-visible,
@@ -98,8 +134,75 @@ textarea:focus-visible {
     outline-offset: 2px;
 }
 
+button {
+    font-family: inherit;
+}
+
 @media (prefers-reduced-motion: reduce) {
     html {
         scroll-behavior: auto;
     }
 }
+
+/* ==========================================================
+   RESPONSIVIDADE GLOBAL — computador / notebook / tablet / mobile
+   Hierarquia visual mantida: só densidade e espaçamento mudam.
+   Escala de breakpoints do projeto: 1023px (tablet/notebook estreito),
+   768px (tablet retrato), 640px (grande), 480px (mobile), 360px (pé).
+   ========================================================== */
+@media (max-width: 1023px) {
+    body::before {
+        background-size:
+            100% 100%,
+            100% 100%,
+            34px 34px,
+            34px 34px,
+            100% 100%;
+    }
+}
+
+@media (max-width: 640px) {
+    body::before {
+        /* brasas e grade de aço ficam mais discretas em telas pequenas */
+        background-size:
+            140% 100%,
+            100% 100%,
+            28px 28px,
+            28px 28px,
+            100% 100%;
+    }
+
+    /* conteúdo de formulários e painéis respira menos nas bordas,
+       mas SEM quebrar a hierarquia: os cardes continuam com o mesmo
+       preenchimento interno (ganham folga só fora) */
+    input,
+    select,
+    textarea {
+        font-size: 16px; /* evita o zoom automático do iOS ao tocar em campos */
+    }
+}
+
+/* ==========================================================
+   ANIMAÇÕES GLOBAIS
+   ========================================================== */
+@keyframes surgir {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulsar-suave {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+}
+
+@keyframes pop {
+    0% { opacity: 0; transform: scale(0.92) translateY(8px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+

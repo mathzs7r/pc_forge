@@ -1,12 +1,12 @@
 /* ==========================================================
    MODAL DE ACESSO DE VISUALIZAÇÃO (secreto — clique na logo)
+   Estética Mercado Livre (claro)
    ========================================================== */
 .modal-fundo {
     position: fixed;
     inset: 0;
     z-index: 100;
-    background: rgba(4, 8, 8, 0.6);
-    backdrop-filter: blur(6px);
+    background: rgba(0, 0, 0, 0.45);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -25,9 +25,19 @@
     padding: 34px 30px 28px;
     max-width: 360px;
     width: 100%;
-    backdrop-filter: blur(20px) saturate(160%);
-    -webkit-backdrop-filter: blur(20px) saturate(160%);
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+    animation: pop 0.25s ease-out;
+}
+
+.modal-fundo {
+    animation: surgir 0.2s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .modal-caixa,
+    .modal-fundo {
+        animation: none !important;
+    }
 }
 
 .modal-fechar {
@@ -44,15 +54,16 @@
 }
 
 .modal-fechar:hover {
-    color: var(--chalk);
+    color: var(--texto-forte);
 }
 
 .modal-caixa h2 {
-    font-family: 'Anton', sans-serif;
+    font-family: 'Nunito Sans', sans-serif;
     text-transform: uppercase;
     text-align: center;
-    font-size: 21px;
-    letter-spacing: 1px;
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 0.3px;
     margin: 6px 0 6px;
-    color: var(--chalk);
+    color: var(--texto-forte);
 }

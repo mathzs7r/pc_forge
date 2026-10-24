@@ -20,12 +20,12 @@
     align-items: flex-start;
     gap: 10px;
     padding: 13px 14px;
-    border-radius: var(--radius, 14px);
-    background: color-mix(in srgb, var(--bg-court) 88%, black);
+    border-radius: var(--radius, 6px);
+    background: color-mix\(in srgb, var(--bg-court) 88%, black);
     border: 1px solid var(--glass-border);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
-    color: var(--chalk);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+    color: var(--texto-forte);
+    font-family: 'Nunito Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 13.5px;
     line-height: 1.4;
     animation: toast-entrar 0.25s ease-out;
@@ -60,7 +60,7 @@
 }
 
 .toast-fechar:hover {
-    color: var(--chalk);
+    color: var(--texto-forte);
 }
 
 /* variações por tipo */
