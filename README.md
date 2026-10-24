@@ -1,90 +1,85 @@
-# Chutaki — marketplace de artigos esportivos
+# PC Forge
 
-Marketplace full-stack (frontend + backend + MySQL) para compra e venda de artigos esportivos, com painéis de cliente, loja e administrador.
-
-> **Nota:** este README foi gerado/atualizado automaticamente a partir do estado atual do código. Ajuste nomes, URLs e variáveis conforme o seu ambiente.
-
----
+Marketplace full-stack de componentes e periféricos de PC. Clientes compram, lojas vendem e um painel administrativo gerencia o sistema.
 
 ## Stack
 
-| Camada | Tecnologia |
-|--------|------------|
-| Frontend | HTML5, CSS3, JavaScript (vanilla) |
-| Backend | Node.js + Express |
-| Banco | MySQL |
-| Auth | JWT + bcrypt |
-| Upload | Multer (imagens de produto/loja) |
-
----
+| Camada     | Tecnologia                          |
+|------------|-------------------------------------|
+| Frontend   | HTML5, CSS3, JavaScript (vanilla)   |
+| Backend    | Node.js + Express                   |
+| Banco      | MySQL 8+                            |
+| Auth       | Token assinado (AUTH_SECRET) + bcryptjs |
+| Imagens    | BLOB no MySQL + suporte a URL       |
 
 ## Estrutura do projeto
 
 ```
 pc_forge/
-├── backend/                 # API Node/Express
-│   ├── routes/              # Rotas (produtos, lojas, clientes, carrinho, perfil, admin)
-│   ├── utils/               # Auth, senha, imagem, erros, documentos
-│   ├── server.js
-│   ├── db.js
-│   ├── migration.js
+├── backend/
+│   ├── routes/           # clientes, lojas, produtos, carrinho, perfil, admin
+│   ├── utils/            # auth, senha, imagem, erros, documentos
+│   ├── server.js         # sobe a API (e roda migração automática)
+│   ├── db.js             # pool MySQL
+│   ├── migration.js      # aplica schema + migrations
+│   ├── seed-fotos-*.js   # scripts para popular imagens do catálogo
 │   ├── package.json
 │   └── .env.example
-├── frontend/                # Páginas e assets estáticos
+├── frontend/
 │   ├── assets/
 │   │   ├── css/
 │   │   ├── js/
 │   │   └── img/
-│   ├── *.html               # login, produtos, carrinho, painéis etc.
+│   └── *.html            # páginas (catálogo, login, painéis, carrinho...)
 ├── database/
 │   ├── schema.sql
 │   ├── seed.sql
-│   ├── migrations/          # Migrações numeradas
-│   └── dump/
+│   ├── migrations/       # 001 … 009
+│   ├── dump/
+│   └── README-CATALOGO.md
 ├── docs/
-├── package.json             # Scripts raiz (opcional)
-└── README.md
+└── package.json
 ```
-
----
 
 ## Pré-requisitos
 
 - Node.js 18+
 - MySQL 8+
-- Conta/API keys se for usar integrações externas (ex.: RapidAPI — ver `docs/`)
-
----
 
 ## Configuração rápida
 
 ### 1. Banco de dados
 
-```bash
-mysql -u root -p < database/schema.sql
-# opcional: dados de teste
-mysql -u root -p < database/seed.sql
-# aplicar migrações (na ordem)
-for f in database/migrations/*.sql; do mysql -u root -p < "$f"; done
-```
+Crie o banco (ou deixe o `migration.js` criar):
 
-Ou use o script de migração do backend (veja `backend/migration.js`).
+```bash
+mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS pc_forge CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+```
 
 ### 2. Backend
 
 ```bash
 cd backend
 cp .env.example .env
-# edite .env com DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, JWT_SECRET etc.
+# Edite o .env: DB_PASSWORD, AUTH_SECRET, etc.
 npm install
-npm run dev   # ou npm start
+npm start          # roda migration + sobe a API (porta 3000)
+# ou
+npm run migrate    # só atualiza o banco
+npm run dev        # nodemon (sem migration automática)
 ```
 
-A API sobe em geral em `http://localhost:3000` (confira `server.js` / `.env`).
+Variáveis importantes no `.env`:
+
+- `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`
+- `PORT` (padrão 3000)
+- `AUTH_SECRET` — texto longo e aleatório (mín. 16 caracteres)
+
+**Nunca faça commit do arquivo `.env` real.**
 
 ### 3. Frontend
 
-Sirva a pasta `frontend/` com qualquer servidor estático, por exemplo:
+Sirva a pasta `frontend/` com qualquer servidor estático:
 
 ```bash
 cd frontend
@@ -93,44 +88,52 @@ npx serve .
 python -m http.server 8080
 ```
 
-Configure a URL base da API no frontend (geralmente em `frontend/assets/js/api.js`).
+A URL da API está centralizada em `frontend/assets/js/api.js` (`API_URL = "http://localhost:3000"`).
 
----
+### Diagnóstico
 
-## Variáveis de ambiente (backend)
+Abra `http://localhost:3000/saude` para ver se a API enxerga o banco e se as colunas estão atualizadas.
 
-Veja `backend/.env.example`. Principais:
+## Funcionalidades
 
-- `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`
-- `JWT_SECRET`
-- `PORT`
-- caminhos/limites de upload de imagem
+- Catálogo público de produtos (filtros, busca, página do produto)
+- Carrinho de compras do cliente + finalização
+- Cadastro/login de **Cliente** e de **Loja**
+- Painel da loja (CRUD de produtos, perfil, logo)
+- Painel administrativo (dashboard, listagens, exclusão/restauração lógica)
+- Upload de imagens de produto (BLOB + tipo MIME)
+- Avaliações de produto (nota + comentário)
+- Soft-delete de produtos e logs de exclusão
+- Página pública da loja
 
-**Nunca commite o arquivo `.env` real.**
+## Scripts úteis (pasta backend)
 
----
+| Comando                    | O que faz                                      |
+|----------------------------|------------------------------------------------|
+| `npm start`                | Migration + sobe a API                         |
+| `npm run migrate`          | Só aplica schema + migrations pendentes        |
+| `npm run migrate:seed`     | Migration + seed básico                        |
+| `npm run seed:fotos`       | Preenche fotos do catálogo (placeholder)       |
+| `npm run seed:reais`       | Tenta buscar fotos reais (Bing)                |
+| `npm run gerar:catalogo`   | Gera dados de catálogo                         |
+| `npm run hash`             | Gera hash bcrypt de uma senha (testes)         |
 
-## Funcionalidades principais
+## Rotas principais da API
 
-- Catálogo de produtos com busca/filtros
-- Carrinho de compras
-- Cadastro e login de clientes e lojas
-- Painel da loja (produtos, pedidos, perfil)
-- Painel administrativo
-- Upload de imagens (produto / logo da loja)
-- Avaliações (conforme migrações)
-- Soft delete de produtos e logs de exclusão
+- `GET  /produtos` / `GET /produtos/:id` / `GET /produtos/:id/imagem`
+- `POST /produtos` (loja autenticada)
+- Carrinho: `/carrinho/...` (cliente autenticado)
+- Perfil: `/perfil/cliente/...` e `/perfil/loja/...`
+- Admin: `/admin/...` (administrador autenticado)
+- `GET /saude` — health check do banco
 
----
+## Observações
 
-## Scripts úteis (backend)
+- O frontend é 100% vanilla (sem framework).
+- A migration roda automaticamente no `npm start`.
+- Imagens de produto ficam no banco (MEDIUMBLOB). Listagens não trazem os bytes — só um flag `TEM_IMAGEM` e um `IMG_VERSAO` para cache-busting.
+- Projeto voltado para estudo / demonstração. Antes de produção: HTTPS, rate-limit, CORS restrito, secrets fortes, backups, etc.
 
-- `node migration.js` — aplica migrações
-- `node gerar-catalogo.js` / seeds de fotos — popular catálogo
-- `node gerar-hash.js` — gerar hash de senha para testes
+## Licença
 
----
-
-## Licença / uso
-
-Projeto educacional / demonstração. Ajuste conforme necessário antes de produção (segurança, CORS, rate limit, HTTPS, etc.).
+ISC
