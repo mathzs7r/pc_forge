@@ -1,4 +1,4 @@
-# Pc_Forge — Marketplace de peças de TI (PC Forge)
+# PC Forge — Marketplace de peças de TI 
 
 Marketplace estilo "Shopee de componentes de informática": clientes compram peças e
 acessórios de computadores, e qualquer loja pode criar uma conta e começar a vender.
