@@ -1,6 +1,6 @@
 # PC Forge — Marketplace de peças de TI 
 
-Marketplace estilo "Shopee de componentes de informática": clientes compram peças e
+Marketplace estilo "Mercado Livre de componentes de informática": clientes compram peças e
 acessórios de computadores, e qualquer loja pode criar uma conta e começar a vender.
 O projeto tem duas frentes de login/cadastro (Cliente e Loja), com uma barra no topo pra
 alternar entre as duas.
