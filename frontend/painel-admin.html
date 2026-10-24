@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="assets/css/base.css">
+    <link rel="stylesheet" href="assets/css/toast.css">
+    <link rel="stylesheet" href="assets/css/navbar.css">
+    <link rel="stylesheet" href="assets/css/forms.css">
+    <link rel="stylesheet" href="assets/css/painel.css">
+    <link rel="stylesheet" href="assets/css/perfil.css">
+    <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+    <title>Acesso restrito | PC Forge</title>
+    <meta name="description" content="Área do administrador da PC Forge — supervisiona lojas parceiras, clientes, acessos e vendas.">
+</head>
+
+<body>
+    <header class="topo-site">
+        <div class="topo-conteudo">
+            <a href="produtos.html" class="logo" title="PC Forge">
+                <span class="logo-marca">PC Forge</span>
+            </a>
+            <div class="topo-acoes">
+                <a href="produtos.html" class="link-inicio">‹ Vitrine</a>
+                <button type="button" class="painel-sair" id="botao-sair">Sair</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="painel">
+        <div class="painel-cabecalho">
+            <div class="perfil-topo">
+                <div class="perfil-avatar">⚠️</div>
+                <div>
+                    <span class="vitrine-eyebrow">Acesso restrito</span>
+                    <h1 id="nome-admin">Administrador</h1>
+                    <span class="perfil-desde">O que manda em tudo — supervisiona parceiros, clientes e métricas</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="painel-form-card aviso-demo-perfil" id="login-necessario" hidden>
+            <h2>Sessão sem credencial</h2>
+            <p class="subtitulo" style="text-align:left">Para entrar aqui, o acesso é restrito: clique na <strong>logo</strong> em qualquer página e entre com o usuário e a senha do administrador.</p>
+        </div>
+
+        <div id="painel-conteudo" hidden>
+            <div class="stats-grid" id="stats"></div>
+
+            <div class="painel-grade">
+                <div class="painel-form-card">
+                    <h2>Lojas parceiras</h2>
+                    <p class="subtitulo">As parcerias da forja e o que cada uma movimenta</p>
+                    <div class="painel-lista rolagem-lista" id="lista-lojas"><p class="estado-carregando">Carregando...</p></div>
+                </div>
+
+                <div class="painel-form-card">
+                    <h2>Clientes</h2>
+                    <p class="subtitulo">Quem tem conta na PC Forge</p>
+                    <div class="painel-lista rolagem-lista" id="lista-clientes"><p class="estado-carregando">Carregando...</p></div>
+                </div>
+            </div>
+
+            <div class="painel-form-card" style="margin-top: 18px;">
+                <h2>Acessos ao site</h2>
+                <p class="subtitulo">Carregamentos de página (anônimos — sem dados de quem acessou)</p>
+                <dl class="dados-cadastro" id="acessos-detalhe"></dl>
+            </div>
+        </div>
+    </main>
+
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/util.js"></script>
+    <script src="assets/js/toast.js"></script>
+    <script src="assets/js/painel-admin.js"></script>
+</body>
+
+</html>
