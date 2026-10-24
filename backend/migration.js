@@ -37,105 +37,68 @@ const DATABASE_DIR = path.join(__dirname, '..', 'database');
 const SCHEMA_PATH = path.join(DATABASE_DIR, 'schema.sql');
 const SEED_PATH = path.join(DATABASE_DIR, 'seed.sql');
 const MIGRATIONS_DIR = path.join(DATABASE_DIR, 'migrations');
-
 const NOME_BANCO = process.env.DB_NAME || 'pc_forge';
 const RODAR_SEED = process.argv.includes('--seed');
 
-function log(mensagem) {
-    console.log(`[migration] ${mensagem}`);
+function log(msg) {
+    console.log(`[migrate] ${msg}`);
 }
 
-async function conectar() {
+async function conectarSemBanco() {
     return mysql.createConnection({
         host: process.env.DB_HOST || '127.0.0.1',
-        port: process.env.DB_PORT || 3306,
         user: process.env.DB_USER || 'root',
-        password: process.env.DB_PASSWORD || 'escola',
-        multipleStatements: true // schema/migrações têm vários comandos SQL num arquivo só
+        password: process.env.DB_PASSWORD || '',
+        port: Number(process.env.DB_PORT) || 3306,
+        multipleStatements: true,
+        charset: 'utf8mb4'
     });
 }
 
-// Os .sql têm "pc_forge" escrito; se o DB_NAME do .env for outro, troca aqui
-// pra não criar um banco e depois tentar usar outro.
-function prepararSql(sql) {
-    return sql
-        .replace(/CREATE DATABASE IF NOT EXISTS\s+`?pc_forge`?/gi, `CREATE DATABASE IF NOT EXISTS \`${NOME_BANCO}\``)
-        .replace(/^\s*USE\s+`?pc_forge`?\s*;/gim, `USE \`${NOME_BANCO}\`;`);
-}
-
-async function rodarArquivoSql(conexao, caminhoArquivo) {
-    const sql = prepararSql(fs.readFileSync(caminhoArquivo, 'utf8'));
+async function rodarArquivoSql(conexao, arquivo) {
+    const sql = fs.readFileSync(arquivo, 'utf8');
+    if (!sql.trim()) return;
     await conexao.query(sql);
 }
 
 async function garantirTabelaDeControle(conexao) {
     await conexao.query(`
         CREATE TABLE IF NOT EXISTS _MIGRACOES (
-            ARQUIVO      VARCHAR(255) PRIMARY KEY,
-            APLICADA_EM  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            arquivo VARCHAR(255) NOT NULL UNIQUE,
+            aplicada_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     `);
-}
-
-async function jaFoiAplicada(conexao, nomeArquivo) {
-    const [linhas] = await conexao.query(
-        'SELECT 1 FROM _MIGRACOES WHERE ARQUIVO = ?',
-        [nomeArquivo]
-    );
-    return linhas.length > 0;
-}
-
-async function marcarComoAplicada(conexao, nomeArquivo) {
-    await conexao.query(
-        'INSERT INTO _MIGRACOES (ARQUIVO) VALUES (?)',
-        [nomeArquivo]
-    );
 }
 
 async function aplicarMigracoesPendentes(conexao) {
     if (!fs.existsSync(MIGRATIONS_DIR)) {
-        log('Pasta database/migrations não existe, nada pra aplicar aqui.');
+        log('Pasta database/migrations não existe, pulando.');
         return;
     }
-
     const arquivos = fs.readdirSync(MIGRATIONS_DIR)
-        .filter((nome) => nome.endsWith('.sql'))
-        .sort(); // nomes com prefixo numérico (001_..., 002_...) garantem a ordem certa
+        .filter((f) => f.endsWith('.sql'))
+        .sort();
+    const [aplicadas] = await conexao.query('SELECT arquivo FROM _MIGRACOES');
+    const ja = new Set(aplicadas.map((r) => r.arquivo));
 
-    if (arquivos.length === 0) {
-        log('Nenhum arquivo de migração encontrado em database/migrations.');
-        return;
-    }
-
-    for (const arquivo of arquivos) {
-        if (await jaFoiAplicada(conexao, arquivo)) {
-            log(`- ${arquivo} já tinha sido aplicada, pulando.`);
+    for (const arq of arquivos) {
+        if (ja.has(arq)) {
+            log(`Já aplicada: ${arq}`);
             continue;
         }
-
-        log(`- aplicando ${arquivo}...`);
-        try {
-            await rodarArquivoSql(conexao, path.join(MIGRATIONS_DIR, arquivo));
-            log(`  ✔ ${arquivo} aplicada.`);
-        } catch (erro) {
-            // 1060 = coluna duplicada, 1061 = índice duplicado: acontece quando o
-            // banco foi criado com o schema.sql novo, que já vem com essa alteração.
-            // Não é erro de verdade — só marca como aplicada e segue.
-            if (erro.errno === 1060 || erro.errno === 1061) {
-                log(`  ✔ ${arquivo}: o schema já tinha essa alteração, marcando como aplicada.`);
-            } else {
-                throw erro;
-            }
-        }
-        await marcarComoAplicada(conexao, arquivo);
+        log(`Aplicando: ${arq}...`);
+        const caminho = path.join(MIGRATIONS_DIR, arq);
+        await rodarArquivoSql(conexao, caminho);
+        await conexao.query('INSERT INTO _MIGRACOES (arquivo) VALUES (?)', [arq]);
+        log(`OK: ${arq}`);
     }
 }
 
 async function main() {
-    log(`Conectando em ${process.env.DB_HOST || '127.0.0.1'}:${process.env.DB_PORT || 3306} como ${process.env.DB_USER || 'root'}...`);
     let conexao;
     try {
-        conexao = await conectar();
+        conexao = await conectarSemBanco();
     } catch (erro) {
         log(`Não consegui conectar no MySQL: ${erro.message}`);
         if (erro.code === 'ER_ACCESS_DENIED_ERROR') {
@@ -143,8 +106,7 @@ async function main() {
         } else if (erro.code === 'ECONNREFUSED') {
             log('Dica: o MySQL não está rodando (ou DB_HOST/DB_PORT estão errados no backend/.env).');
         }
-        process.exitCode = 1;
-        return;
+        return false;
     }
 
     try {
@@ -171,6 +133,8 @@ async function main() {
         }
 
         log('Banco de dados pronto! ✅');
+        log('Dica: se acabou de aplicar a 005_catalogo_completo.sql, rode "npm run seed:fotos" para gravar as fotos placeholder nos produtos.');
+        return true;
     } catch (erro) {
         log(`Erro ao rodar a migração: ${erro.message}`);
         if (erro.code === 'ER_ACCESS_DENIED_ERROR') {
@@ -178,10 +142,16 @@ async function main() {
         } else if (erro.code === 'ECONNREFUSED') {
             log('Dica: o MySQL não está rodando (ou DB_HOST/DB_PORT estão errados no backend/.env).');
         }
-        process.exitCode = 1;
+        return false;
     } finally {
         await conexao.end();
     }
 }
 
-main();
+if (require.main === module) {
+    main().then((ok) => {
+        if (!ok) process.exitCode = 1;
+    });
+}
+
+module.exports = { migrar: main };
