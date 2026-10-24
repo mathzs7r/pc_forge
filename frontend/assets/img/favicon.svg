@@ -1,0 +1,11 @@
+<!-- Favicon do PC Forge: bigorna da forja sobre fora âmbar -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+    <defs>
+        <linearGradient id="forja" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#f5a623"/>
+            <stop offset="1" stop-color="#b45309"/>
+        </linearGradient>
+    </defs>
+    <rect width="64" height="64" rx="14" fill="url(#forja)"/>
+    <path d="M8 18h48c0 11-11 16-21 16v9h8a5 5 0 0 1 5 5v8H16v-8a5 5 0 0 1 5-5h8v-9C19 34 8 29 8 18z" fill="#1b1207"/>
+</svg>

@@ -1,0 +1,18 @@
+{
+  "categorias": [
+    "Processadores",
+    "Placas de Vídeo",
+    "Memória RAM",
+    "Armazenamento",
+    "Placas-mãe",
+    "Fontes",
+    "Periféricos",
+    "Acessórios"
+  ],
+  "totalProdutos": 400,
+  "lojas": [
+    "parceiro@pichau.com.br",
+    "parceiro@kabum.com.br",
+    "parceiro@terabyte.com.br"
+  ]
+}
