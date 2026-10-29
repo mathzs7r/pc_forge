@@ -4,8 +4,11 @@ const { gerarHash, conferirSenha } = require('../utils/senha');
 const { soDigitos, normalizarEmail, emailValido, semMascara } = require('../utils/documentos');
 const { responderErro } = require('../utils/erros');
 const { gerarToken } = require('../utils/auth');
+const { limitarTentativas } = require('../utils/rateLimit');
 
 const router = express.Router();
+// Protege o login da loja contra força bruta: mesmo IP só pode tentar N vezes na janela.
+const limitarLogin = limitarTentativas();
 
 // ------------------------------------------------------------
 // CADASTRO DE LOJA (vendedor do marketplace)
@@ -30,8 +33,8 @@ router.post('/loja', async (req, res) => {
     if (!emailValido(email)) {
         return res.status(400).json({ resposta: 'E-mail inválido.' });
     }
-    if (senha.length < 4) {
-        return res.status(400).json({ resposta: 'A senha precisa ter pelo menos 4 caracteres.' });
+    if (senha.length < 8) {
+        return res.status(400).json({ resposta: 'A senha precisa ter pelo menos 8 caracteres.' });
     }
 
     try {
@@ -60,7 +63,7 @@ router.post('/loja', async (req, res) => {
 // ------------------------------------------------------------
 // LOGIN DE LOJA (email ou CNPJ + senha)
 // ------------------------------------------------------------
-router.post('/loja/login', async (req, res) => {
+router.post('/loja/login', limitarLogin, async (req, res) => {
     const { identificador, senha } = req.body || {};
 
     if (!identificador || !senha) {

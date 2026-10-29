@@ -32,10 +32,10 @@ function inteiroPositivo(valor) {
 // flutuante: 0.1 + 0.2 em JS dá 0.30000000000000004.
 async function lerCarrinho(executor, idCliente) {
     const [linhas] = await executor.query(
-        `SELECT I.ID_PRODUTO, I.QUANTIDADE,
+        `SELECT I.ID_PRODUTO, I.QUANTIDADE, I.GRUPO, I.MONTADA,
                 P.NOME, P.CATEGORIA, P.PRECO, P.ID_LOJA,
                 L.NOME AS LOJA_NOME,
-                (P.IMAGEM IS NOT NULL) AS TEM_IMAGEM,
+                (P.IMAGEM IS NOT NULL OR P.IMAGEM_URL IS NOT NULL) AS TEM_IMAGEM,
                 UNIX_TIMESTAMP(P.ATUALIZADO_EM) AS IMG_VERSAO
          FROM CARRINHO_ITEM I
          JOIN PRODUTO P ON P.ID = I.ID_PRODUTO AND P.ATIVO = 1
@@ -61,6 +61,10 @@ async function lerCarrinho(executor, idCliente) {
             SUBTOTAL: subtotalCentavos / 100,
             ID_LOJA: linha.ID_LOJA,
             LOJA_NOME: linha.LOJA_NOME,
+            // identidade da montagem: itens de "Montado na loja" compartilham
+            // o GRUPO e o carrinho os junta num cartão único de "PC Montado"
+            GRUPO: linha.GRUPO || null,
+            MONTADA: linha.MONTADA === 1,
             // Mesmo contrato das listas de produto: a foto em si vem de GET /produtos/:id/imagem.
             TEM_IMAGEM: linha.TEM_IMAGEM,
             IMG_VERSAO: linha.IMG_VERSAO
@@ -106,11 +110,16 @@ router.post('/carrinho/:id/itens', doCliente, async (req, res) => {
         }
 
         // LEAST(...) trava o total do item em LIMITE_POR_ITEM mesmo somando.
+        // GRUPO/MONTADA vêm do "Monte seu PC": quando existem, as linhas viram
+        // um cartão único de "PC Montado" no carrinho.
+        const grupo = typeof corpo.grupo === 'string' && /^[A-Za-z0-9-]{8,64}$/.test(corpo.grupo) ? corpo.grupo : null;
+        const montada = corpo.montada === true ? 1 : 0;
         await pool.query(
-            `INSERT INTO CARRINHO_ITEM (ID_CLIENTE, ID_PRODUTO, QUANTIDADE)
-             VALUES (?, ?, ?)
-             ON DUPLICATE KEY UPDATE QUANTIDADE = LEAST(QUANTIDADE + ?, ?)`,
-            [idCliente, idProduto, quantidade, quantidade, LIMITE_POR_ITEM]
+            `INSERT INTO CARRINHO_ITEM (ID_CLIENTE, ID_PRODUTO, QUANTIDADE, GRUPO, MONTADA)
+             VALUES (?, ?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE QUANTIDADE = LEAST(QUANTIDADE + ?, ?),
+                                    GRUPO = VALUES(GRUPO), MONTADA = VALUES(MONTADA)`,
+            [idCliente, idProduto, quantidade, grupo, montada, quantidade, LIMITE_POR_ITEM]
         );
 
         const carrinho = await lerCarrinho(pool, idCliente);
@@ -179,6 +188,28 @@ router.delete('/carrinho/:id/itens/:idProduto', doCliente, async (req, res) => {
         res.json({ resposta: 'Produto removido do carrinho.', ...(await lerCarrinho(pool, idCliente)) });
     } catch (error) {
         responderErro(res, error, 'DELETE /carrinho/:id/itens/:idProduto');
+    }
+});
+
+// ------------------------------------------------------------
+// REMOVER UMA MONTAGEM INTEIRA (todos os itens de um GRUPO)
+// É o ✕ do cartão "PC Montado": a peça NÃO pode sair sozinha de
+// dentro do pacote sem ela a montagem perde sentido — sai tudo.
+// ------------------------------------------------------------
+router.delete('/carrinho/:id/grupos/:grupo', doCliente, async (req, res) => {
+    const idCliente = Number(req.params.id);
+    const grupo = String(req.params.grupo || '');
+
+    // mesmo formato validado no POST: letras/números/traço
+    if (!/^[A-Za-z0-9-]{8,64}$/.test(grupo)) {
+        return res.status(400).json({ resposta: 'Grupo de montagem inválido.' });
+    }
+
+    try {
+        await pool.query('DELETE FROM CARRINHO_ITEM WHERE ID_CLIENTE = ? AND GRUPO = ?', [idCliente, grupo]);
+        res.json({ resposta: 'Montagem removida do carrinho.', ...(await lerCarrinho(pool, idCliente)) });
+    } catch (error) {
+        responderErro(res, error, 'DELETE /carrinho/:id/grupos/:grupo');
     }
 });
 

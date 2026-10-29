@@ -11,9 +11,10 @@
     <link rel="stylesheet" href="assets/css/painel.css">
     <link rel="stylesheet" href="assets/css/carrinho.css">
     <link rel="stylesheet" href="assets/css/modal.css">
-    <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+    <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg?v=2">
     <title>Meu carrinho | PC Forge — Peças de TI</title>
     <meta name="description" content="Revise os itens do seu carrinho, escolha o endereço de entrega e finalize sua compra na PC Forge.">
+    <script src="assets/js/acesso.js" data-exige="cliente"></script>
 </head>
 
 <body data-tipo-pagina="cliente">
@@ -22,8 +23,8 @@
     <main class="painel">
         <div class="painel-cabecalho">
             <div>
-                <span class="vitrine-eyebrow">Seu carrinho</span>
-                <h1>Carrinho</h1>
+                <span class="vitrine-eyebrow">Antes de fechar o pedido</span>
+                <h1>Revisão do carrinho</h1>
             </div>
             <a href="produtos.html" class="painel-sair link-botao">Continuar comprando</a>
         </div>
@@ -54,10 +55,10 @@
                         <option value="boleto">Boleto</option>
                     </select>
 
-                    <input type="submit" id="botao-finalizar" value="Finalizar compra">
+                    <input type="submit" id="botao-finalizar" value="Concluir pedido">
                     <button type="button" id="botao-esvaziar" class="painel-cancelar-edicao">Esvaziar carrinho</button>
 
-                    <p class="resumo-aviso">O pedido é registrado na sua conta, mas ainda não há cobrança de verdade (pagamento simulado).</p>
+                    <p class="resumo-aviso">Pedido registrado na conta — cobrança simulada, sem cobrar nada de verdade.</p>
                     <p id="mensagem-erro" class="mensagem-erro"></p>
                 </form>
             </aside>

@@ -18,31 +18,63 @@
         </svg>`;
 
     // Pra onde manda a pessoa quando ela clica em "Sair" na navbar.
+    // Regra do projeto: Sair SEMPRE vai pro login, de qualquer tipo de conta.
     const DESTINO_SAIR = {
-        cliente: 'produtos.html',
-        loja: 'loja-login.html'
+        cliente: 'login.html',
+        loja: 'login.html'
     };
 
+    // Mesmo escape do util.js: escapa também as aspas, porque o resultado
+    // entra dentro de atributos (title="...").
     function escapeHtml(texto) {
-        const div = document.createElement('div');
-        div.textContent = texto ?? '';
-        return div.innerHTML;
+        return String(texto ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
 
     function primeiroNome(nomeCompleto) {
         return (nomeCompleto || '').trim().split(/\s+/)[0] || '';
     }
 
-    // Lê sessionStorage.cliente ou sessionStorage.loja — é ali que
+    // Lê sessionStorage.cliente e sessionStorage.loja — é ali que
     // login.js / loja-login.js guardam quem está logado nessa aba.
-    function pegarSessaoLogada(tipo) {
-        const bruto = sessionStorage.getItem(tipo);
-        if (!bruto) return null;
+    // A navbar vale PRA TODO O SITE, então procuramos as duas sessões:
+    // 1º a do tipo da página; sem ela, a do outro tipo. Assim uma loja
+    // logada navegando na vitrine (página "cliente") continua vendo o
+    // bloco dela + "Sair", e não "Entrar/Criar conta".
+    function pegarSessao(tipoPagina) {
+        const outro = tipoPagina === 'loja' ? 'cliente' : 'loja';
+        for (const tipo of [tipoPagina, outro]) {
+            const bruto = sessionStorage.getItem(tipo);
+            if (!bruto) continue;
+            try {
+                const sessao = JSON.parse(bruto);
+                if (sessao && sessao.id) {
+                    // nome com fallback: escrito do banco vem minúsculo,
+                    // mas mantém tolerância se algum lugar salvou NOME.
+                    return { tipo, sessao: { ...sessao, nome: sessao.nome || sessao.NOME || 'Conta' } };
+                }
+            } catch {
+                // JSON corrompido: trata como deslogado (a chave inútil
+                // some pra não atrapalhar de novo).
+                sessionStorage.removeItem(tipo);
+            }
+        }
+        return { tipo: tipoPagina, sessao: null };
+    }
+
+    // O "Monte seu PC" só existe pra cliente logado (é ele quem monta e
+    // envia pro carrinho — loja não compra). Lê a sessão de CLIENTE direto,
+    // independente do tipo da página em que a pessoa está navegando.
+    function clienteLogado() {
         try {
-            const sessao = JSON.parse(bruto);
-            return sessao && sessao.nome ? sessao : null;
+            const cliente = JSON.parse(sessionStorage.getItem('cliente'));
+            return !!(cliente && cliente.nome);
         } catch {
-            return null;
+            return false;
         }
     }
 
@@ -75,14 +107,41 @@
         const montagem = document.getElementById('topo-montagem');
         if (!montagem) return;
 
-        const tipo = montagem.dataset.tipo === 'loja' ? 'loja' : 'cliente';
+        const tipoPagina = montagem.dataset.tipo === 'loja' ? 'loja' : 'cliente';
         const modo = montagem.dataset.modo === 'login' ? 'login' : 'cadastro';
-        const sessao = pegarSessaoLogada(tipo);
+        const { tipo, sessao } = pegarSessao(tipoPagina);
+
+        // "▦ Produtos": ícone + texto, só pra quem está logado. Visitante
+        // deslogado não vê (a logo continua levando aos produtos via clique).
+        const linkVitrine = sessao ? `
+            <a href="produtos.html" class="link-inicio link-vitrine" title="Ver todos os produtos">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="link-vitrine-icone">
+                    <!-- grade de 4 quadrados = catálogo -->
+                    <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/>
+                </svg>
+                Produtos
+            </a>` : '';
+
+        // "Monte seu PC" só aparece pra cliente logado (visitante e loja não veem).
+        const logadoComoCliente = clienteLogado();
+        const linkMontar = logadoComoCliente ? `
+            <a href="montar.html" class="link-inicio link-montar" title="Monte seu PC na PC Forge">
+                <!-- chave de fenda da montagem -->
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="link-vitrine-icone">
+                    <path d="M4 8V4h4l10 10a2.5 2.5 0 0 1-3.5 3.5L4 8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                    <path d="M15 15l4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+                Monte seu PC
+            </a>` : '';
 
         montagem.innerHTML = `
             <header class="topo">
                 <div class="topo-conteudo">
-                    <a href="produtos.html" class="link-inicio link-vitrine">‹ Vitrine</a>
+                    ${linkVitrine}
+                    ${linkMontar}
                     <button type="button" class="marca-topo" id="botao-logo" title="PC Forge">
                         <span class="marca-emblema">
                             <!-- bigorna da forja -->
@@ -94,22 +153,29 @@
                     </button>
 
                     <div class="topo-acessos">
-                        <div class="alternador" data-ativo="${tipo}">
-                            <button type="button" class="alternador-opcao" data-tipo="cliente" aria-pressed="${tipo === 'cliente'}">Cliente</button>
-                            <button type="button" class="alternador-opcao" data-tipo="loja" aria-pressed="${tipo === 'loja'}">Loja</button>
+                        ${sessao ? '' : `<div class="alternador" data-ativo="${tipoPagina}">
+                            <button type="button" class="alternador-opcao" data-tipo="cliente" aria-pressed="${tipoPagina === 'cliente'}">Cliente</button>
+                            <button type="button" class="alternador-opcao" data-tipo="loja" aria-pressed="${tipoPagina === 'loja'}">Loja</button>
                             <span class="alternador-indicador"></span>
-                        </div>
-                        ${tipo === 'loja' ? '<a href="painel-loja.html" class="link-inicio">Meus produtos</a>' : ''}
+                        </div>`}
+                        ${tipo === 'loja' && sessao ? '<a href="painel-loja.html" class="link-inicio">Meus produtos</a>' : ''}
                         ${montarBlocoAcessos(tipo, sessao)}
                     </div>
                 </div>
             </header>
         `;
 
+        // Elementos marcados com data-so-cliente (ex: o CTA grande do hero
+        // em produtos.html) seguem a MESMA regra do link do topo: só cliente
+        // logado vê.
+        document.querySelectorAll('[data-so-cliente]').forEach(function (elemento) {
+            elemento.hidden = !logadoComoCliente;
+        });
+
         montagem.querySelectorAll('.alternador-opcao').forEach(function (botao) {
             botao.addEventListener('click', function () {
                 const tipoClicado = botao.dataset.tipo;
-                if (tipoClicado === tipo) return;
+                if (tipoClicado === tipoPagina) return;
                 window.location.href = DESTINOS[tipoClicado][modo];
             });
         });

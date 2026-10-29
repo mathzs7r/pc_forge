@@ -10,13 +10,32 @@
     <link rel="stylesheet" href="assets/css/forms.css">
     <link rel="stylesheet" href="assets/css/catalog.css">
     <link rel="stylesheet" href="assets/css/modal.css">
-    <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+    <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg?v=2">
     <title>PC Forge | Peças e Acessórios de TI</title>
     <meta name="description" content="Catálogo de peças de informática — processadores, placas de vídeo, SSDs, memórias e periféricos de lojas parceiras. Filtre por preço e categoria na PC Forge.">
+    <script src="assets/js/acesso.js" data-exige="sessao"></script>
 </head>
 
 <body data-tipo-pagina="cliente">
     <div id="topo-montagem" data-tipo="cliente" data-modo="cadastro"></div>
+
+    <section class="hero-vitrine">
+        <div class="hero-vitrine-conteudo">
+            <p class="hero-eyebrow">pcforge · marketplace de componentes</p>
+            <h1 class="hero-titulo">Peças de alta performance<br><span>montadas sob encomenda.</span></h1>
+            <p class="hero-sub">
+                Processadores, placas de vídeo, memória e periféricos direto das lojas
+                parceiras — com frete grátis e avaliação real dos compradores.
+            </p>
+            <a href="montar.html" class="hero-cta" data-so-cliente hidden>
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M4 8V4h4l10 10a2.5 2.5 0 0 1-3.5 3.5L4 8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                    <path d="M15 15l4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+                Monte seu PC peça por peça →
+            </a>
+        </div>
+    </section>
 
     <div class="filtros" id="filtros"></div>
 
@@ -27,11 +46,13 @@
     </main>
 
     <script src="assets/js/api.js"></script>
+    <script src="assets/js/util.js"></script>
     <script src="assets/js/toast.js"></script>
     <script src="assets/js/demo.js"></script>
     <script src="assets/js/admin-modal.js"></script>
     <script src="assets/js/carrinho-api.js"></script>
     <script src="assets/js/navbar.js"></script>
+    <script src="assets/js/favoritos.js"></script>
     <script src="assets/js/produtos.js"></script>
 </body>
 

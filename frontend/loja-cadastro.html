@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="assets/css/navbar.css">
     <link rel="stylesheet" href="assets/css/forms.css">
     <link rel="stylesheet" href="assets/css/modal.css">
-    <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+    <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg?v=2">
     <title>Cadastrar loja | PC Forge — Peças de TI</title>
     <meta name="description" content="Cadastre sua loja na PC Forge e venda peças e acessórios de TI para milhares de builders.">
 </head>
@@ -41,7 +41,7 @@
                     <input type="text" id="nome" required>
 
                     <label for="cnpj">CNPJ</label>
-                    <input type="text" id="cnpj" placeholder="00.000.000/0000-00" required>
+                    <input type="text" id="cnpj" placeholder="00.000.000/0000-00" data-mascara="cnpj" required>
 
                     <label for="endereco">Endereço</label>
                     <input type="text" id="endereco" placeholder="Rua, número, bairro, cidade - UF" required>
@@ -50,7 +50,7 @@
                     <input type="email" id="email" placeholder="contato@sualoja.com" required>
 
                     <label for="celular">Celular</label>
-                    <input type="tel" id="celular" placeholder="(00) 00000-0000" required>
+                    <input type="tel" id="celular" placeholder="(00) 00000-0000" data-mascara="celular" required>
 
                     <label for="senha">Senha</label>
                     <input type="password" id="senha" placeholder="Crie uma senha" required>
@@ -65,9 +65,11 @@
 
     <script src="assets/js/api.js"></script>
     <script src="assets/js/toast.js"></script>
+    <script src="assets/js/util.js"></script>
     <script src="assets/js/demo.js"></script>
     <script src="assets/js/admin-modal.js"></script>
     <script src="assets/js/carrinho-api.js"></script>
+    <script src="assets/js/mascaras.js"></script>
     <script src="assets/js/navbar.js"></script>
     <script src="assets/js/loja-cadastro.js"></script>
 </body>

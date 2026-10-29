@@ -31,8 +31,9 @@
         if (resumo.itens.length === 0) {
             elResumo.hidden = true;
             elItens.innerHTML = `<p class="estado-vazio">
-                Seu carrinho está vazio.<br>
-                <a href="produtos.html" style="color: var(--accent); font-weight: 700;">Ver a vitrine de produtos</a>
+                Nada por aqui ainda.<br>
+                <a href="produtos.html" style="color: var(--accent); font-weight: 700;">Ver a vitrine de produtos</a> ·
+                <a href="montar.html" style="color: var(--accent); font-weight: 700;">montar um PC do zero</a>
             </p>`;
             return;
         }
@@ -41,38 +42,95 @@
         document.getElementById('resumo-itens').textContent = resumo.quantidade_total;
         document.getElementById('resumo-total').textContent = U.formatarPreco(resumo.total);
 
-        elItens.innerHTML = resumo.itens.map((item) => {
-            const urlFoto = urlImagemProduto({ ID: item.ID_PRODUTO, TEM_IMAGEM: item.TEM_IMAGEM, IMG_VERSAO: item.IMG_VERSAO, IMAGEM_URL: item.IMAGEM_URL });
+        // itens de "Montado na loja" vêm amarrados por GRUPO: saem como UM
+        // cartão "PC Montado" (com o total fechado e a lista das peças dentro).
+        // Itens com GRUPO nulo (compras normais) mantêm o layout peça por peça.
+        const grupos = {};
+        const soltos = [];
+        for (const item of resumo.itens) {
+            if (item.MONTADA && item.GRUPO) {
+                (grupos[item.GRUPO] ||= []).push(item);
+            } else {
+                soltos.push(item);
+            }
+        }
+
+        const cartaoMontagem = (itens, grupo) => {
+            const totalGrupo = itens.reduce((s, i) => s + i.SUBTOTAL, 0);
+            const pecas = itens.filter((i) => !['Serviços', 'Sistemas Operacionais'].includes(i.CATEGORIA));
+            const extras = itens.filter((i) => ['Serviços', 'Sistemas Operacionais'].includes(i.CATEGORIA));
+            const linhaExtra = (i) => `<li><span>${U.escapeHtml(i.NOME)}</span><span>${U.formatarPreco(i.SUBTOTAL)}</span></li>`;
             return `
-            <div class="item-carrinho" data-id="${item.ID_PRODUTO}">
+            <div class="item-carrinho item-montagem" data-grupo="${U.escapeHtml(grupo)}">
                 <div class="item-principal">
-                    <div class="item-thumb${urlFoto ? ' com-foto' : ''}">
-                        ${urlFoto ? `<img src="${U.escapeHtml(urlFoto)}" alt="" loading="lazy">` : ''}
-                        <span class="item-thumb-icone">📦</span>
+                    <div class="item-thumb com-foto montagem-thumb">
+                        <span class="item-thumb-icone">🖥️</span>
                     </div>
                     <div>
-                        <span class="item-nome">${U.escapeHtml(item.NOME)}</span>
-                        <span class="item-preco-unit">${U.formatarPreco(item.PRECO)} cada</span>
-                        <span class="item-loja">${U.escapeHtml(item.LOJA_NOME)}</span>
+                        <span class="item-nome">PC Montado ${U.escapeHtml(pecas[0] && pecas[0].LOJA_NOME ? '· ' + pecas[0].LOJA_NOME : '')}</span>
+                        <span class="item-preco-unit">${pecas.length} peça(s) + montagem e teste na loja · frete grátis</span>
+                        <button type="button" class="montagem-ver-pecas">ver as peças da build</button>
                     </div>
                 </div>
-                <div class="qtd-controle" role="group" aria-label="Quantidade de ${U.escapeHtml(item.NOME)}">
-                    <button type="button" class="qtd-menos" aria-label="Diminuir" ${item.QUANTIDADE <= 1 ? 'disabled' : ''}>−</button>
-                    <span class="qtd-valor">${item.QUANTIDADE}</span>
-                    <button type="button" class="qtd-mais" aria-label="Aumentar" ${item.QUANTIDADE >= Carrinho.LIMITE_POR_ITEM ? 'disabled' : ''}>+</button>
-                </div>
                 <div class="item-carrinho-direita">
-                    <span class="item-subtotal">${U.formatarPreco(item.SUBTOTAL)}</span>
-                    <button type="button" class="item-excluir item-remover">Remover</button>
+                    <span class="item-subtotal">${U.formatarPreco(totalGrupo)}</span>
+                    <button type="button" class="item-excluir montagem-remover">Remover montagem</button>
+                </div>
+                <div class="montagem-pecas" hidden>
+                    <ul>${pecas.map(linhaExtra).join('')}</ul>
+                    ${extras.length ? `<ul class="montagem-extras">${extras.map(linhaExtra).join('')}</ul>` : ''}
                 </div>
             </div>`;
-        }).join('');
+        };
 
+        elItens.innerHTML = [
+            ...Object.entries(grupos).map(([grupo, itens]) => cartaoMontagem(itens, grupo)),
+            ...soltos.map((item) => {
+                const urlFoto = urlImagemProduto({ ID: item.ID_PRODUTO, TEM_IMAGEM: item.TEM_IMAGEM, IMG_VERSAO: item.IMG_VERSAO, IMAGEM_URL: item.IMAGEM_URL });
+                return `
+                <div class="item-carrinho" data-id="${item.ID_PRODUTO}">
+                    <div class="item-principal">
+                        <div class="item-thumb${urlFoto ? ' com-foto' : ''}">
+                            ${urlFoto ? `<img src="${U.escapeHtml(urlFoto)}" alt="" loading="lazy">` : ''}
+                            <span class="item-thumb-icone">📦</span>
+                        </div>
+                        <div>
+                            <span class="item-nome">${U.escapeHtml(item.NOME)}</span>
+                            <span class="item-preco-unit">${U.formatarPreco(item.PRECO)} cada</span>
+                            <span class="item-loja">${U.escapeHtml(item.LOJA_NOME)}</span>
+                        </div>
+                    </div>
+                    <div class="qtd-controle" role="group" aria-label="Quantidade de ${U.escapeHtml(item.NOME)}">
+                        <button type="button" class="qtd-menos" aria-label="Diminuir" ${item.QUANTIDADE <= 1 ? 'disabled' : ''}>−</button>
+                        <span class="qtd-valor">${item.QUANTIDADE}</span>
+                        <button type="button" class="qtd-mais" aria-label="Aumentar" ${item.QUANTIDADE >= Carrinho.LIMITE_POR_ITEM ? 'disabled' : ''}>+</button>
+                    </div>
+                    <div class="item-carrinho-direita">
+                        <span class="item-subtotal">${U.formatarPreco(item.SUBTOTAL)}</span>
+                        <button type="button" class="item-excluir item-remover">Remover</button>
+                    </div>
+                </div>`;
+            })
+        ].join('');
+
+        // fotos
         elItens.querySelectorAll('.item-thumb img').forEach((img) => {
             img.addEventListener('error', () => { img.parentElement.classList.remove('com-foto'); img.remove(); });
         });
 
-        elItens.querySelectorAll('.item-carrinho').forEach((linha) => {
+        // cartões da montagem: expandir peças e remover o grupo inteiro
+        elItens.querySelectorAll('.item-montagem').forEach((cartao) => {
+            const grupo = cartao.dataset.grupo;
+            cartao.querySelector('.montagem-ver-pecas').addEventListener('click', function () {
+                const caixa = cartao.querySelector('.montagem-pecas');
+                caixa.hidden = !caixa.hidden;
+                this.textContent = caixa.hidden ? 'ver as peças da build' : 'esconder as peças';
+            });
+            cartao.querySelector('.montagem-remover').addEventListener('click', () =>
+                executar(() => Carrinho.removerGrupo(grupo)));
+        });
+
+        elItens.querySelectorAll('.item-carrinho[data-id]').forEach((linha) => {
             const id = Number(linha.dataset.id);
             const item = resumo.itens.find((i) => i.ID_PRODUTO === id);
             linha.querySelector('.qtd-menos').addEventListener('click', () => executar(() => Carrinho.alterarQuantidade(id, item.QUANTIDADE - 1)));
@@ -138,8 +196,8 @@
         }
     });
 
-    botaoEsvaziar.addEventListener('click', function () {
-        if (!confirm('Tirar todos os produtos do carrinho?')) return;
+    botaoEsvaziar.addEventListener('click', async function () {
+        if (!(await U.confirmar('Tirar todos os produtos do carrinho?', { titulo: 'Esvaziar carrinho', confirmar: 'Esvaziar' }))) return;
         executar(() => Carrinho.esvaziar());
     });
 

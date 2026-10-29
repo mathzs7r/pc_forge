@@ -57,10 +57,16 @@ function formatarPreco(valor) {
     return Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
+// Mesmo escape do PCForgeUtil (util.js): escapa & < > " ' — as aspas
+// importam porque este valor entra DENTRO de atributos (title="...",
+// alt="..."), onde só escapar < > não protege.
 function escapeHtml(texto) {
-    const div = document.createElement('div');
-    div.textContent = texto ?? '';
-    return div.innerHTML;
+    return String(texto ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 // ------------------------------------------------------------
@@ -83,8 +89,27 @@ function construirQuery() {
 // ------------------------------------------------------------
 // Carrega uma página de produtos da API (ou do modo demo)
 // ------------------------------------------------------------
+// Skeleton da vitrine: cards fantasmas com brilho varrendo (o layout da
+// grade aparece imediatamente, que é o que dá sensação de velocidade).
+function renderizarSkeletonCatalogo() {
+    const grade = document.getElementById('grade-produtos');
+    grade.innerHTML = Array.from({ length: LIMITE_POR_PAGINA }, () => `
+        <div class="cartao-produto esqueleto">
+            <div class="cartao-thumb esqueleto-bloco"></div>
+            <div class="cartao-corpo">
+                <div class="esqueleto-linha do-67"></div>
+                <div class="esqueleto-linha do-100"></div>
+                <div class="esqueleto-linha do-40"></div>
+            </div>
+        </div>
+    `).join('') + '<p class="estado-carregando" aria-live="polite">Carregando produtos...</p>';
+}
+
 async function carregarProdutos() {
     const grade = document.getElementById('grade-produtos');
+
+    // A URL acompanha o estado dos filtros (deep link / F5 / voltar funcionam).
+    atualizarUrl();
 
     if (estaEmModoDemo()) {
         // Modo visualização: filtra localmente sobre os produtos de exemplo
@@ -98,6 +123,9 @@ async function carregarProdutos() {
         adicionarProdutoPretendido();
         return;
     }
+
+    // Cards fantasmas enquanto a resposta não chega (não demora: é imediato).
+    renderizarSkeletonCatalogo();
 
     try {
         // Traz os produtos E o total de resultados (header X-Resultados-Total)
@@ -118,9 +146,9 @@ async function carregarProdutos() {
     } catch (error) {
         grade.innerHTML = `<p class="estado-vazio">
             Não foi possível carregar os produtos.<br>
-            Confira se a API está rodando em <code>${API_URL}</code>,
-            ou clique na logo pra usar o modo visualização.<br>
-            (${escapeHtml(error.message)})
+            Confira se a API está rodando em <code>${API_URL}</code><br>
+            (${escapeHtml(error.message)})<br><br>
+            <a href="produtos.html">Tentar de novo</a>
         </p>`;
     }
 }
@@ -169,19 +197,37 @@ function paginarProdutosDemo() {
 // ------------------------------------------------------------
 function montarFiltros() {
     const container = document.getElementById('filtros');
+
+    // Quem estava digitando na barra não deve perder o foco por causa do
+    // rebuild (a barra é reconstruída a cada carregamento de página).
+    const focoDeVolta = document.activeElement;
+    const indicadorFoco = focoDeVolta && typeof focoDeVolta.className === 'string' ? focoDeVolta.className : null;
+    const selecaoDeVolta = focoDeVolta && typeof focoDeVolta.selectionStart === 'number' ? focoDeVolta.selectionStart : null;
+
     container.innerHTML = '';
 
-    // --- barra de busca / ordenação / faixa de preço ---
+    // --- barra de busca grande (com lupa e atalho "/") ---
     const barra = document.createElement('div');
     barra.className = 'filtros-barra';
     barra.innerHTML = `
-        <input class="filtro-input filtro-busca" type="search" aria-label="Buscar produto pelo nome"
-            placeholder="Buscar produto pelo nome..." value="${escapeHtml(filtros.nome)}">
-        <select class="filtro-input filtro-select" aria-label="Ordenar por preço">
-            <option value="">Mais recentes</option>
-            <option value="menor_preco" ${filtros.ordem === 'menor_preco' ? 'selected' : ''}>Menor preço</option>
-            <option value="maior_preco" ${filtros.ordem === 'maior_preco' ? 'selected' : ''}>Maior preço</option>
-        </select>
+        <div class="busca-caixa">
+            <span class="busca-lupa" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="1.8"/>
+                    <path d="M15.5 15.5 20.5 20.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+            </span>
+            <input class="filtro-input filtro-busca" type="search" aria-label="Buscar produto pelo nome"
+                placeholder="Buscar produto, categoria ou loja..." value="${escapeHtml(filtros.nome)}">
+            <kbd class="busca-atalho" title="Aperta / pra focar a busca">/</kbd>
+        </div>
+
+        <div class="ordem-pilulas" role="group" aria-label="Ordenar resultados">
+            <button type="button" class="ordem-pilula${filtros.ordem === '' ? ' ativa' : ''}" data-ordem="">Relevância</button>
+            <button type="button" class="ordem-pilula${filtros.ordem === 'menor_preco' ? ' ativa' : ''}" data-ordem="menor_preco">Menor preço</button>
+            <button type="button" class="ordem-pilula${filtros.ordem === 'maior_preco' ? ' ativa' : ''}" data-ordem="maior_preco">Maior preço</button>
+        </div>
+
         <span class="filtro-preco-grupo">
             <label class="filtro-label" for="filtro-preco-min">R$</label>
             <input id="filtro-preco-min" class="filtro-input filtro-preco" type="number" min="0"
@@ -190,13 +236,14 @@ function montarFiltros() {
             <input id="filtro-preco-max" class="filtro-input filtro-preco" type="number" min="0"
                 placeholder="máx" aria-label="Preço máximo" value="${escapeHtml(filtros.preco_max)}">
         </span>
+
         <button class="filtro-chip filtro-aplicar" type="button">Filtrar</button>
         <button class="filtro-chip filtro-limpar" type="button">Limpar</button>
     `;
     container.appendChild(barra);
 
     const buscar = barra.querySelector('.filtro-busca');
-    const ordenar = barra.querySelector('.filtro-select');
+    const pilulas = barra.querySelectorAll('.ordem-pilula');
     const precoMin = barra.querySelector('#filtro-preco-min');
     const precoMax = barra.querySelector('#filtro-preco-max');
 
@@ -206,7 +253,24 @@ function montarFiltros() {
             if (evento.key === 'Enter') aplicarFiltrosDaInterface();
         });
     });
-    ordenar.addEventListener('change', aplicarFiltrosDaInterface);
+
+    // pílulas de ordenação: clicou troca a ordem e recarrega
+    pilulas.forEach((pilula) => {
+        pilula.addEventListener('click', function () {
+            pilulas.forEach((p) => p.classList.toggle('ativa', p === pilula));
+            filtros.ordem = this.dataset.ordem;
+            filtros.pagina = 1;
+            carregarProdutos();
+        });
+    });
+
+    // Busca "ao digitar" com debounce (450ms sem digitar = aplica). Antes só
+    // aplicava com Enter/botão — funciona, mas parece que a busca está presa.
+    let cicloDebounce = null;
+    buscar.addEventListener('input', () => {
+        clearTimeout(cicloDebounce);
+        cicloDebounce = setTimeout(aplicarFiltrosDaInterface, 450);
+    });
 
     barra.querySelector('.filtro-aplicar').addEventListener('click', aplicarFiltrosDaInterface);
     barra.querySelector('.filtro-limpar').addEventListener('click', () => {
@@ -228,24 +292,40 @@ function montarFiltros() {
         const rotulo = categoria === 'todas' ? 'Todas' : categoria;
         const icone = categoria === 'todas' ? '🛒' : iconeDe(categoria);
         botao.innerHTML = `<span class="filtro-cat-icone" aria-hidden="true">${icone}</span>${escapeHtml(rotulo)}`;
-        botao.setAttribute('aria-pressed', categoria === filtros.categoria ? 'true' : 'false');
+        botao.setAttribute('aria-pressed',
+            (categoria === 'todas'
+                ? (!filtros.categoria || filtros.categoria === 'todas')
+                : categoria === filtros.categoria) ? 'true' : 'false');
         botao.addEventListener('click', () => {
-            filtros.categoria = categoria;
-            filtros.pagina = 1;
-            montarFiltros();
-            carregarProdutos();
+            aplicarCategoriaDaInterface(categoria);
         });
         container.appendChild(botao);
     });
+
+    // Devolve o foco onde estava (ex.: o usuário ainda está digitando a busca).
+    if (indicadorFoco) {
+        const alvo = container.querySelector(`.${indicadorFoco.split(' ').filter(Boolean).map((c) => CSS.escape(c)).join('.')}`);
+        if (alvo) {
+            alvo.focus({ preventScroll: true });
+            if (selecaoDeVolta !== null && alvo.setSelectionRange) {
+                try { alvo.setSelectionRange(selecaoDeVolta, selecaoDeVolta); } catch { /* campo sem caret */ }
+            }
+        }
+    }
 }
 
-// Lê os campos da barra e recarrega do servidor
-function aplicarFiltrosDaInterface() {
+// Lê os campos da barra SEM disparar busca (quem chama decide o momento).
+// A ordenação hoje é por pílulas — a ordem vem da pílula marcada com a
+// classe "ativa" (antes lia um .filtro-select que não existe mais e quebrava
+// QUALQUER aplicação de filtro: busca, Enter, botão Filtrar e os chips).
+function lerCamposDaBarra() {
     const barra = document.querySelector('.filtros-barra');
-    if (!barra) return;
+    if (!barra) return false;
 
     filtros.nome = barra.querySelector('.filtro-busca').value.trim();
-    filtros.ordem = barra.querySelector('.filtro-select').value;
+
+    const pilulaAtiva = barra.querySelector('.ordem-pilula.ativa');
+    filtros.ordem = pilulaAtiva ? pilulaAtiva.dataset.ordem : '';
 
     const min = barra.querySelector('#filtro-preco-min').value.trim();
     const max = barra.querySelector('#filtro-preco-max').value.trim();
@@ -253,7 +333,68 @@ function aplicarFiltrosDaInterface() {
     filtros.preco_max = max === '' ? '' : max;
 
     filtros.pagina = 1;
+    return true;
+}
+
+// Botão "Filtrar" e Enter nos campos: relê a barra e recarrega do servidor.
+function aplicarFiltrosDaInterface() {
+    if (!lerCamposDaBarra()) return;
     carregarProdutos();
+}
+
+// A pessoa clicou no chip de categoria. Antes disparamos DUAS cargas seguidas
+// (a de aplicar os campos + a nova categoria), e a primeira podia responder
+// por último e sobrescrever a grade com a categoria antiga. Agora: aplica os
+// campos e carrega UMA vez só.
+function aplicarCategoriaDaInterface(categoria) {
+    if (!lerCamposDaBarra()) return;
+    filtros.categoria = categoria;
+    filtros.pagina = 1;
+    carregarProdutos();
+}
+
+// ------------------------------------------------------------
+// FILTROS NA URL (?categoria=...&nome=...&ordem=...&pagina=...)
+// Antes os filtros moravam só num objeto do JS: recarregar a página,
+// voltar no navegador ou compartilhar um link perdia tudo. Agora:
+//   * ao abrir a página, os filtros são lidos da URL (lerFiltrosDaUrl);
+//   * a cada carregamento, os MESMOS valores são escritos de volta na
+//     URL com history.replaceState (não cria entradas no histórico a
+//     cada tecla — a URL apenas acompanha o estado atual).
+// ------------------------------------------------------------
+function lerFiltrosDaUrl() {
+    const url = new URLSearchParams(window.location.search);
+    if (url.has('nome')) filtros.nome = url.get('nome') || '';
+    if (url.has('categoria')) filtros.categoria = url.get('categoria') || '';
+    if (url.has('ordem')) filtros.ordem = url.get('ordem') || '';
+    if (url.has('preco_min')) filtros.preco_min = url.get('preco_min') || '';
+    if (url.has('preco_max')) filtros.preco_max = url.get('preco_max') || '';
+    const pagina = Number(url.get('pagina'));
+    if (Number.isInteger(pagina) && pagina > 0) filtros.pagina = pagina;
+}
+
+function atualizarUrl() {
+    const url = new URL(window.location.href);
+    const parametros = new URLSearchParams(url.search);
+
+    const valores = {
+        nome: filtros.nome,
+        categoria: filtros.categoria && filtros.categoria !== 'todas' ? filtros.categoria : '',
+        ordem: filtros.ordem,
+        preco_min: filtros.preco_min,
+        preco_max: filtros.preco_max,
+        pagina: filtros.pagina > 1 ? String(filtros.pagina) : ''
+    };
+
+    for (const [nome, valor] of Object.entries(valores)) {
+        if (valor) parametros.set(nome, valor);
+        else parametros.delete(nome);
+    }
+    // A página pública da loja (loja.html) usa ?loja=N; preserva.
+    if (idLojaFiltro) parametros.set('loja', idLojaFiltro);
+
+    const novaBusca = parametros.toString();
+    history.replaceState(null, '', novaBusca ? `${url.pathname}?${novaBusca}` : url.pathname);
 }
 
 // ------------------------------------------------------------
@@ -308,10 +449,10 @@ function montarPaginacao() {
     proxima.type = 'button';
     proxima.className = 'paginacao-botao';
     proxima.textContent = 'Próxima ›';
-    // Se veio menos produtos que o LIMITE, não existe página seguinte.
-    proxima.disabled = estaEmModoDemo()
-        ? contarProdutosDemo() <= filtros.pagina * LIMITE_POR_PAGINA
-        : produtosCache.length < LIMITE_POR_PAGINA;
+    // Se o total de resultados é multiple do LIMITE, usar "menos que o LIMITE
+    // veio" dava uma página extra vazia. O total exato (header X-Resultados-Total
+    // ou a contagem do modo demo) decide se existe página seguinte.
+    proxima.disabled = totalResultados <= filtros.pagina * LIMITE_POR_PAGINA;
     proxima.addEventListener('click', () => mudarPagina(1));
     rodape.appendChild(proxima);
 }
@@ -332,10 +473,38 @@ function renderizarProdutos() {
     if (filtrados.length === 0) {
         grade.innerHTML = filtros.pagina > 1
             ? '<p class="estado-vazio">Não há produtos nessa página — volte uma página.</p>'
-            : `<p class="estado-vazio">
-                Nenhum produto encontrado com esses filtros.<br>
-                Tente outra busca ou categoria.
-            </p>`;
+            : `
+            <div class="vazio-busca">
+                <span class="vazio-busca-icone" aria-hidden="true">⌕</span>
+                <h3>Nada por aqui.</h3>
+                <p>Nenhum produto pra <strong>"${escapeHtml(filtros.nome || 'esses filtros')}"</strong> ou categoria escolhida.</p>
+                <div class="vazio-sugestoes">
+                    <span>sugerir:</span>
+                    ${['memória RAM', 'placa de vídeo', 'SSD', 'processador'].map((s) =>
+                        `<button type="button" class="vazio-sugestao" data-busca="${escapeHtml(s)}">${escapeHtml(s)}</button>`
+                    ).join('')}
+                </div>
+                <button type="button" class="vazio-limpar">Limpar os filtros</button>
+            </div>`;
+
+        // sugestões: clicar roda uma busca nova em cima
+        grade.querySelectorAll('.vazio-sugestao').forEach((botao) => {
+            botao.addEventListener('click', function () {
+                filtros.nome = this.dataset.busca;
+                filtros.categoria = '';
+                filtros.ordem = '';
+                filtros.preco_min = '';
+                filtros.preco_max = '';
+                filtros.pagina = 1;
+                carregarProdutos();
+            });
+        });
+        const limpar = grade.querySelector('.vazio-limpar');
+        if (limpar) limpar.addEventListener('click', () => {
+            filtros.nome = ''; filtros.categoria = ''; filtros.ordem = '';
+            filtros.preco_min = ''; filtros.preco_max = ''; filtros.pagina = 1;
+            carregarProdutos();
+        });
         return;
     }
 
@@ -348,6 +517,7 @@ function renderizarProdutos() {
                     ${urlFoto ? `<img src="${escapeHtml(urlFoto)}" alt="${escapeHtml(produto.NOME)}" loading="lazy">` : ''}
                     <span class="cartao-categoria">${escapeHtml(produto.CATEGORIA)}</span>
                     <span class="cartao-icone">${iconeDe(produto.CATEGORIA)}</span>
+                    ${PCForgeFavoritos.coracaoHtml(produto.ID)}
                 </div>
             </a>
             <div class="cartao-corpo">
@@ -385,6 +555,9 @@ function renderizarProdutos() {
             adicionarAoCarrinho(produto, botao);
         });
     });
+
+    // liga os corações de favoritar que vierem nos cards
+    if (window.PCForgeFavoritos) PCForgeFavoritos.decorarBotoes(grade);
 }
 
 async function adicionarAoCarrinho(produto, botao) {
@@ -432,4 +605,21 @@ async function adicionarProdutoPretendido() {
     }
 }
 
+// Estado inicial: filtros que vieram na URL (compartilhamento/F5/voltar)
+// e depois a primeira carga da vitrine.
+lerFiltrosDaUrl();
 carregarProdutos();
+
+// Atalho "/" foca a busca (igual apps). Ignora se já está digitando
+// em outro campo (input/select/textarea) — senão roubaria o teclado.
+document.addEventListener('keydown', function (evento) {
+    if (evento.key !== '/') return;
+    const alvo = evento.target;
+    if (alvo && (/^(input|textarea|select)$/i).test(alvo.tagName)) return;
+    const busca = document.querySelector('.filtro-busca');
+    if (busca) {
+        evento.preventDefault();
+        busca.focus();
+        busca.select();
+    }
+});

@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="assets/css/navbar.css">
     <link rel="stylesheet" href="assets/css/forms.css">
     <link rel="stylesheet" href="assets/css/modal.css">
-    <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+    <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg?v=2">
     <title>Criar conta de cliente | PC Forge — Peças de TI</title>
     <meta name="description" content="Crie sua conta de cliente na PC Forge e compre peças de informática de lojas parceiras em todo o Brasil.">
 </head>
@@ -41,12 +41,12 @@
                     <input type="text" id="nome" required>
 
                     <label for="cpf">CPF</label>
-                    <input type="text" id="cpf" placeholder="000.000.000-00" required>
+                    <input type="text" id="cpf" placeholder="000.000.000-00" data-mascara="cpf" required>
 
                     <div class="row">
                         <div class="col">
                             <label for="cep">CEP</label>
-                            <input type="text" id="cep" placeholder="00000-000" maxlength="9"
+                            <input type="text" id="cep" placeholder="00000-000" maxlength="9" data-mascara="cep"
                                 onblur="pesquisarCep(this.value);" required>
                         </div>
                         <div class="col">
@@ -84,7 +84,7 @@
                     <input type="email" id="email" placeholder="exemplo@email.com" required>
 
                     <label for="celular">Celular</label>
-                    <input type="tel" id="celular" placeholder="(00) 00000-0000" required>
+                    <input type="tel" id="celular" placeholder="(00) 00000-0000" data-mascara="celular" required>
 
                     <label for="senha">Senha</label>
                     <input type="password" id="senha" placeholder="Crie uma senha" required>
@@ -99,9 +99,11 @@
 
     <script src="assets/js/api.js"></script>
     <script src="assets/js/toast.js"></script>
+    <script src="assets/js/util.js"></script>
     <script src="assets/js/demo.js"></script>
     <script src="assets/js/admin-modal.js"></script>
     <script src="assets/js/carrinho-api.js"></script>
+    <script src="assets/js/mascaras.js"></script>
     <script src="assets/js/navbar.js"></script>
     <script src="assets/js/cep.js"></script>
     <script src="assets/js/cliente-cadastro.js"></script>

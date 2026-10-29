@@ -123,8 +123,10 @@
     $('form-dados').addEventListener('submit', async function (evento) {
         evento.preventDefault();
         $('mensagem-erro').style.display = 'none';
+        // Estado de envio no botão de salvar (evita duplo clique / sem feedback).
+        const botaoSalvar = this.querySelector('button[type="submit"], input[type="submit"], button');
         try {
-            const r = await apiPut(base, {
+            const r = await U.comEstadoEnviando(botaoSalvar, () => apiPut(base, {
                 nome: $('perfil-campo-nome').value,
                 endereco: $('perfil-campo-endereco').value,
                 celular: $('perfil-campo-celular').value,
@@ -134,7 +136,7 @@
                 senha_atual: $('perfil-senha-atual').value,
                 logo: logoNova || undefined,          // só vai se escolheu logo nova
                 remover_logo: removerLogo || undefined // só vai se clicou em "Remover logo"
-            });
+            }));
             sessao = { ...sessao, nome: r.loja.nome, email: r.loja.email };
             U.salvarSessao('loja', sessao);
             if (typeof window.atualizarNavbar === 'function') window.atualizarNavbar();

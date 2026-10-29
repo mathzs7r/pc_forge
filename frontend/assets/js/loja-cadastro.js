@@ -22,17 +22,22 @@ document.getElementById('form-cadastro-loja').addEventListener('submit', async f
         senha: document.getElementById('senha').value
     };
 
-    try {
-        try {
-            await apiPost('/loja', dados);
-        } catch (error) {
-            // Modo visualização: só simula se a API estiver fora do ar.
-            if (!(error.rede && estaEmModoDemo())) throw error;
-        }
+    // Botão mostra "Enviando..." e bloqueia o duplo clique (evita cadastro duplo).
+    const botaoEnviar = this.querySelector('button[type="submit"], input[type="submit"], button');
 
-        mostrarToast('Loja cadastrada com sucesso! Agora é só entrar.', 'sucesso');
-        setTimeout(() => { window.location.href = 'loja-login.html'; }, 1200);
-    } catch (error) {
-        mostrarErro(error.message);
-    }
+    await PCForgeUtil.comEstadoEnviando(botaoEnviar, async () => {
+        try {
+            try {
+                await apiPost('/loja', dados);
+            } catch (error) {
+                // Modo visualização: só simula se a API estiver fora do ar.
+                if (!(error.rede && estaEmModoDemo())) throw error;
+            }
+
+            mostrarToast('Loja cadastrada com sucesso! Agora é só entrar.', 'sucesso');
+            setTimeout(() => { window.location.href = 'loja-login.html'; }, 1200);
+        } catch (error) {
+            mostrarErro(error.message);
+        }
+    });
 });

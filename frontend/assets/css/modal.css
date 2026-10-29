@@ -42,15 +42,15 @@
 
 .modal-fechar {
     position: absolute;
-    top: 10px;
-    right: 12px;
+    top: 6px;
+    right: 8px;
     background: none;
     border: none;
     color: var(--muted);
     font-size: 22px;
     line-height: 1;
     cursor: pointer;
-    padding: 6px;
+    padding: 10px; /* alvo de toque decente */
 }
 
 .modal-fechar:hover {
@@ -58,7 +58,7 @@
 }
 
 .modal-caixa h2 {
-    font-family: 'Nunito Sans', sans-serif;
+    font-family: var(--fonte-corpo), sans-serif;
     text-transform: uppercase;
     text-align: center;
     font-size: 20px;
@@ -66,4 +66,29 @@
     letter-spacing: 0.3px;
     margin: 6px 0 6px;
     color: var(--texto-forte);
+}
+
+/* botões do modal de confirmação (PCForgeUtil.confirmar) */
+.modal-acao {
+    flex: 1;
+    border: 1px solid var(--glass-border);
+    padding: 12px;
+    background: var(--glass-fill);
+    color: var(--accent);
+    border-radius: var(--raio-pastilha);
+    font-family: var(--fonte-corpo), sans-serif;
+    font-weight: 800;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.modal-acao-primario {
+    border: none;
+    background: var(--gradiente-turbo);
+    color: var(--on-accent);
+}
+
+.modal-acao:hover {
+    transform: translateY(-1px);
 }

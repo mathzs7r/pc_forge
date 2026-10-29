@@ -11,6 +11,7 @@
 // ============================================================
 (function () {
     const DURACAO_PADRAO = 4500;
+    const DURACAO_ERRO = 8000; // erro precisa de mais tempo pra ser lido
     const ICONES = { sucesso: '✓', erro: '✕', aviso: '!', info: 'i' };
 
     function garantirContainer() {
@@ -19,13 +20,20 @@
             container = document.createElement('div');
             container.id = 'toast-container';
             container.className = 'toast-container';
+            // role/aria-live no CONTAINER: garante que leitor de tela anuncie
+            // os avisos mesmo se o role do toast individual muda depois.
+            container.setAttribute('role', 'region');
+            container.setAttribute('aria-label', 'Notificações');
+            container.setAttribute('aria-live', 'polite');
+            container.setAttribute('aria-atomic', 'false');
             document.body.appendChild(container);
         }
         return container;
     }
 
-    function mostrarToast(mensagem, tipo = 'info', duracao = DURACAO_PADRAO) {
+    function mostrarToast(mensagem, tipo = 'info', duracao) {
         const container = garantirContainer();
+        const tempo = duracao ?? (tipo === 'erro' ? DURACAO_ERRO : DURACAO_PADRAO);
 
         const toast = document.createElement('div');
         toast.className = `toast toast-${tipo}`;
@@ -58,7 +66,7 @@
         }
 
         botaoFechar.addEventListener('click', remover);
-        const temporizador = setTimeout(remover, duracao);
+        const temporizador = setTimeout(remover, tempo);
 
         return toast;
     }

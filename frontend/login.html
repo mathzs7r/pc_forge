@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="assets/css/navbar.css">
     <link rel="stylesheet" href="assets/css/forms.css">
     <link rel="stylesheet" href="assets/css/modal.css">
-    <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+    <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg?v=2">
     <title>Entrar | PC Forge — Peças de TI</title>
     <meta name="description" content="Entre na sua conta de cliente da PC Forge com e-mail ou CPF e continue suas compras.">
 </head>
@@ -19,15 +19,25 @@
 
     <div class="tela">
         <section class="vitrine">
-            <div class="vitrine-trajeto">
+            <div class="vitrine-trajeto" aria-hidden="true">
                 <svg viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M-50 460 Q 160 500 260 300 T 560 40" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 10" opacity="0.35"/>
-                    <circle cx="260" cy="300" r="70" fill="var(--accent)" opacity="0.06"/>
-                    <circle cx="500" cy="55" r="9" fill="var(--accent)" opacity="0.5"/>
+                    <path d="M-50 460 Q 160 500 260 300 T 560 40" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 10" opacity="0.25"/>
                 </svg>
             </div>
+
             <span class="vitrine-eyebrow">Bem-vindo de volta</span>
-            <p class="vitrine-titulo">ENTRE NA<br><em>FORJA.</em></p>
+
+            <!-- terminal -->
+            <div class="terminal-card" aria-hidden="true">
+                <div class="terminal-barra"><span></span><span></span><span></span><em>pcforge://login</em></div>
+                <div class="terminal-linhas">
+                    <p class="linha" style="--linha: 1">&gt; status: <em>online</em>_</p>
+                    <p class="linha" style="--linha: 2">&gt; banco de dados: <em>conectado</em>_</p>
+                    <p class="linha" style="--linha: 3">&gt; pedidos na fila: <em>150</em>_</p>
+                </div>
+            </div>
+
+            <p class="vitrine-titulo">ACESSE<br><em>A FORJA.</em></p>
             <p class="vitrine-texto">Entre na sua conta e continue de onde parou — seus pedidos e favoritos te esperam.</p>
         </section>
 
@@ -38,21 +48,32 @@
 
                 <form id="form-login">
                     <label for="identificador">E-mail ou CPF</label>
-                    <input type="text" id="identificador" placeholder="exemplo@email.com" required>
+                    <input type="text" id="identificador" placeholder="exemplo@email.com" autocomplete="username" required>
 
                     <label for="senha">Senha</label>
-                    <input type="password" id="senha" placeholder="Digite sua senha" required>
+                    <div class="campo-senha">
+                        <input type="password" id="senha" placeholder="Digite sua senha" autocomplete="current-password" required>
+                        <button type="button" class="senha-olho" aria-label="Mostrar senha" aria-pressed="false">👁</button>
+                    </div>
 
                     <input type="submit" value="Entrar">
 
                     <p id="mensagem-erro" class="mensagem-erro"></p>
                 </form>
+
+                <p class="subtitulo" style="margin-top:14px; font-size:12.5px; text-align:center">
+                    É o administrador? Use o usuário <code>adm</code> no formulário acima,
+                    ou clique na <strong>logo</strong> para o acesso restrito.
+                </p>
             </main>
         </div>
     </div>
 
+    <script src="assets/js/login-extras.js"></script>
+
     <script src="assets/js/api.js"></script>
     <script src="assets/js/toast.js"></script>
+    <script src="assets/js/util.js"></script>
     <script src="assets/js/demo.js"></script>
     <script src="assets/js/admin-modal.js"></script>
     <script src="assets/js/carrinho-api.js"></script>

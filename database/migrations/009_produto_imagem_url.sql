@@ -15,7 +15,12 @@
 -- categoria automaticamente (onerror), nunca fica quebrado feio.
 -- ============================================================
 
+-- Usamos ALTER TABLE normal (sem IF NOT EXISTS, que o MySQL 8 não aceita —
+-- só o MariaDB aceita). Se a coluna já existir, o migration.js entende o
+-- erro 1060 "Duplicate column name" como "já aplicada" e segue normalmente.
+-- ============================================================
+
 USE pc_forge;
 
 ALTER TABLE PRODUTO
-    ADD COLUMN IF NOT EXISTS IMAGEM_URL VARCHAR(500) NULL AFTER IMAGEM_TIPO;
+    ADD COLUMN IMAGEM_URL VARCHAR(500) NULL AFTER IMAGEM_TIPO;

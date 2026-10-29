@@ -51,14 +51,16 @@
     $('form-dados').addEventListener('submit', async function (evento) {
         evento.preventDefault();
         esconderErro('mensagem-erro');
+        // Estado de envio no botão de salvar (evita duplo clique / sem feedback).
+        const botaoSalvar = this.querySelector('button[type="submit"], input[type="submit"], button');
         try {
-            const r = await apiPut(base, {
+            const r = await U.comEstadoEnviando(botaoSalvar, () => apiPut(base, {
                 nome: $('perfil-campo-nome').value,
                 email: $('perfil-campo-email').value,
                 celular: $('perfil-campo-celular').value,
                 nova_senha: $('perfil-nova-senha').value,
                 senha_atual: $('perfil-senha-atual').value
-            });
+            }));
             // Mantém o token e atualiza o nome/e-mail da sessão (a barra do topo usa isso).
             sessao = { ...sessao, nome: r.cliente.nome, email: r.cliente.email };
             U.salvarSessao('cliente', sessao);
@@ -129,9 +131,14 @@
             cep: $('cep').value, numero: $('numero').value, rua: $('rua').value,
             bairro: $('bairro').value, cidade: $('cidade').value, uf: $('uf').value
         };
+        // Estado de envio no botão de salvar (evita duplo clique).
+        const botaoSalvar = this.querySelector('button[type="submit"], input[type="submit"], button');
         try {
-            if (enderecoEmEdicaoId) await apiPut(`${base}/enderecos/${enderecoEmEdicaoId}`, dados);
-            else await apiPost(`${base}/enderecos`, dados);
+            await U.comEstadoEnviando(botaoSalvar, () =>
+                enderecoEmEdicaoId
+                    ? apiPut(`${base}/enderecos/${enderecoEmEdicaoId}`, dados)
+                    : apiPost(`${base}/enderecos`, dados)
+            );
             mostrarToast(enderecoEmEdicaoId ? 'Endereço atualizado!' : 'Endereço adicionado!', 'sucesso');
             fecharFormEndereco();
             await carregarEnderecos();
@@ -141,7 +148,7 @@
     });
 
     async function excluirEndereco(id) {
-        if (!confirm('Excluir este endereço?')) return;
+        if (!(await U.confirmar('Excluir este endereço?', { titulo: 'Excluir endereço', confirmar: 'Excluir' }))) return;
         try {
             await apiDelete(`${base}/enderecos/${id}`);
             mostrarToast('Endereço removido.', 'sucesso');
@@ -153,6 +160,15 @@
     }
 
     // ---------- pedidos ----------
+    const ROTULO_STATUS = {
+        PENDENTE: 'Pendente', PAGO: 'Pago', ENVIADO: 'Enviado',
+        ENTREGUE: 'Entregue', CANCELADO: 'Cancelado'
+    };
+    function chipStatus(status) {
+        const s = (status || 'PENDENTE').toUpperCase();
+        return `<span class="chip-status ${s.toLowerCase()}">${ROTULO_STATUS[s] || s}</span>`;
+    }
+
     function renderPedidos(pedidos) {
         const el = $('lista-pedidos');
         if (pedidos.length === 0) {
@@ -163,7 +179,7 @@
             <details class="pedido">
                 <summary>
                     <span><span class="pedido-id">Pedido #${p.ID}</span> <span class="pedido-meta">· ${U.escapeHtml(U.formatarData(p.DATA, true))} · ${U.escapeHtml(p.FORMA_PAGAMENTO)}</span></span>
-                    <span class="pedido-total">${U.formatarPreco(p.VALOR_INICIAL)}</span>
+                    <span class="pedido-direita">${chipStatus(p.STATUS)} <span class="pedido-total">${U.formatarPreco(p.VALOR_INICIAL)}</span></span>
                 </summary>
                 <div class="pedido-corpo">
                     ${p.ITENS.map((i) => `
@@ -176,6 +192,76 @@
             </details>`).join('');
     }
 
+    // ---------- favoritos (lista de desejos) ----------
+    async function renderFavoritos() {
+        const el = $('lista-favoritos');
+        try {
+            const favoritos = await PCForgeFavoritos.listar();
+            if (favoritos.length === 0) {
+                el.innerHTML = '<p class="estado-vazio">Nenhum favorito ainda. Toque no coração ♡ dos produtos pra guardar aqui.</p>';
+                return;
+            }
+            // cards iguais aos da vitrine (catalog.css); clicar no coração tira da lista
+            el.innerHTML = favoritos.map((produto) => {
+                const urlFoto = urlImagemProduto(produto);
+                return `
+                <div class="cartao-produto">
+                    <a class="cartao-thumb-link" href="produto.html?id=${encodeURIComponent(produto.ID)}" title="Ver detalhes de ${U.escapeHtml(produto.NOME)}">
+                        <div class="cartao-thumb${urlFoto ? ' com-foto' : ''}">
+                            ${urlFoto ? `<img src="${U.escapeHtml(urlFoto)}" alt="${U.escapeHtml(produto.NOME)}" loading="lazy">` : ''}
+                            <span class="cartao-categoria">${U.escapeHtml(produto.CATEGORIA)}</span>
+                        </div>
+                    </a>
+                    <div class="cartao-corpo">
+                        ${produto.ID_LOJA
+                            ? `<a class="cartao-loja cartao-loja-link" href="loja.html?id=${encodeURIComponent(produto.ID_LOJA)}">${U.escapeHtml(produto.LOJA_NOME)}</a>`
+                            : `<span class="cartao-loja">${U.escapeHtml(produto.LOJA_NOME)}</span>`}
+                        <h3 class="cartao-nome"><a class="cartao-nome-link" href="produto.html?id=${encodeURIComponent(produto.ID)}">${U.escapeHtml(produto.NOME)}</a></h3>
+                        <span class="cartao-preco">${U.formatarPreco(produto.PRECO)}</span>
+                        <button class="cartao-comprar" type="button" data-id="${produto.ID}">Adicionar ao carrinho</button>
+                    </div>
+                </div>`;
+            }).join('');
+
+            // coração já nasce preenchido; clicar remove da lista
+            el.querySelectorAll('[data-favoritar]').forEach((botao) => {
+                const id = botao.dataset.favoritar;
+                PCForgeFavoritos.tem(id); // estado no cache
+                botao.classList.add('favoritado');
+                botao.textContent = '♥';
+                botao.addEventListener('click', async () => {
+                    botao.disabled = true;
+                    try {
+                        const r = await PCForgeFavoritos.alternar(id);
+                        if (r && !r.favorito) {
+                            mostrarToast('Removido dos favoritos.', 'sucesso');
+                            await renderFavoritos();
+                        }
+                    } catch (e) {
+                        mostrarToast(e.message, 'erro');
+                    } finally {
+                        botao.disabled = false;
+                    }
+                });
+            });
+
+            // "Adicionar ao carrinho" dos favoritos: reusa a máquina do carrinho
+            el.querySelectorAll('.cartao-comprar').forEach((botao) => {
+                botao.addEventListener('click', async () => {
+                    const produto = favoritos.find((p) => String(p.ID) === botao.dataset.id);
+                    try {
+                        await Carrinho.adicionar(produto);
+                        mostrarToast(`${produto.NOME} foi pro carrinho!`, 'sucesso');
+                    } catch (e) {
+                        mostrarToast(e.message, 'erro');
+                    }
+                });
+            });
+        } catch (error) {
+            el.innerHTML = `<p class="estado-vazio">Não foi possível carregar os favoritos. (${U.escapeHtml(error.message)})</p>`;
+        }
+    }
+
     (async function iniciar() {
         try {
             const [perfil, , pedidos] = await Promise.all([
@@ -185,6 +271,7 @@
             ]);
             renderDados(perfil);
             renderPedidos(pedidos);
+            renderFavoritos();
             if (window.location.hash) {
                 const alvo = document.querySelector(window.location.hash);
                 if (alvo) alvo.scrollIntoView();

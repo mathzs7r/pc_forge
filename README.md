@@ -7,6 +7,35 @@ alternar entre as duas.
 
 ## Funcionalidades
 
+### 🔧 Monte seu PC
+
+- Página `frontend/montar.html` (link **"Monte seu PC"** no topo, visível só para cliente logado):
+  montagem peça a peça em **9 etapas na ordem certa** — Placa-mãe → Processador
+  → Memória → Placa de vídeo → Armazenamento → Fonte → Cooler → Gabinete →
+  Sistema. As etapas seguintes ficam 🔒 trancadas até as anteriores serem escolhidas.
+- **Compatibilidade ao vivo**: só aparecem as peças compatíveis com o que já foi
+  escolhido. As incompatíveis ficam num link "mostrar N incompatível(is)", esmaecidas
+  e com o motivo (ex. "Soquete AM5 ≠ AM4 da placa-mãe", "DDR5 exige memória DDR5",
+  "Placa de 336mm não cabe (gabinete aceita até 330mm)").
+- As especificações técnicas (soquete, DDR, TDP, watts, mm do gabinete) são
+  **deduzidas do nome do produto** por `frontend/assets/js/compatibilidade.js`
+  (motor puro, testado à parte). Peças de nome fora do padrão aparecem como
+  "sem dados técnicos" em vez de serem escondidas.
+- Resumo lateral fixo: peças escolhidas, **total em R$**, **consumo estimado**
+  (base 60W + TDP CPU + consumo GPU) com barra contra a potência da fonte,
+  semáforo de conflitos e **"Enviar tudo pro carrinho"** (um clique, sequencial,
+  exige login de cliente).
+- **Duas modalidades**: "Só as peças" (o cliente monta) ou "Montado na loja"
+  — montagem **R$ 0,10** + **frete grátis**; no modo montado o carrinho mostra
+  um cartão único "PC Montado" com o total fechado e a lista das peças
+  (agrupadas pela coluna `GRUPO` do carrinho).
+- A montagem fica guardada em `sessionStorage` (sobrevive ao F5); depois do
+  envio pra compra: o painel "Montagem organizada" oferece **Montar outro PC**
+  (zera o estado) ou **Ver carrinho**.
+- O **sistema operacional** (Windows/Linux) só existe dentro do Monte seu PC:
+  as categorias "Sistemas Operacionais" e "Serviços" vêm **escondidas da
+  vitrine** pelo backend.
+
 ### 🛒 Catálogo e vitrine
 
 - Página inicial (`frontend/produtos.html`) com a **vitrine de produtos**.
@@ -72,8 +101,8 @@ alternar entre as duas.
 
 ### 🛠️ Admin
 
-- Modal "Acesso restrito" (clique na logo) → login do admin (`adm`) → painel
-  (`frontend/painel-admin.html`) com:
+- Modal "Acesso restrito" (clique na logo) → login do admin (`adm` / `12345678`
+  em desenvolvimento) → painel (`frontend/painel-admin.html`) com:
   - Visão geral: lojas, clientes, acessos (hoje/semana/total), produtos vendidos e faturamento.
   - Listas de lojas parceiras e clientes cadastrados.
 
@@ -184,8 +213,12 @@ npm install
 copy .env.example .env        # Mac/Linux: cp .env.example .env
 ```
 
-No `backend/.env`, coloque a senha do seu MySQL em `DB_PASSWORD` e, se quiser, um
-`AUTH_SECRET` com pelo menos 16 caracteres (o token de login usa essa chave).
+No `backend/.env`, coloque a senha do seu MySQL em `DB_PASSWORD`. O `AUTH_SECRET` já
+vem preenchido de exemplo — é a chave que assina o token de login, então gere um
+PRÓPRIO (`node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`).
+O `ADMIN_SENHA_HASH` vem de desenvolvimento: admin é **`adm` / `12345678`**
+(a mesma senha do seed demo). Troque a com `npm run hash -- SUANOVASENHA`
+antes de apresentar o projeto.
 
 Suba a API — o `npm start` roda a migração automaticamente e só sobe se o banco estiver
 pronto:
@@ -229,25 +262,30 @@ Depois abra: **http://localhost:5500**
   - `npm run migrate` — schema + migrações pendentes.
   - `npm run migrate:seed` — o mesmo, e ainda roda o `database/seed.sql`.
   - `npm run migrate:catalogo` — migra + grava as fotos placeholder dos produtos do catálogo.
-- Dump pronto: `database/dump/pc_forge_dump.sql` (schema + dados) — importar com
-  `mysql -u root -p < database/dump/pc_forge_dump.sql`.
+- Dump pronto: `database/dump/pc_forge_dump.sql` (schema + dados ATÉ a migração 004)
+  — importar com `mysql -u root -p < database/dump/pc_forge_dump.sql` e depois rodar
+  `npm run migrate` pra colocar o banco em dia (005 a 009).
 
 ## 🔌 API
 
 - `GET /ola` — health check simples (`Hello World!`).
 - `GET /saude` — checagem do banco (`api` + `banco`).
-- `POST /cliente`, `POST /login`, `GET /cliente/:cpf`, `DELETE /cliente/:cpf`
+- `POST /cliente`, `POST /login` (com rate limit contra força bruta)
 - `POST /loja`, `POST /loja/login`, `GET /loja/:id/publico`, `GET /loja/:id/avaliacoes`, `GET /loja/:id/logo`, `GET /produtos?loja=:id`
 - `GET /produtos`, `GET /produtos/categorias`, `GET /produtos/:id`, `GET /produtos/:id/avaliacoes`,
   `POST /produtos/:id/avaliacao`, `GET /produtos/loja/:idLoja`, `GET /produtos/:id/imagem`,
-  `POST /produtos`, `PUT /produtos/:id`, `DELETE /produtos/:id`
+  `POST /produtos`, `PUT /produtos/:id`, `DELETE /produtos/:id` — **exigem token de loja**;
+  o `id_loja` vem do token (o do corpo é ignorado)
 - `GET /carrinho/:id`, `POST /carrinho/:id/itens`, `PUT /carrinho/:id/itens/:idProduto`,
   `DELETE /carrinho/:id/itens/:idProduto`, `DELETE /carrinho/:id`,
   `POST /carrinho/:id/finalizar`
 - `GET /perfil/cliente/:id`, `PUT /perfil/cliente/:id`,
   `GET/POST /perfil/cliente/:id/enderecos`, `PUT/DELETE /perfil/cliente/:id/enderecos/:idEndereco`,
   `GET /perfil/cliente/:id/pedidos`,
-  `GET /perfil/loja/:id`, `PUT /perfil/loja/:id`, `GET /perfil/loja/:id/vendas`
+  `GET/POST /perfil/cliente/:id/favoritos`, `DELETE /perfil/cliente/:id/favoritos/:idProduto` — lista de desejos (migração 010)
+  `GET /perfil/loja/:id`, `PUT /perfil/loja/:id`, `GET /perfil/loja/:id/vendas`,
+  `GET /perfil/loja/:id/pedidos` — pedidos agrupados por compra (só itens da loja),
+  `PUT /perfil/loja/:id/pedidos/:idCompra/status` — muda o status do pedido: `PENDENTE`, `PAGO`, `ENVIADO`, `ENTREGUE`, `CANCELADO`
 - `POST /admin/login`, `POST /acesso`, `GET /admin/visao`, `GET /admin/lojas`, `GET /admin/clientes`
 
 A coleção completa (com exemplos de corpo) pra importar no **RapidAPI Client** está em
@@ -258,18 +296,43 @@ A coleção completa (com exemplos de corpo) pra importar no **RapidAPI Client**
 - Cliente: `cliente@teste.com` (CPF `123.456.789-09`) — senha `senha123`.
 - Lojas parceiras do catálogo: `parceiro@pichau.com.br`, `parceiro@kabum.com.br`,
   `parceiro@terabyte.com.br` — senha `senha123`.
-- Admin: usuário `adm` (senha fica no servidor, no hash do `backend/routes/admin.js`) —
+
+### Contas da massa de demonstração (`npm run seed:demo`, senha geral `12345678`)
+
+- Clientes: `cliente01@demo.pcforge` … `cliente25@demo.pcforge`
+- Lojas: `loja01@demo.pcforge` (TechPoint), `loja02@demo.pcforge` (Hardware Prime),
+  `loja03@demo.pcforge` (MegaByte), `loja04@demo.pcforge` (Nexus), `loja05@demo.pcforge` (Byte House)
+
+## ✨ Pedidos com status + favoritos + máscaras
+
+- **Status do pedido:** toda compra nasce `PENDENTE` e a loja dona de algum item move
+  pelo ciclo `PAGO → ENVIADO → ENTREGUE` (ou `CANCELADO`) na aba **"Pedidos recebidos"**
+  do painel da loja. O cliente acompanha com um chip colorido em "Meus pedidos"
+  (amarelo = pendente, azul = pago, roxo = enviado, verde = entregue, cinza = cancelado).
+  Migração: `database/migrations/010_status_pedido_e_favoritos.sql`.
+- **Favoritos (lista de desejos):** coração ♡ nos cards da vitrine e na página do
+  produto (só pra cliente logado); a lista inteira fica em **"Meus favoritos"**, no
+  perfil do cliente (abaixo dos endereços, antes dos pedidos).
+- **Máscaras de formulário:** CPF, CNPJ, CEP, celular e preço formatam enquanto
+  digita (`frontend/assets/js/mascaras.js` + `data-mascara` nos inputs). O backend
+  continua recebendo os dados como antes — ele já limpa pontuação com `soDigitos`.
+- Admin: usuário `adm` (padrão de fábrica; a senha real mora como hash no
+  `ADMIN_SENHA_HASH` do `backend/.env` — troque a sua com `npm run hash -- SUANOVA SENHA`) —
   acessa pelo modal "Acesso restrito" (clique na logo) e entra em `frontend/painel-admin.html`.
 
 ## 🎨 Modo visualização
 
-Clique na **logo "Chutaki"** (canto superior esquerdo) em qualquer página → abre o modal
-**Acesso restrito**.
+Clique na **logo** (canto superior esquerdo) em qualquer página → abre o modal
+**Acesso restrito**, o login do ADMIN (`adm`).
 
-- **Admin:** faz o login real via `POST /admin/login` e vai pro painel.
-- **Visualização geral do site:** enquanto a API estiver fora do ar, o site pode usar os
-  dados de exemplo (`frontend/assets/js/demo.js`) pra navegar sem MySQL nem back-end — o
-  cadastro/login e o carrinho viram simulação.
+- **Admin:** faz o login real via `POST /admin/login` e vai pro painel do admin.
+- **Visualização geral do site (sem a API rodando):** enquanto a API estiver fora do ar,
+  páginas de login/cadastro/carrinho simulam com os dados de exemplo de
+  `frontend/assets/js/demo.js` **se o modo visualização estiver ativado**.
+  O ativador é um comando no console do navegador (não há botão de interface
+  de propósito — é ferramenta de teste, não funcionalidade):
+  `localStorage.setItem('pcforge_modo_demo', 'true')`
+  (pra desativar: `localStorage.removeItem('pcforge_modo_demo')`)
 
 > ⚠️ Não é segurança de verdade: é só uma chave/localStorage pra testar o site. Não use
 > como base de um painel de admin de verdade.
@@ -278,6 +341,4 @@ Clique na **logo "Chutaki"** (canto superior esquerdo) em qualquer página → a
 
 - Pagamento de verdade e controle de estoque (hoje o finalizar só registra o pedido).
 - Mostrar o endereço de entrega completo para a loja (hoje ela vê só nome/cidade/UF).
-- Estender o token às rotas antigas que ainda confiam no `id` enviado pelo front
-  (`POST/PUT/DELETE /produtos`, `GET /cliente/:cpf`, `DELETE /cliente/:cpf`).
 - Validação de CPF e CNPJ (dígito verificador) no front e no back.

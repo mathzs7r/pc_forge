@@ -18,7 +18,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: 'Nunito Sans', sans-serif;
+    font-family: var(--fonte-corpo), sans-serif;
     font-size: 28px;
     font-weight: 900;
     text-transform: uppercase;
@@ -56,7 +56,7 @@
 
 .painel-form-card h3,
 .perfil-secao h3 {
-    font-family: 'Nunito Sans', sans-serif;
+    font-family: var(--fonte-corpo), sans-serif;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     font-size: 13px;
@@ -187,8 +187,23 @@
     margin-top: 40px;
 }
 
+/* chip + total lado a lado no resumo do pedido */
+.pedido-direita {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* grade de favoritos no perfil (reusa os cards da vitrine) */
+.grade-favoritos {
+    margin-top: 14px;
+}
+.grade-favoritos .cartao-favorito {
+    position: absolute;
+}
+
 .perfil-secao h2 {
-    font-family: 'Nunito Sans', sans-serif;
+    font-family: var(--fonte-corpo), sans-serif;
     font-weight: 900;
     font-size: 19px;
     color: var(--texto-forte);
@@ -238,7 +253,7 @@
 }
 
 .pedido-total {
-    font-family: 'Nunito Sans', sans-serif;
+    font-family: var(--fonte-corpo), sans-serif;
     color: var(--mais-vendido);
     font-size: 16px;
     font-weight: 800;
@@ -296,7 +311,7 @@
 .stat-card strong {
     display: block;
     margin-top: 6px;
-    font-family: 'Nunito Sans', sans-serif;
+    font-family: var(--fonte-corpo), sans-serif;
     font-size: 22px;
     font-weight: 900;
     color: var(--texto-forte);
@@ -327,7 +342,7 @@
 }
 
 .venda-linha .venda-total {
-    font-family: 'Nunito Sans', sans-serif;
+    font-family: var(--fonte-corpo), sans-serif;
     color: var(--mais-vendido);
     font-weight: 800;
     white-space: nowrap;

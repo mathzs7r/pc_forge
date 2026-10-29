@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const pool = require('../db');
 const { gerarHash, conferirSenha } = require('../utils/senha');
 const { normalizarEmail, emailValido } = require('../utils/documentos');
@@ -16,13 +16,13 @@ const inteiroPositivo = (v) => {
     return Number.isInteger(n) && n > 0 ? n : null;
 };
 
-// Pra mudar dados da conta a pessoa digita a SENHA ATUAL de novo, mesmo já
-// estando logada. Assim, quem pegou um computador destravado não consegue
+// Pra mudar dados da conta a pessoa digita a SENHA ATUAL de novo, mesmo jÃ¡
+// estando logada. Assim, quem pegou um computador destravado nÃ£o consegue
 // trocar o e-mail nem a senha da conta.
-// (Quem chama já conferiu que a senha veio preenchida, antes de ir ao banco.)
-// Devolve true se a senha confere; senão já responde 403 e devolve false.
-//   (403 e não 401 de propósito: o front trata 401 como "sessão expirada" e
-//    deslogaria a pessoa só por errar a senha.)
+// (Quem chama jÃ¡ conferiu que a senha veio preenchida, antes de ir ao banco.)
+// Devolve true se a senha confere; senÃ£o jÃ¡ responde 403 e devolve false.
+//   (403 e nÃ£o 401 de propÃ³sito: o front trata 401 como "sessÃ£o expirada" e
+//    deslogaria a pessoa sÃ³ por errar a senha.)
 async function confirmarSenhaAtual(res, hashSalvo, senhaAtual) {
     if (!(await conferirSenha(senhaAtual, hashSalvo))) {
         res.status(403).json({ resposta: 'Senha atual incorreta.' });
@@ -31,11 +31,11 @@ async function confirmarSenhaAtual(res, hashSalvo, senhaAtual) {
     return true;
 }
 
-const AVISO_SENHA_ATUAL = 'Digite sua senha atual pra confirmar as alterações.';
+const AVISO_SENHA_ATUAL = 'Digite sua senha atual pra confirmar as alteraÃ§Ãµes.';
 
-// Mesma regra do cadastro: senha nova com pelo menos 4 caracteres.
+// Mesma regra do cadastro: senha nova com pelo menos 8 caracteres.
 function novaSenhaInvalida(novaSenha) {
-    return novaSenha !== '' && novaSenha.length < 4;
+    return novaSenha !== '' && novaSenha.length < 8;
 }
 
 // ============================================================
@@ -43,7 +43,7 @@ function novaSenhaInvalida(novaSenha) {
 // ============================================================
 
 // ------------------------------------------------------------
-// DADOS DO CLIENTE (o próprio, logado)
+// DADOS DO CLIENTE (o prÃ³prio, logado)
 // ------------------------------------------------------------
 router.get('/perfil/cliente/:id', doCliente, async (req, res) => {
     try {
@@ -57,7 +57,7 @@ router.get('/perfil/cliente/:id', doCliente, async (req, res) => {
             [Number(req.params.id)]
         );
         if (linhas.length === 0) {
-            return res.status(404).json({ resposta: 'Conta não encontrada.' });
+            return res.status(404).json({ resposta: 'Conta nÃ£o encontrada.' });
         }
         res.json(linhas[0]);
     } catch (error) {
@@ -67,9 +67,9 @@ router.get('/perfil/cliente/:id', doCliente, async (req, res) => {
 
 // ------------------------------------------------------------
 // ALTERAR DADOS DO CLIENTE
-// Corpo: nome, email, celular, senha_atual (todos obrigatórios)
-//        nova_senha (opcional — só manda se quiser trocar a senha)
-// CPF e nascimento não mudam por aqui.
+// Corpo: nome, email, celular, senha_atual (todos obrigatÃ³rios)
+//        nova_senha (opcional â€” sÃ³ manda se quiser trocar a senha)
+// CPF e nascimento nÃ£o mudam por aqui.
 // ------------------------------------------------------------
 router.put('/perfil/cliente/:id', doCliente, async (req, res) => {
     const id = Number(req.params.id);
@@ -81,28 +81,28 @@ router.put('/perfil/cliente/:id', doCliente, async (req, res) => {
     const novaSenha = String(corpo.nova_senha ?? '');
 
     if (!nome || !email || !celular) {
-        return res.status(400).json({ resposta: 'Nome, e-mail e celular são obrigatórios.' });
+        return res.status(400).json({ resposta: 'Nome, e-mail e celular sÃ£o obrigatÃ³rios.' });
     }
     if (!emailValido(email)) {
-        return res.status(400).json({ resposta: 'E-mail inválido.' });
+        return res.status(400).json({ resposta: 'E-mail invÃ¡lido.' });
     }
     if (!senhaAtual) {
         return res.status(400).json({ resposta: AVISO_SENHA_ATUAL });
     }
     if (novaSenhaInvalida(novaSenha)) {
-        return res.status(400).json({ resposta: 'A nova senha precisa ter pelo menos 4 caracteres.' });
+        return res.status(400).json({ resposta: 'A nova senha precisa ter pelo menos 8 caracteres.' });
     }
 
     try {
         const [atual] = await pool.query('SELECT SENHA FROM CLIENTE WHERE ID = ?', [id]);
         if (atual.length === 0) {
-            return res.status(404).json({ resposta: 'Conta não encontrada.' });
+            return res.status(404).json({ resposta: 'Conta nÃ£o encontrada.' });
         }
         if (!(await confirmarSenhaAtual(res, atual[0].SENHA, senhaAtual))) return;
 
         const [repetido] = await pool.query('SELECT ID FROM CLIENTE WHERE EMAIL = ? AND ID <> ?', [email, id]);
         if (repetido.length > 0) {
-            return res.status(409).json({ resposta: 'Esse e-mail já está em uso por outra conta.' });
+            return res.status(409).json({ resposta: 'Esse e-mail jÃ¡ estÃ¡ em uso por outra conta.' });
         }
 
         if (novaSenha) {
@@ -117,7 +117,7 @@ router.put('/perfil/cliente/:id', doCliente, async (req, res) => {
             );
         }
 
-        // Devolve o que o front guarda na sessão, pra a barra do topo mostrar o nome novo.
+        // Devolve o que o front guarda na sessÃ£o, pra a barra do topo mostrar o nome novo.
         res.json({
             resposta: novaSenha ? 'Dados e senha atualizados!' : 'Dados atualizados!',
             cliente: { id, nome, email }
@@ -128,9 +128,9 @@ router.put('/perfil/cliente/:id', doCliente, async (req, res) => {
 });
 
 // ------------------------------------------------------------
-// ENDEREÇOS DO CLIENTE
+// ENDEREÃ‡OS DO CLIENTE
 // ------------------------------------------------------------
-// Valida o corpo de um endereço (mesmas regras do cadastro).
+// Valida o corpo de um endereÃ§o (mesmas regras do cadastro).
 // Devolve { erro } ou { dados }.
 function lerEndereco(corpo) {
     const dados = {
@@ -142,10 +142,10 @@ function lerEndereco(corpo) {
         uf: texto(corpo.uf).toUpperCase()
     };
     if (Object.values(dados).some((v) => !v)) {
-        return { erro: 'Preencha CEP, rua, número, bairro, cidade e estado.' };
+        return { erro: 'Preencha CEP, rua, nÃºmero, bairro, cidade e estado.' };
     }
     if (dados.cep.replace(/\D/g, '').length !== 8) {
-        return { erro: 'CEP inválido: precisa ter 8 números.' };
+        return { erro: 'CEP invÃ¡lido: precisa ter 8 nÃºmeros.' };
     }
     if (dados.uf.length !== 2) {
         return { erro: 'Estado (UF) precisa ter 2 letras.' };
@@ -175,7 +175,7 @@ router.post('/perfil/cliente/:id/enderecos', doCliente, async (req, res) => {
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [Number(req.params.id), dados.cep, dados.rua, dados.numero, dados.bairro, dados.cidade, dados.uf]
         );
-        res.status(201).json({ resposta: 'Endereço adicionado!', id: resultado.insertId });
+        res.status(201).json({ resposta: 'EndereÃ§o adicionado!', id: resultado.insertId });
     } catch (error) {
         responderErro(res, error, 'POST /perfil/cliente/:id/enderecos');
     }
@@ -183,26 +183,26 @@ router.post('/perfil/cliente/:id/enderecos', doCliente, async (req, res) => {
 
 router.put('/perfil/cliente/:id/enderecos/:idEndereco', doCliente, async (req, res) => {
     const idEndereco = inteiroPositivo(req.params.idEndereco);
-    if (!idEndereco) return res.status(400).json({ resposta: 'Endereço inválido.' });
+    if (!idEndereco) return res.status(400).json({ resposta: 'EndereÃ§o invÃ¡lido.' });
 
     const { erro, dados } = lerEndereco(req.body || {});
     if (erro) return res.status(400).json({ resposta: erro });
 
     try {
-        // O "AND ID_CLIENTE" garante que só dá pra mexer em endereço da própria conta.
+        // O "AND ID_CLIENTE" garante que sÃ³ dÃ¡ pra mexer em endereÃ§o da prÃ³pria conta.
         const [existe] = await pool.query(
             'SELECT ID FROM ENDERECO WHERE ID = ? AND ID_CLIENTE = ?',
             [idEndereco, Number(req.params.id)]
         );
         if (existe.length === 0) {
-            return res.status(404).json({ resposta: 'Endereço não encontrado.' });
+            return res.status(404).json({ resposta: 'EndereÃ§o nÃ£o encontrado.' });
         }
         await pool.query(
             `UPDATE ENDERECO SET CEP = ?, RUA = ?, NUMERO = ?, BAIRRO = ?, CIDADE = ?, ESTADO = ?
              WHERE ID = ? AND ID_CLIENTE = ?`,
             [dados.cep, dados.rua, dados.numero, dados.bairro, dados.cidade, dados.uf, idEndereco, Number(req.params.id)]
         );
-        res.json({ resposta: 'Endereço atualizado!' });
+        res.json({ resposta: 'EndereÃ§o atualizado!' });
     } catch (error) {
         responderErro(res, error, 'PUT /perfil/cliente/:id/enderecos/:idEndereco');
     }
@@ -210,7 +210,7 @@ router.put('/perfil/cliente/:id/enderecos/:idEndereco', doCliente, async (req, r
 
 router.delete('/perfil/cliente/:id/enderecos/:idEndereco', doCliente, async (req, res) => {
     const idEndereco = inteiroPositivo(req.params.idEndereco);
-    if (!idEndereco) return res.status(400).json({ resposta: 'Endereço inválido.' });
+    if (!idEndereco) return res.status(400).json({ resposta: 'EndereÃ§o invÃ¡lido.' });
 
     try {
         const [resultado] = await pool.query(
@@ -218,23 +218,23 @@ router.delete('/perfil/cliente/:id/enderecos/:idEndereco', doCliente, async (req
             [idEndereco, Number(req.params.id)]
         );
         if (resultado.affectedRows === 0) {
-            return res.status(404).json({ resposta: 'Endereço não encontrado.' });
+            return res.status(404).json({ resposta: 'EndereÃ§o nÃ£o encontrado.' });
         }
-        res.json({ resposta: 'Endereço removido.' });
+        res.json({ resposta: 'EndereÃ§o removido.' });
     } catch (error) {
-        // Endereço já usado numa compra não pode sumir (FK de COMPRA) — o erro
+        // EndereÃ§o jÃ¡ usado numa compra nÃ£o pode sumir (FK de COMPRA) â€” o erro
         // ER_ROW_IS_REFERENCED_2 vira uma mensagem clara em utils/erros.js.
         responderErro(res, error, 'DELETE /perfil/cliente/:id/enderecos/:idEndereco');
     }
 });
 
 // ------------------------------------------------------------
-// PEDIDOS DO CLIENTE (mais recentes primeiro, até 50)
+// PEDIDOS DO CLIENTE (mais recentes primeiro, atÃ© 50)
 // ------------------------------------------------------------
 router.get('/perfil/cliente/:id/pedidos', doCliente, async (req, res) => {
     try {
         const [compras] = await pool.query(
-            `SELECT C.ID, C.DATA, C.FORMA_PAGAMENTO, C.VALOR_INICIAL,
+            `SELECT C.ID, C.DATA, C.FORMA_PAGAMENTO, C.VALOR_INICIAL, C.STATUS,
                     E.RUA, E.NUMERO, E.BAIRRO, E.CIDADE, E.ESTADO
              FROM COMPRA C
              JOIN ENDERECO E ON E.ID = C.ID_ENDERECO
@@ -260,6 +260,7 @@ router.get('/perfil/cliente/:id/pedidos', doCliente, async (req, res) => {
             ID: c.ID,
             DATA: c.DATA,
             FORMA_PAGAMENTO: c.FORMA_PAGAMENTO,
+            STATUS: c.STATUS || 'PENDENTE',
             VALOR_INICIAL: Number(c.VALOR_INICIAL),
             ENDERECO: `${c.RUA}, ${c.NUMERO} - ${c.BAIRRO}, ${c.CIDADE}/${c.ESTADO}`,
             ITENS: itens
@@ -282,7 +283,7 @@ router.get('/perfil/cliente/:id/pedidos', doCliente, async (req, res) => {
 // ============================================================
 
 // ------------------------------------------------------------
-// DADOS DA LOJA (a própria, logada) + resumo de vendas
+// DADOS DA LOJA (a prÃ³pria, logada) + resumo de vendas
 // ------------------------------------------------------------
 router.get('/perfil/loja/:id', daLoja, async (req, res) => {
     const id = Number(req.params.id);
@@ -295,14 +296,14 @@ router.get('/perfil/loja/:id', daLoja, async (req, res) => {
             [id]
         );
         if (lojas.length === 0) {
-            return res.status(404).json({ resposta: 'Loja não encontrada.' });
+            return res.status(404).json({ resposta: 'Loja nÃ£o encontrada.' });
         }
 
         const [[produtos]] = await pool.query(
             'SELECT COUNT(*) AS TOTAL FROM PRODUTO WHERE ID_LOJA = ? AND ATIVO = 1',
             [id]
         );
-        // Vendas contam também produtos que a loja já "excluiu" (ATIVO = 0):
+        // Vendas contam tambÃ©m produtos que a loja jÃ¡ "excluiu" (ATIVO = 0):
         // o que foi vendido continua sendo faturamento.
         const [[vendas]] = await pool.query(
             `SELECT COUNT(DISTINCT X.ID_COMPRA) AS PEDIDOS,
@@ -330,9 +331,9 @@ router.get('/perfil/loja/:id', daLoja, async (req, res) => {
 
 // ------------------------------------------------------------
 // ALTERAR DADOS DA LOJA
-// Corpo: nome, endereco, celular, email, senha_atual (obrigatórios)
-//        descricao (opcional, até 500 caracteres), nova_senha (opcional)
-// O CNPJ não muda por aqui.
+// Corpo: nome, endereco, celular, email, senha_atual (obrigatÃ³rios)
+//        descricao (opcional, atÃ© 500 caracteres), nova_senha (opcional)
+// O CNPJ nÃ£o muda por aqui.
 // ------------------------------------------------------------
 const LIMITE_DESCRICAO = 500;
 
@@ -348,34 +349,34 @@ router.put('/perfil/loja/:id', daLoja, async (req, res) => {
     const novaSenha = String(corpo.nova_senha ?? '');
 
     if (!nome || !endereco || !celular || !email) {
-        return res.status(400).json({ resposta: 'Nome, endereço, celular e e-mail são obrigatórios.' });
+        return res.status(400).json({ resposta: 'Nome, endereÃ§o, celular e e-mail sÃ£o obrigatÃ³rios.' });
     }
     if (!emailValido(email)) {
-        return res.status(400).json({ resposta: 'E-mail inválido.' });
+        return res.status(400).json({ resposta: 'E-mail invÃ¡lido.' });
     }
     if (descricao.length > LIMITE_DESCRICAO) {
-        return res.status(400).json({ resposta: `A descrição passou de ${LIMITE_DESCRICAO} caracteres.` });
+        return res.status(400).json({ resposta: `A descriÃ§Ã£o passou de ${LIMITE_DESCRICAO} caracteres.` });
     }
     if (!senhaAtual) {
         return res.status(400).json({ resposta: AVISO_SENHA_ATUAL });
     }
     if (novaSenhaInvalida(novaSenha)) {
-        return res.status(400).json({ resposta: 'A nova senha precisa ter pelo menos 4 caracteres.' });
+        return res.status(400).json({ resposta: 'A nova senha precisa ter pelo menos 8 caracteres.' });
     }
 
     try {
         const [atual] = await pool.query('SELECT SENHA FROM LOJA WHERE ID = ?', [id]);
         if (atual.length === 0) {
-            return res.status(404).json({ resposta: 'Loja não encontrada.' });
+            return res.status(404).json({ resposta: 'Loja nÃ£o encontrada.' });
         }
         if (!(await confirmarSenhaAtual(res, atual[0].SENHA, senhaAtual))) return;
 
         const [repetido] = await pool.query('SELECT ID FROM LOJA WHERE EMAIL = ? AND ID <> ?', [email, id]);
         if (repetido.length > 0) {
-            return res.status(409).json({ resposta: 'Esse e-mail já está em uso por outra loja.' });
+            return res.status(409).json({ resposta: 'Esse e-mail jÃ¡ estÃ¡ em uso por outra loja.' });
         }
 
-        // Descrição vazia vira NULL (loja sem "sobre").
+        // DescriÃ§Ã£o vazia vira NULL (loja sem "sobre").
         const parametros = [nome, endereco, celular, email, descricao || null];
         let trechoSenha = '';
         if (novaSenha) {
@@ -383,7 +384,7 @@ router.put('/perfil/loja/:id', daLoja, async (req, res) => {
             parametros.push(await gerarHash(novaSenha));
         }
 
-        // Logo da loja (migração 007): chega em base64 opcional.
+        // Logo da loja (migraÃ§Ã£o 007): chega em base64 opcional.
         let logo = null;
         if (corpo.logo) {
             try {
@@ -400,7 +401,7 @@ router.put('/perfil/loja/:id', daLoja, async (req, res) => {
 
         parametros.push(id);
 
-        // execute() (e não query()) porque a logo viaja como BLOB binário;
+        // execute() (e nÃ£o query()) porque a logo viaja como BLOB binÃ¡rio;
         // o query() escreveria os bytes como texto hexadecimal.
         await pool.execute(
             `UPDATE LOJA SET NOME = ?, ENDERECO = ?, CELULAR = ?, EMAIL = ?, DESCRICAO = ?${trechoSenha} WHERE ID = ?`,
@@ -417,9 +418,9 @@ router.put('/perfil/loja/:id', daLoja, async (req, res) => {
 });
 
 // ------------------------------------------------------------
-// VENDAS RECENTES DA LOJA (últimas 30 linhas de pedido)
-// Mostra só o primeiro nome do comprador e cidade/UF — endereço completo de
-// entrega ainda não é compartilhado com a loja.
+// VENDAS RECENTES DA LOJA (Ãºltimas 30 linhas de pedido)
+// Mostra sÃ³ o primeiro nome do comprador e cidade/UF â€” endereÃ§o completo de
+// entrega ainda nÃ£o Ã© compartilhado com a loja.
 // ------------------------------------------------------------
 router.get('/perfil/loja/:id/vendas', daLoja, async (req, res) => {
     try {
@@ -451,6 +452,195 @@ router.get('/perfil/loja/:id/vendas', daLoja, async (req, res) => {
         })));
     } catch (error) {
         responderErro(res, error, 'GET /perfil/loja/:id/vendas');
+    }
+});
+
+// ------------------------------------------------------------
+// PEDIDOS DA LOJA (agrupados por compra — aba "Pedidos recebidos")
+// Diferente de /vendas (itens soltos), aqui cada COMPRA que contém
+// pelo menos um produto desta loja vem completa:
+//   * COMPRADOR  -> primeiro nome (privacidade igual à /vendas)
+//   * ITENS      -> só os itens desta loja (os de outras lojas,
+//                   se a compra for da vitrine inteira, não vazam)
+//   * TOTAL_LOJA -> soma só dos itens desta loja (não o total geral
+//                   da compra, que também tem produtos alheios)
+//   * STATUS     -> ciclo do pedido (migração 010), que a loja muda
+//                   no PUT /pedidos/:idCompra/status abaixo.
+// ------------------------------------------------------------
+router.get('/perfil/loja/:id/pedidos', daLoja, async (req, res) => {
+    const id = Number(req.params.id);
+    try {
+        // compras que têm produto desta loja, com o total DESTA loja em cada
+        const [compras] = await pool.query(
+            `SELECT C.ID, C.DATA, C.STATUS,
+                    SUBSTRING_INDEX(CL.NOME, ' ', 1) AS COMPRADOR,
+                    E.CIDADE, E.ESTADO,
+                    COALESCE(SUM(X.QUANTIDADE * X.VALOR_UNITARIO), 0) AS TOTAL_LOJA,
+                    COUNT(*) AS QTD_ITENS
+             FROM COMPRA C
+             JOIN POSSUI X ON X.ID_COMPRA = C.ID
+             JOIN PRODUTO P ON P.ID = X.ID_PRODUTO AND P.ID_LOJA = ?
+             JOIN CLIENTE CL ON CL.ID = C.ID_CLIENTE
+             JOIN ENDERECO E ON E.ID = C.ID_ENDERECO
+             GROUP BY C.ID, C.DATA, C.STATUS, CL.NOME, E.CIDADE, E.ESTADO
+             ORDER BY C.DATA DESC, C.ID DESC
+             LIMIT 60`,
+            [id]
+        );
+        if (compras.length === 0) return res.json([]);
+
+        // itens (só desta loja) das compras acima
+        const [itens] = await pool.query(
+            `SELECT X.ID_COMPRA, X.ID_PRODUTO, X.QUANTIDADE, X.VALOR_UNITARIO, P.NOME
+             FROM POSSUI X
+             JOIN PRODUTO P ON P.ID = X.ID_PRODUTO
+             WHERE P.ID_LOJA = ? AND X.ID_COMPRA IN (?)
+             ORDER BY X.ID_COMPRA DESC, P.NOME`,
+            [id, compras.map((c) => c.ID)]
+        );
+
+        res.json(compras.map((c) => ({
+            ID: c.ID,
+            DATA: c.DATA,
+            STATUS: c.STATUS || 'PENDENTE',
+            COMPRADOR: c.COMPRADOR,
+            CIDADE: c.CIDADE,
+            ESTADO: c.ESTADO,
+            TOTAL_LOJA: Number(c.TOTAL_LOJA),
+            QTD_ITENS: Number(c.QTD_ITENS),
+            ITENS: itens
+                .filter((i) => i.ID_COMPRA === c.ID)
+                .map((i) => ({
+                    ID_PRODUTO: i.ID_PRODUTO,
+                    NOME: i.NOME,
+                    QUANTIDADE: i.QUANTIDADE,
+                    VALOR_UNITARIO: Number(i.VALOR_UNITARIO),
+                    TOTAL: Math.round(Number(i.VALOR_UNITARIO) * 100) * i.QUANTIDADE / 100
+                }))
+        })));
+    } catch (error) {
+        responderErro(res, error, 'GET /perfil/loja/:id/pedidos');
+    }
+});
+
+// ------------------------------------------------------------
+// MUDAR STATUS DO PEDIDO (a loja dona move o pedido pelo ciclo)
+// PUT /perfil/loja/:id/pedidos/:idCompra/status   corpo: { status }
+// Só vale se a compra tiver ALGUM item desta loja; o front só
+// mostra e altera compras que passam por ela.
+// ------------------------------------------------------------
+const STATUS_VALIDOS = ['PENDENTE', 'PAGO', 'ENVIADO', 'ENTREGUE', 'CANCELADO'];
+
+router.put('/perfil/loja/:id/pedidos/:idCompra/status', daLoja, async (req, res) => {
+    const id = Number(req.params.id);
+    const idCompra = Number(req.params.idCompra);
+    const novo = String((req.body || {}).status || '').toUpperCase();
+
+    // validação barata antes de tocar no banco
+    if (!STATUS_VALIDOS.includes(novo)) {
+        return res.status(400).json({
+            resposta: `Status inválido. Use um destes: ${STATUS_VALIDOS.join(', ')}.`
+        });
+    }
+
+    try {
+        // A compra precisa conter item desta loja (senão qualquer loja
+        // mexeria em pedidos alheios informando outro idCompra).
+        const [daLojaSim] = await pool.query(
+            `SELECT X.ID_COMPRA FROM POSSUI X
+             JOIN PRODUTO P ON P.ID = X.ID_PRODUTO
+             WHERE X.ID_COMPRA = ? AND P.ID_LOJA = ? LIMIT 1`,
+            [idCompra, id]
+        );
+        if (daLojaSim.length === 0) {
+            return res.status(403).json({
+                resposta: 'Este pedido não tem produtos da sua loja.'
+            });
+        }
+
+        const [r] = await pool.query(
+            'UPDATE COMPRA SET STATUS = ? WHERE ID = ?',
+            [novo, idCompra]
+        );
+        if (r.affectedRows === 0) {
+            return res.status(404).json({ resposta: 'Pedido não encontrado.' });
+        }
+        res.json({ resposta: `Pedido marcado como ${novo.toLowerCase()}.`, STATUS: novo });
+    } catch (error) {
+        responderErro(res, error, 'PUT /perfil/loja/:id/pedidos/:idCompra/status');
+    }
+});
+
+// ============================================================
+// FAVORITOS — lista de desejos do cliente (migração 010)
+// ============================================================
+
+// ------------------------------------------------------------
+// LISTAR FAVORITOS (mesmo contrato de campo da vitrine, pra
+// reusar os cards existentes do produtos.js)
+// ------------------------------------------------------------
+router.get('/perfil/cliente/:id/favoritos', doCliente, async (req, res) => {
+    try {
+        const [linhas] = await pool.query(
+            `SELECT P.ID, P.NOME, P.DESCRICAO, P.CATEGORIA, P.PRECO, P.CAMINHO_IMG,
+                    P.QUANTIDADE_IMG,
+                    (P.IMAGEM IS NOT NULL OR P.IMAGEM_URL IS NOT NULL) AS TEM_IMAGEM,
+                    UNIX_TIMESTAMP(P.ATUALIZADO_EM) AS IMG_VERSAO,
+                    P.IMAGEM_URL,
+                    P.ID_LOJA, L.NOME AS LOJA_NOME
+             FROM FAVORITO F
+             JOIN PRODUTO P ON P.ID = F.ID_PRODUTO AND P.ATIVO = 1
+             JOIN LOJA L ON L.ID = P.ID_LOJA
+             WHERE F.ID_CLIENTE = ?
+             ORDER BY F.ADICIONADO_EM DESC, P.ID DESC`,
+            [Number(req.params.id)]
+        );
+        res.json(linhas);
+    } catch (error) {
+        responderErro(res, error, 'GET /perfil/cliente/:id/favoritos');
+    }
+});
+
+// ------------------------------------------------------------
+// FAVORITAR (idempotente: favoritar 2x = 1 favorito, INSERT IGNORE)
+// Corpo: { id_produto }
+// ------------------------------------------------------------
+router.post('/perfil/cliente/:id/favoritos', doCliente, async (req, res) => {
+    const idProduto = inteiroPositivo((req.body || {}).id_produto);
+    if (!idProduto) {
+        return res.status(400).json({ resposta: 'Informe o id_produto do favorito.' });
+    }
+    try {
+        // produto precisa existir e estar à venda (não favorita item apagado)
+        const [produto] = await pool.query(
+            'SELECT ID FROM PRODUTO WHERE ID = ? AND ATIVO = 1',
+            [idProduto]
+        );
+        if (produto.length === 0) {
+            return res.status(404).json({ resposta: 'Produto não encontrado (ou fora do ar).' });
+        }
+        await pool.query(
+            'INSERT IGNORE INTO FAVORITO (ID_CLIENTE, ID_PRODUTO) VALUES (?, ?)',
+            [Number(req.params.id), idProduto]
+        );
+        res.status(201).json({ resposta: 'Adicionado aos favoritos!' });
+    } catch (error) {
+        responderErro(res, error, 'POST /perfil/cliente/:id/favoritos');
+    }
+});
+
+// ------------------------------------------------------------
+// REMOVER FAVORITO
+// ------------------------------------------------------------
+router.delete('/perfil/cliente/:id/favoritos/:idProduto', doCliente, async (req, res) => {
+    try {
+        await pool.query(
+            'DELETE FROM FAVORITO WHERE ID_CLIENTE = ? AND ID_PRODUTO = ?',
+            [Number(req.params.id), Number(req.params.idProduto)]
+        );
+        res.json({ resposta: 'Removido dos favoritos.' });
+    } catch (error) {
+        responderErro(res, error, 'DELETE /perfil/cliente/:id/favoritos/:idProduto');
     }
 });
 

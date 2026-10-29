@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="assets/css/base.css">
+    <link rel="stylesheet" href="assets/css/toast.css">
+    <link rel="stylesheet" href="assets/css/navbar.css">
+    <link rel="stylesheet" href="assets/css/forms.css">
+    <link rel="stylesheet" href="assets/css/catalog.css">
+    <link rel="stylesheet" href="assets/css/montar.css">
+    <link rel="stylesheet" href="assets/css/modal.css">
+    <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg?v=2">
+    <title>Monte seu PC | PC Forge — Peças de TI</title>
+    <meta name="description" content="Monte seu PC peça por peça na PC Forge: só aparecem peças compatíveis com o que você já escolheu. Leve as peças soltas ou receba o computador montado e testado.">
+    <script src="assets/js/acesso.js" data-exige="cliente"></script>
+</head>
+
+<body data-tipo-pagina="cliente">
+    <div id="topo-montagem" data-tipo="cliente" data-modo="cadastro"></div>
+
+    <section class="montar-hero">
+        <div class="montar-hero-caixa">
+            <span class="vitrine-eyebrow">Compatibilidade conferida em tempo real</span>
+            <h1 class="montar-titulo">MONTE <em>SEU PC.</em></h1>
+            <p class="montar-hero-texto">
+                Peça por peça, sem medo de errar: o site filtra tudo e mostra
+                <strong>somente o que funciona junto</strong> — soquete, memória, potência e gabinete.
+                Quando terminar, envia pra compra: leva as peças soltas ou o PC já montado e testado pela loja.
+            </p>
+        </div>
+    </section>
+
+    <section class="montar">
+        <!-- trilha: as 9 etapas da montagem -->
+        <nav class="montar-etapas" id="montar-etapas" aria-label="Etapas da montagem"></nav>
+
+        <!-- lista de peças da etapa atual -->
+        <div class="montar-lista" id="montar-lista">
+            <p class="estado-carregando">Preparando o catálogo...</p>
+        </div>
+
+        <!-- resumo fixo: total, consumo e compatibilidade -->
+        <aside class="montar-resumo" id="montar-resumo" aria-label="Resumo da montagem"></aside>
+    </section>
+
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/toast.js"></script>
+    <script src="assets/js/util.js"></script>
+    <script src="assets/js/demo.js"></script>
+    <script src="assets/js/admin-modal.js"></script>
+    <script src="assets/js/carrinho-api.js"></script>
+    <script src="assets/js/favoritos.js"></script>
+    <script src="assets/js/compatibilidade.js"></script>
+    <script src="assets/js/kits.js"></script>
+    <script src="assets/js/montar.js"></script>
+    <script src="assets/js/navbar.js"></script>
+</body>
+
+</html>

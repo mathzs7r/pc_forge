@@ -4,8 +4,11 @@ const { gerarHash, conferirSenha } = require('../utils/senha');
 const { soDigitos, normalizarEmail, emailValido, semMascara } = require('../utils/documentos');
 const { responderErro } = require('../utils/erros');
 const { gerarToken } = require('../utils/auth');
+const { limitarTentativas } = require('../utils/rateLimit');
 
 const router = express.Router();
+// Protege o login contra força bruta: mesmo IP só pode tentar N vezes na janela.
+const limitarLogin = limitarTentativas();
 
 // ------------------------------------------------------------
 // CADASTRO DE CLIENTE (grava em CLIENTE + ENDERECO, numa transação)
@@ -43,8 +46,8 @@ router.post('/cliente', async (req, res) => {
     if (uf.length !== 2) {
         return res.status(400).json({ resposta: 'Estado (UF) precisa ter 2 letras.' });
     }
-    if (senha.length < 4) {
-        return res.status(400).json({ resposta: 'A senha precisa ter pelo menos 4 caracteres.' });
+    if (senha.length < 8) {
+        return res.status(400).json({ resposta: 'A senha precisa ter pelo menos 8 caracteres.' });
     }
 
     let conexao;
@@ -94,7 +97,7 @@ router.post('/cliente', async (req, res) => {
 // ------------------------------------------------------------
 // LOGIN DE CLIENTE (email ou CPF + senha)
 // ------------------------------------------------------------
-router.post('/login', async (req, res) => {
+router.post('/login', limitarLogin, async (req, res) => {
     const { identificador, senha } = req.body || {};
 
     if (!identificador || !senha) {
@@ -141,40 +144,10 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// ------------------------------------------------------------
-// CONSULTAR CLIENTE POR CPF
-// ------------------------------------------------------------
-router.get('/cliente/:cpf', async (req, res) => {
-    try {
-        const [linhas] = await pool.query(
-            `SELECT ID, NOME, CPF, EMAIL, CELULAR, NASCIMENTO FROM CLIENTE WHERE ${semMascara('CPF')} = ?`,
-            [soDigitos(req.params.cpf)]
-        );
-        if (linhas.length === 0) {
-            return res.status(404).json({ resposta: 'Cliente não encontrado com este CPF' });
-        }
-        res.status(200).json(linhas[0]);
-    } catch (error) {
-        responderErro(res, error, 'GET /cliente/:cpf');
-    }
-});
-
-// ------------------------------------------------------------
-// DELETAR CLIENTE POR CPF
-// ------------------------------------------------------------
-router.delete('/cliente/:cpf', async (req, res) => {
-    try {
-        const [resultado] = await pool.query(
-            `DELETE FROM CLIENTE WHERE ${semMascara('CPF')} = ?`,
-            [soDigitos(req.params.cpf)]
-        );
-        if (resultado.affectedRows === 0) {
-            return res.status(404).json({ resposta: 'Cliente não encontrado' });
-        }
-        res.json({ resposta: 'Cliente deletado com sucesso' });
-    } catch (error) {
-        responderErro(res, error, 'DELETE /cliente/:cpf');
-    }
-});
+// NOTA: as antigas rotas GET/DELETE /cliente/:cpf foram removidas de propósito.
+// Elas não exigiam login: qualquer pessoa podia ver os dados pessoais de um
+// cliente (nome, e-mail, celular, nascimento) informando só o CPF — e até
+// APAGAR a conta dele. Tudo que esse cliente precisa hoje está em /perfil
+// (rotas de perfil.js, que exigem o token de sessão e conferem o dono).
 
 module.exports = router;

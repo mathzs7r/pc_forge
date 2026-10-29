@@ -50,6 +50,72 @@
     }
 }
 
+/* ---------- cartão único do "PC Montado" (Monte seu PC) ---------- */
+.item-carrinho.item-montagem {
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+    box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 14%, transparent);
+    grid-template-rows: auto auto;
+}
+
+.item-montagem .montagem-thumb {
+    display: grid;
+    place-items: center;
+    font-size: 30px;
+}
+
+.item-montagem .montagem-ver-pecas {
+    margin-top: 6px;
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--accent);
+    font: 700 12px var(--fonte-corpo);
+    cursor: pointer;
+    text-decoration: underline dotted;
+}
+
+.item-montagem .montagem-remover {
+    margin-top: 8px;
+}
+
+.item-montagem .montagem-pecas {
+    grid-column: 1 / -1;
+    margin: 12px 4px 0;
+    padding-top: 10px;
+    border-top: 1px dashed var(--glass-border-neutro, var(--glass-border));
+}
+
+.item-montagem .montagem-pecas ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 6px;
+}
+
+.item-montagem .montagem-pecas li {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 12.5px;
+}
+
+.item-montagem .montagem-pecas li span:last-child {
+    color: var(--texto-forte);
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.item-montagem .montagem-extras {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--glass-border-neutro, var(--glass-border));
+}
+
+.item-montagem .montagem-extras li {
+    color: var(--accent);
+}
+
 .item-carrinho .item-loja {
     display: block;
     font-size: 11px;
@@ -80,8 +146,9 @@
 }
 
 .qtd-controle button {
-    width: 34px;
-    height: 34px;
+    /* 40px de altura: em celular, 34 estavam abaixo do mínimo confortável */
+    width: 38px;
+    height: 40px;
     border: none;
     background: transparent;
     color: var(--accent);
@@ -114,7 +181,7 @@
 }
 
 .item-subtotal {
-    font-family: 'Nunito Sans', sans-serif;
+    font-family: var(--fonte-corpo), sans-serif;
     font-size: 16px;
     font-weight: 800;
     color: var(--texto-forte);
@@ -150,7 +217,7 @@
     color: var(--mais-vendido);
     font-size: 22px;
     font-weight: 900;
-    font-family: 'Nunito Sans', sans-serif;
+    font-family: var(--fonte-corpo), sans-serif;
 }
 
 .resumo-aviso {

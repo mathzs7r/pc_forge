@@ -31,18 +31,23 @@ document.getElementById('form-cadastro').addEventListener('submit', async functi
     esconderErro();
     const dados = pegarDadosCadastro();
 
-    try {
-        try {
-            await apiPost('/cliente', dados);
-        } catch (error) {
-            // Modo visualização: só simula o cadastro se a API estiver mesmo
-            // fora do ar. Se a API respondeu, vale a resposta dela.
-            if (!(error.rede && estaEmModoDemo())) throw error;
-        }
+    // Botão mostra "Enviando..." e bloqueia o duplo clique (evita cadastro duplo).
+    const botaoEnviar = this.querySelector('button[type="submit"], input[type="submit"], button');
 
-        mostrarToast('Cadastro concluído! Agora é só entrar.', 'sucesso');
-        setTimeout(() => { window.location.href = 'login.html'; }, 1200);
-    } catch (error) {
-        mostrarErro(error.message);
-    }
+    await PCForgeUtil.comEstadoEnviando(botaoEnviar, async () => {
+        try {
+            try {
+                await apiPost('/cliente', dados);
+            } catch (error) {
+                // Modo visualização: só simula o cadastro se a API estiver mesmo
+                // fora do ar. Se a API respondeu, vale a resposta dela.
+                if (!(error.rede && estaEmModoDemo())) throw error;
+            }
+
+            mostrarToast('Cadastro concluído! Agora é só entrar.', 'sucesso');
+            setTimeout(() => { window.location.href = 'login.html'; }, 1200);
+        } catch (error) {
+            mostrarErro(error.message);
+        }
+    });
 });

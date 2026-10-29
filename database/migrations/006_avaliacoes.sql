@@ -51,6 +51,11 @@ CREATE TABLE IF NOT EXISTS AVALIACAO (
 -- Avaliações de exemplo: 12 primeiros produtos ativos x 6 autores
 -- (talvez não seja 72, se o banco tiver menos produtos; o JOIN
 -- resolve distinguindo os que existem)
+--
+-- Idempotente: o WHERE NOT EXISTS impede repetir as avaliações de
+-- exemplo se este arquivo rodar mais de uma vez (importante, porque
+-- NULL não colide na unique key do MySQL — sem esse filtro, rodar
+-- duas vezes duplicaria tudo).
 -- ------------------------------------------------------------
 INSERT INTO AVALIACAO (ID_PRODUTO, ID_CLIENTE, NOME_CLIENTE, NOTA, COMENTARIO)
 WITH alvo AS (
@@ -66,4 +71,11 @@ declarado AS (
 )
 SELECT a.ID, NULL, d.nome, d.nota, d.comentario
 FROM alvo a
-CROSS JOIN declarado d;
+CROSS JOIN declarado d
+WHERE NOT EXISTS (
+    SELECT 1 FROM AVALIACAO V
+    WHERE V.ID_PRODUTO = a.ID
+      AND V.ID_CLIENTE IS NULL
+      AND V.NOME_CLIENTE = d.nome
+      AND V.NOTA = d.nota
+);

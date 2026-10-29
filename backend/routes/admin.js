@@ -17,13 +17,26 @@ const bcrypt = require('bcryptjs');
 const pool = require('../db');
 const { responderErro } = require('../utils/erros');
 const { exigirLogin, gerarToken } = require('../utils/auth');
+const { limitarTentativas } = require('../utils/rateLimit');
 
 const router = express.Router();
 
-// Administrador único: usuario "adm" e a senha "Fa110809" (bcrypt).
-// Ela nunca viaja pro navegador — só este hash e a conferência aqui.
-const ADMIN_USUARIO = 'adm';
-const ADMIN_HASH = '$2a$10$9hvMRKC8yxnDqQwJZupBO.KWX9BLjTrkE2X93vcGaXmxsFxdWdaI.';
+// Protege o login do admin contra força bruta (é a rota mais valiosa do site).
+const limitarLogin = limitarTentativas();
+
+// ------------------------------------------------------------
+// CREDENCIAIS DO ADMIN — vêm do backend/.env, NUNCA do código-fonte.
+//   ADMIN_USUARIO      usuário de login (ex.: "adm" por padrão)
+//   ADMIN_SENHA_HASH   hash bcrypt da senha. Pra gerar/TROCAR a sua:
+//     cd backend
+//     npm run hash -- SUANOVASENHA
+//   ...e cole o resultado no ADMIN_SENHA_HASH do .env.
+// Sem essas variáveis, vale o hash de desenvolvimento abaixo (adm / 12345678,
+// igual ao seed demo). TROQUE por um seu antes de mostrar o projeto pra alguém.
+// ------------------------------------------------------------
+const ADMIN_USUARIO = process.env.ADMIN_USUARIO || 'adm';
+const ADMIN_HASH = process.env.ADMIN_SENHA_HASH ||
+    '$2a$10$XTkk9tq0d9cZayKGVUeoP.xOfl41jMxgl10zjTNzodLvk7AoBFELO';
 const ADMIN_ID = 1;
 
 // As rotas de dados exigem o token do tipo "adm"
@@ -32,7 +45,7 @@ const doAdmin = exigirLogin('adm');
 // ------------------------------------------------------------
 // LOGIN DO ADMINISTRADOR (posta do modal "Acesso restrito")
 // ------------------------------------------------------------
-router.post('/admin/login', async (req, res) => {
+router.post('/admin/login', limitarLogin, async (req, res) => {
     const { usuario, senha } = req.body || {};
 
     if (String(usuario ?? '').trim() !== ADMIN_USUARIO ||

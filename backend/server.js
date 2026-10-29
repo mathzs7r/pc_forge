@@ -18,12 +18,44 @@ const rotasAdmin = require('./routes/admin');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// CORS antes de tudo, pra o "preflight" (OPTIONS) do navegador sempre passar.
-app.use(cors());
-// Rotas de produto aceitam JSON maior, porque a foto vai junto em base64
-// (5 MB de imagem viram ~6,7 MB de texto). Esse parser tem que vir ANTES do
-// express.json() padrão (limite de 100 KB): o primeiro que ler o corpo vale.
+// CORS: por padrão, em desenvolvimento, qualquer origem de localhost vale
+// (Live Server, Vite, abrir o HTML pelo file:// etc.). Em publicação de
+// verdade, defina ORIGENS_PERMITIDAS no .env (separadas por vírgula,
+// ex.: "https://pcforge.seusite.com.br") e a API passa a aceitar SÓ essas
+// origens — qualquer outro site não consegue mais ler as respostas.
+if (process.env.ORIGENS_PERMITIDAS) {
+    const permitidas = process.env.ORIGENS_PERMITIDAS.split(',')
+        .map((o) => o.trim().replace(/\/+$/, ''))
+        .filter(Boolean);
+    app.use(cors({
+        origin: (origem, callback) => {
+            // Sem Origin = curl/aplicativo/file:// simples: deixa passar.
+            if (!origem) return callback(null, true);
+            const limpa = origem.replace(/\/+$/, '');
+            // localhost sempre vale (diferentes portas do dev na mesma máquina)
+            if (/^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(limpa)) return callback(null, true);
+            callback(null, permitidas.includes(limpa));
+        }
+    }));
+    console.log(`[api] CORS restrito às origens configuradas (+ localhost). Permitidas: ${permitidas.join(', ') || '(nenhuma além de localhost)'}`);
+} else {
+    app.use(cors());
+    console.warn('[api] CORS aberto (qualquer origem). Ok para desenvolver; em produção defina ORIGENS_PERMITIDAS no .env.');
+}
+
+// Headers customizados têm que ser EXPOSTOS, senão o navegador esconde
+// mesmo com CORS aberto: o front não leria o X-Resultados-Total (total
+// de resultados usado pela vitrine e pelo "Monte seu PC").
+app.use((req, res, next) => { res.setHeader('Access-Control-Expose-Headers', 'X-Resultados-Total'); next(); });
+
+// Rotas de produto E de perfil aceitam JSON maior, porque a foto vai junto
+// em base64 (5 MB de imagem viram ~6,7 MB de texto). Esse parser tem que
+// vir ANTES do express.json() padrão (limite de 100 KB): o primeiro que ler
+// o corpo vale. O /perfil entra aqui porque a LOGO da loja é enviada por
+// PUT /perfil/loja/:id do mesmo jeito — sem isso, logos acima de ~75 KB
+// davam 413 "grande demais" e o upload quebrava.
 app.use('/produtos', express.json({ limit: '8mb' }));
+app.use('/perfil', express.json({ limit: '8mb' }));
 app.use(express.json());
 
 app.get('/ola', (req, res) => {

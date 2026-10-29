@@ -1,11 +1,17 @@
 -- ============================================================
 -- DUMP — banco pc_forge (schema atualizado + dados de exemplo)
 -- ============================================================
--- Reflete: schema.sql + migrações 001, 002, 003 e 004 + seed.sql.
---   001 = exclusão lógica de produto (coluna ATIVO)
---   002 = cliente de teste
---   003 = foto do produto em BLOB (colunas IMAGEM e IMAGEM_TIPO)
---   004 = carrinho de compras (tabela CARRINHO_ITEM) + LOJA.DESCRICAO
+-- ⚠️  ATENÇÃO (atualizado): este dump é ANTIGO. Reflete apenas o
+--     schema.sql + migrações 001 a 004 + seed.sql. NÃO tem:
+--       AVALIACAO (006), LOJA.LOGO* (007), ACESSO_LOG (008),
+--       catalogo completo 005, PRODUTO.IMAGEM_URL (009).
+--
+--     Como usar Corretamente:
+--       1. Importe este dump (cria banco + dados antigos), OU rode "npm run migrate:seed".
+--       2. RODE "npm run migrate" dentro de backend/ — o migration.js aplica
+--          as migrações 005 a 009 e deixa o banco NO ESTADO ATUAL.
+--     Recomendado de verdade (banco 100% gerado pelo MySQL):
+--       npm run migrate:seed   →  mysqldump -u root -p --databases pc_forge > pc_forge_dump.sql
 -- Os produtos de exemplo vêm SEM foto (IMAGEM = NULL): a vitrine mostra o
 -- ícone da categoria até a loja adicionar uma foto pelo painel.
 --

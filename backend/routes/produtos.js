@@ -22,6 +22,15 @@ function responderErroImagem(res, erro) {
 }
 
 // ------------------------------------------------------------
+// Categorias que NÃO saem na vitrine: "Sistemas Operacionais" e
+// "Serviços" existem no banco apenas pra dar orgem no carrinho
+// do "Monte seu PC" (013_so_e_montagem.sql). O cliente não deve
+// comprá-las soltas — dentro do Monte seu PC elas são
+// entregues por id pelo próprio carrinho da montagem.
+// ------------------------------------------------------------
+const CATEGORIAS_ESCONDIDAS = ['Sistemas Operacionais', 'Serviços'];
+
+// ------------------------------------------------------------
 // LISTAR PRODUTOS (vitrine pública, não exige login)
 // Opcional: GET /produtos?loja=3 mostra só os produtos daquela loja
 // (é o que a página pública da loja usa).
@@ -85,6 +94,10 @@ router.get('/produtos', async (req, res) => {
     if (categoria) {
         condicoes.push('P.CATEGORIA = ?');
         parametros.push(categoria);
+    } else {
+        // vitrine geral: esconde SO e Serviços (só saem no Monte seu PC)
+        condicoes.push(`P.CATEGORIA NOT IN (${CATEGORIAS_ESCONDIDAS.map(() => '?').join(', ')})`);
+        parametros.push(...CATEGORIAS_ESCONDIDAS);
     }
     if (precoMin !== null) {
         condicoes.push('P.PRECO >= ?');
@@ -110,7 +123,7 @@ router.get('/produtos', async (req, res) => {
 
         const [linhas] = await pool.query(
             `SELECT P.ID, P.NOME, P.DESCRICAO, P.CATEGORIA, P.PRECO, P.CAMINHO_IMG,
-                    (P.IMAGEM IS NOT NULL) AS TEM_IMAGEM,
+                    (P.IMAGEM IS NOT NULL OR P.IMAGEM_URL IS NOT NULL) AS TEM_IMAGEM,
                     UNIX_TIMESTAMP(P.ATUALIZADO_EM) AS IMG_VERSAO,
                     P.IMAGEM_URL,
                     P.ID_LOJA,
@@ -140,6 +153,7 @@ router.get('/produtos/categorias', async (req, res) => {
         const [linhas] = await pool.query(
             `SELECT DISTINCT CATEGORIA FROM PRODUTO
              WHERE ATIVO = 1${filtrarLoja ? ' AND ID_LOJA = ?' : ''}
+               AND CATEGORIA NOT IN ('Sistemas Operacionais', 'Serviços')
              ORDER BY CATEGORIA`,
             parametros
         );
@@ -163,7 +177,7 @@ router.get('/produtos/:id', async (req, res) => {
     try {
         const [linhas] = await pool.query(
             `SELECT P.ID, P.NOME, P.DESCRICAO, P.CATEGORIA, P.PRECO, P.CAMINHO_IMG,
-                    (P.IMAGEM IS NOT NULL) AS TEM_IMAGEM,
+                    (P.IMAGEM IS NOT NULL OR P.IMAGEM_URL IS NOT NULL) AS TEM_IMAGEM,
                     UNIX_TIMESTAMP(P.ATUALIZADO_EM) AS IMG_VERSAO,
                     P.IMAGEM_URL,
                     P.ID_LOJA,
@@ -330,7 +344,7 @@ router.get('/produtos/loja/:idLoja', async (req, res) => {
     try {
         const [linhas] = await pool.query(
             `SELECT ID, NOME, DESCRICAO, CATEGORIA, PRECO, CAMINHO_IMG, QUANTIDADE_IMG,
-                    (IMAGEM IS NOT NULL) AS TEM_IMAGEM,
+                    (IMAGEM IS NOT NULL OR IMAGEM_URL IS NOT NULL) AS TEM_IMAGEM,
                     UNIX_TIMESTAMP(ATUALIZADO_EM) AS IMG_VERSAO,
                     IMAGEM_URL
              FROM PRODUTO WHERE ID_LOJA = ? AND ATIVO = 1 ORDER BY ID DESC`,
@@ -380,16 +394,64 @@ router.get('/produtos/:id/imagem', async (req, res) => {
 });
 
 // ------------------------------------------------------------
+// ALTERAÇÕES DE ESCRITA EXIGEM LOJA LOGADA
+//
+// Antes, POST/PUT/DELETE de produto eram PÚBLICOS: qualquer pessoa com o
+// id_loja no corpo criava/editava/apagava produtos de QUALQUER loja.
+// Agora a rota exige o token de sessão tipo "loja" (o mesmo do login da
+// loja, mandado pelo api.js automaticamente) e o id_loja usado SEMPRE é
+// o do token — o que veio no corpo é ignorado.
+//
+// (Não usar exigirLogin('loja') direto: ele compara o :id da rota com o id
+// do token, mas aqui o :id é o PRODUTO, não a loja. Então fazemos a mesma
+// checagem à mão, sem a comparação de :id.)
+// ------------------------------------------------------------
+function exigirLoja(req, res, next) {
+    const encontrado = /^Bearer\s+(\S+)$/i.exec(req.headers.authorization || '');
+    const sessao = encontrado ? lerToken(encontrado[1]) : null;
+    if (!sessao || sessao.t !== 'loja') {
+        return res.status(401).json({ resposta: 'Entre na sua conta de loja para gerenciar produtos.' });
+    }
+    req.sessao = sessao;
+    next();
+}
+
+// Validação de verdade do produto: antes bastava preencher os campos
+// ("truthy"), o que aceitava preço negativo, "abc" de preço, nomes de
+// 10000 caracteres e o que mais viesse no corpo.
+function validarProduto(corpo) {
+    const nome = String(corpo.nome ?? '').trim();
+    const descricao = String(corpo.descricao ?? '').trim();
+    const categoria = String(corpo.categoria ?? '').trim();
+    const preco = Number(corpo.preco);
+    const quantidadeImg = Number(corpo.quantidade_img ?? 1);
+
+    if (!nome || !categoria) return 'Nome e categoria são obrigatórios.';
+    if (nome.length > 150) return 'O nome do produto está grande demais (máximo 150 caracteres).';
+    if (descricao.length > 2000) return 'A descrição está grande demais (máximo 2000 caracteres).';
+    if (!Number.isFinite(preco) || preco <= 0 || preco > 9999999) {
+        return 'Preço inválido: informe um valor maior que zero.';
+    }
+    if (!Number.isInteger(quantidadeImg) || quantidadeImg < 0 || quantidadeImg > 50) {
+        return 'Quantidade inválida: informe um número de 0 a 50.';
+    }
+    return null;
+}
+
+// ------------------------------------------------------------
 // CRIAR PRODUTO (loja logada cadastra um produto novo)
-// Corpo: id_loja, nome, categoria, preco  (obrigatórios)
-//        descricao, imagem                (opcionais)
+// Corpo: nome, categoria, preco            (obrigatórios)
+//        descricao, imagem                 (opcionais)
+//        id_loja                           (ignorado: usa o do token)
 // "imagem" = foto em base64 (com ou sem o prefixo "data:image/...;base64,")
 // ------------------------------------------------------------
-router.post('/produtos', async (req, res) => {
-    const { id_loja, nome, descricao, categoria, preco, caminho_img, quantidade_img, imagem } = req.body || {};
+router.post('/produtos', exigirLoja, async (req, res) => {
+    const { nome, descricao, categoria, preco, caminho_img, quantidade_img, imagem } = req.body || {};
+    const id_loja = req.sessao.id;
 
-    if (!id_loja || !nome || !categoria || !preco) {
-        return res.status(400).json({ resposta: 'Loja, nome, categoria e preço são obrigatórios.' });
+    const erroValidacao = validarProduto({ nome, descricao, categoria, preco, quantidade_img });
+    if (erroValidacao) {
+        return res.status(400).json({ resposta: erroValidacao });
     }
 
     let foto = null;
@@ -439,15 +501,16 @@ router.post('/produtos', async (req, res) => {
 //   - mandou remover_imagem=true -> apaga a foto (volta pro ícone)
 //   - não mandou nenhum dos dois -> a foto atual continua como está
 // ------------------------------------------------------------
-router.put('/produtos/:id', async (req, res) => {
+router.put('/produtos/:id', exigirLoja, async (req, res) => {
     const { id } = req.params;
-    const { id_loja, nome, descricao, categoria, preco, caminho_img, quantidade_img, imagem, remover_imagem } = req.body || {};
+    // O id_loja não vem mais do corpo: é o da sessão (token). Antes isso era
+    // um risco — qualquer um mandava o id de outra loja e editava o produto dela.
+    const { nome, descricao, categoria, preco, caminho_img, quantidade_img, imagem, remover_imagem } = req.body || {};
+    const id_loja = req.sessao.id;
 
-    if (!id_loja) {
-        return res.status(400).json({ resposta: 'Informe a loja dona do produto.' });
-    }
-    if (!nome || !categoria || !preco) {
-        return res.status(400).json({ resposta: 'Nome, categoria e preço são obrigatórios.' });
+    const erroValidacao = validarProduto({ nome, descricao, categoria, preco, quantidade_img });
+    if (erroValidacao) {
+        return res.status(400).json({ resposta: erroValidacao });
     }
 
     let foto = null;
@@ -512,13 +575,9 @@ router.put('/produtos/:id', async (req, res) => {
 // tabela POSSUI, do histórico de compras). Com ATIVO = 0 o produto some
 // da vitrine e do painel da loja, mas o histórico continua íntegro.
 // ------------------------------------------------------------
-router.delete('/produtos/:id', async (req, res) => {
+router.delete('/produtos/:id', exigirLoja, async (req, res) => {
     const { id } = req.params;
-    const { id_loja } = req.body || {};
-
-    if (!id_loja) {
-        return res.status(400).json({ resposta: 'Informe a loja dona do produto.' });
-    }
+    const id_loja = req.sessao.id; // do token, não do corpo
 
     try {
         const [resultado] = await pool.query(

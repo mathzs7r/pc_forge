@@ -22,18 +22,23 @@ const pool = mysql.createPool({
 // Usado na inicialização do servidor e na rota /saude: confere se o banco
 // responde e se as tabelas principais existem.
 pool.testarConexao = async function testarConexao() {
-  const tabelasNecessarias = ['CLIENTE', 'ENDERECO', 'LOJA', 'PRODUTO', 'CARRINHO_ITEM'];
+  const tabelasNecessarias = [
+    'CLIENTE', 'ENDERECO', 'LOJA', 'PRODUTO', 'CARRINHO_ITEM',
+    'AVALIACAO', 'ACESSO_LOG', 'FAVORITO'
+  ];
   const [linhas] = await pool.query('SHOW TABLES');
   const existentes = linhas.map((l) => String(Object.values(l)[0]).toUpperCase());
   const faltando = tabelasNecessarias.filter((t) => !existentes.includes(t));
 
   // Colunas que as migrações adicionaram (PRODUTO.ATIVO = exclusão lógica,
-  // PRODUTO.IMAGEM/IMAGEM_TIPO = foto em BLOB, LOJA.DESCRICAO = "sobre a loja").
+  // PRODUTO.IMAGEM/IMAGEM_TIPO/IMAGEM_URL = foto em BLOB ou URL externa,
+  // LOJA.DESCRICAO = "sobre a loja", LOJA.LOGO* = logo em BLOB).
   // Se faltar alguma, o banco é de antes dessas migrações e a pessoa precisa
   // rodar "npm run migrate". Vem como "TABELA.COLUNA".
   const colunasEsperadas = {
-    PRODUTO: ['ATIVO', 'IMAGEM', 'IMAGEM_TIPO'],
-    LOJA: ['DESCRICAO']
+    PRODUTO: ['ATIVO', 'IMAGEM', 'IMAGEM_TIPO', 'IMAGEM_URL'],
+    LOJA: ['DESCRICAO', 'LOGO', 'LOGO_TIPO', 'LOGO_ATUALIZADO_EM'],
+    COMPRA: ['STATUS']
   };
   let colunasFaltando = [];
   for (const [tabela, esperadas] of Object.entries(colunasEsperadas)) {

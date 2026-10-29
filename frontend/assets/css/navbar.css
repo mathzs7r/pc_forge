@@ -5,7 +5,10 @@
     position: sticky;
     top: 0;
     z-index: 20;
-    height: var(--topo-altura);
+    /* min-height em vez de height: no celular os acessos quebram para uma
+       segunda linha e a barra PRECISA crescer — com height fixa o conteúdo
+       vazava e cobria o topo do conteúdo da página. */
+    min-height: var(--topo-altura);
     display: flex;
     align-items: center;
     background: rgba(10, 10, 12, 0.82);
@@ -31,10 +34,29 @@
     margin-left: auto;
 }
 
-/* link de retorno à vitrine, ao lado da logo */
+/* link "▦ Produtos", ao lado da logo (só para sessões logadas) */
 .link-vitrine {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
     color: var(--accent);
 }
+
+.link-vitrine-icone {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+/* link "Monte seu PC": só aparece pra cliente logado (em navbar.js) */
+.link-montar {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--accent);
+}
+
+.link-montar:hover { color: var(--chalk); }
 
 /* ---------- logo ---------- */
 .marca-topo {
@@ -68,10 +90,10 @@
 }
 
 .marca-texto {
-    font-family: 'Nunito Sans', sans-serif;
-    font-size: 19px;
-    font-weight: 900;
-    letter-spacing: 1px;
+    font-family: var(--fonte-display);
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
     color: var(--chalk);
     text-transform: uppercase;
     line-height: 1;
@@ -79,6 +101,8 @@
 
 .marca-texto span {
     color: var(--accent);
+    font-family: var(--fonte-mono);
+    font-weight: 600;
 }
 
 .topo-acessos {
@@ -115,8 +139,8 @@
     border: none;
     background: transparent;
     color: var(--muted);
-    font-family: 'Nunito Sans', sans-serif;
-    font-weight: 700;
+    font-family: var(--fonte-corpo), sans-serif;
+    font-weight: 600;
     font-size: 13px;
     padding: 7px 16px;
     border-radius: 999px;
@@ -292,13 +316,14 @@
     .topo-conteudo {
         justify-content: center;
         text-align: center;
-        padding: 0 12px;
+        padding: 8px 12px;
     }
 
     .topo-acessos {
         width: 100%;
         justify-content: center;
         flex-wrap: wrap;
+        row-gap: 6px;
     }
 }
 

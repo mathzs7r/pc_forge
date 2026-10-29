@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="assets/css/navbar.css">
     <link rel="stylesheet" href="assets/css/forms.css">
     <link rel="stylesheet" href="assets/css/modal.css">
-    <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+    <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg?v=2">
     <title>Entrar como loja | PC Forge — Peças de TI</title>
     <meta name="description" content="Entre no painel da sua loja na PC Forge para gerenciar produtos, pedidos e vendas.">
 </head>
@@ -19,16 +19,26 @@
 
     <div class="tela">
         <section class="vitrine">
-            <div class="vitrine-trajeto">
+            <div class="vitrine-trajeto" aria-hidden="true">
                 <svg viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M-50 40 Q 160 0 260 200 T 560 460" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 10" opacity="0.35"/>
-                    <circle cx="260" cy="200" r="70" fill="var(--accent)" opacity="0.06"/>
-                    <circle cx="500" cy="445" r="9" fill="var(--accent)" opacity="0.5"/>
+                    <path d="M-50 40 Q 160 0 260 200 T 560 460" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 10" opacity="0.25"/>
                 </svg>
             </div>
+
             <span class="vitrine-eyebrow">Área da loja</span>
+
+            <!-- terminal -->
+            <div class="terminal-card" aria-hidden="true">
+                <div class="terminal-barra"><span></span><span></span><span></span><em>pcforge://painel</em></div>
+                <div class="terminal-linhas">
+                    <p class="linha" style="--linha: 1">&gt; painel da loja: <em>pronto</em>_</p>
+                    <p class="linha" style="--linha: 2">&gt; produtos + pedidos + vendas: <em>aguardando você</em>_</p>
+                    <p class="linha" style="--linha: 3">&gt; status dos pedidos: <em>editável</em>_</p>
+                </div>
+            </div>
+
             <p class="vitrine-titulo">PAINEL<br><em>DA LOJA.</em></p>
-            <p class="vitrine-texto">Entre pra gerenciar seus produtos, pedidos e vendas.</p>
+            <p class="vitrine-texto">Entre pra gerenciar produtos, pedidos recebidos e vendas da sua loja.</p>
         </section>
 
         <div class="pagina">
@@ -38,21 +48,29 @@
 
                 <form id="form-login-loja">
                     <label for="identificador">E-mail ou CNPJ</label>
-                    <input type="text" id="identificador" placeholder="contato@sualoja.com" required>
+                    <input type="text" id="identificador" placeholder="contato@sualoja.com" autocomplete="username" required>
 
                     <label for="senha">Senha</label>
-                    <input type="password" id="senha" placeholder="Digite sua senha" required>
+                    <div class="campo-senha">
+                        <input type="password" id="senha" placeholder="Digite sua senha" autocomplete="current-password" required>
+                        <button type="button" class="senha-olho" aria-label="Mostrar senha" aria-pressed="false">👁</button>
+                    </div>
 
                     <input type="submit" value="Entrar">
 
                     <p id="mensagem-erro" class="mensagem-erro"></p>
+
+                    <p class="troca-acesso">É cliente? <a href="login.html">Entrar como cliente</a></p>
                 </form>
             </main>
         </div>
     </div>
 
+    <script src="assets/js/login-extras.js"></script>
+
     <script src="assets/js/api.js"></script>
     <script src="assets/js/toast.js"></script>
+    <script src="assets/js/util.js"></script>
     <script src="assets/js/demo.js"></script>
     <script src="assets/js/admin-modal.js"></script>
     <script src="assets/js/carrinho-api.js"></script>

@@ -9,7 +9,10 @@ const API_URL = "http://localhost:3000";
 //   /carrinho/...  e  /perfil/cliente/...  -> token do CLIENTE
 //   /perfil/loja/...                       -> token da LOJA
 //   /admin/...                             -> token do ADMINISTRADOR
-function tipoDeLoginDaRota(caminho) {
+function tipoDeLoginDaRota(caminho, metodo) {
+    // Escrita de produto (cadastrar/editar/excluir) agora EXIGE o token da
+    // loja no backend — a rota aceita de qualquer um antes, o que era perigo.
+    if (metodo && metodo !== "GET" && (caminho === "/produtos" || /^\/produtos\/\d+$/.test(caminho))) return "loja";
     if (caminho.startsWith("/perfil/loja")) return "loja";
     if (caminho.startsWith("/perfil/cliente") || caminho.startsWith("/carrinho")) return "cliente";
     if (caminho.startsWith("/admin/")) return "adm";
@@ -40,7 +43,7 @@ function sessaoExpirou(tipo) {
         window.mostrarToast("Sua sessão expirou. Entre novamente.", "aviso");
     }
     setTimeout(() => {
-        window.location.href = tipo === "loja" ? "loja-login.html" : tipo === "adm" ? "produtos.html" : "login.html";
+        window.location.href = tipo === "loja" ? "loja-login.html" : "login.html";
     }, 1400);
 }
 
@@ -51,12 +54,12 @@ function sessaoExpirou(tipo) {
 //  - API respondeu com erro (400, 401, 409, 500...) -> mostra a mensagem dela.
 //  - 401 numa rota que exige login -> sessão expirada (erro.sessaoExpirada = true).
 async function chamarApi(metodo, caminho, corpo) {
-    const tipoLogin = tipoDeLoginDaRota(caminho);
+    const tipoLogin = tipoDeLoginDaRota(caminho, metodo);
     const cabecalhos = { "Content-Type": "application/json" };
-    if (tipoLogin) {
-        const token = tokenDaSessao(tipoLogin);
-        if (token) cabecalhos.Authorization = `Bearer ${token}`;
-    }
+    // Guarda se de fato HAVIA token anexado — um login que errou a senha
+    // também responde 401, e isso NÃO significa "sessão expirada".
+    const tokenPortador = tipoLogin ? tokenDaSessao(tipoLogin) : null;
+    if (tokenPortador) cabecalhos.Authorization = `Bearer ${tokenPortador}`;
 
     let resposta;
     try {
@@ -75,7 +78,8 @@ async function chamarApi(metodo, caminho, corpo) {
     if (!resposta.ok) {
         if (dados.erro) console.error(`[API ${metodo} ${caminho}] ${dados.erro}`);
         const erro = new Error(dados.resposta || `Erro na requisição (${resposta.status}).`);
-        if (resposta.status === 401 && tipoLogin) {
+        erro.status = resposta.status; // quem chama decide pelo status (ex.: tentar admin)
+        if (resposta.status === 401 && tipoLogin && tokenPortador) {
             erro.sessaoExpirada = true;
             sessaoExpirou(tipoLogin);
         }
@@ -92,10 +96,24 @@ function apiGet(caminho) { return chamarApi("GET", caminho); }
 // Igual ao apiGet, mas devolve também os cabeçalhos da resposta:
 // usado onde a API manda meta-informação no header (ex: X-Resultados-Total
 // da vitrine, com o total de produtos achados pelos filtros).
-async function apiGetComMeta(caminho) {
-    const response = await fetch(`${API_URL}${caminho}`);
-    const dados = await response.json().catch(() => ({}));
-    return { dados, headers: response.headers };
+// opcoes = { timeout, busignal } — com timeout (ms), a chamada ABORTA se a
+// API demorar demais; sem isso uma carga travada deixaria a página em
+// "carregando..." eterno.
+async function apiGetComMeta(caminho, opcoes) {
+    const op = opcoes || {};
+    let controle = null;
+    let cronometro = null;
+    try {
+        if (op.timeout) {
+            controle = new AbortController();
+            cronometro = setTimeout(() => controle.abort(), op.timeout);
+        }
+        const response = await fetch(`${API_URL}${caminho}`, controle ? { signal: controle.signal } : undefined);
+        const dados = await response.json().catch(() => ({}));
+        return { dados, headers: response.headers };
+    } finally {
+        if (cronometro) clearTimeout(cronometro);
+    }
 }
 
 // Endereço da foto de um produto. A foto vive no banco (BLOB) e a API a
@@ -103,7 +121,14 @@ async function apiGetComMeta(caminho) {
 // alterado, então o navegador não fica mostrando a foto velha do cache.
 // Devolve null se o produto não tem foto.
 function urlImagemProduto(produto) {
-    if (produto.IMAGEM_URL) return produto.IMAGEM_URL; // modo visualização (foto só na memória)
+    // foto externa. Se vier como caminho RELATIVO (isso é um atalho interno da
+    // API, ex. "/produtos/51/imagem"), qualifica com o endereço da API:
+    // solto, o navegador tentaria buscar no frontend (5500) e daria 404.
+    if (produto.IMAGEM_URL) {
+        return produto.IMAGEM_URL.startsWith('/')
+            ? `${API_URL}${produto.IMAGEM_URL}`
+            : produto.IMAGEM_URL;
+    }
     if (!produto.TEM_IMAGEM) return null;
     return `${API_URL}/produtos/${produto.ID}/imagem?v=${produto.IMG_VERSAO || 0}`;
 }

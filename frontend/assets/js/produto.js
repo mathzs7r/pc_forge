@@ -10,10 +10,15 @@
 const idProduto = Number(new URLSearchParams(window.location.search).get('id'));
 
 // helpers locais (produto.js não compartilha escopo com produtos.js)
+// Mesmo escape do PCForgeUtil (util.js): escapa também as aspas, porque
+// o resultado entra dentro de atributos (alt="...", title="...").
 function escapeHtml(texto) {
-    const div = document.createElement('div');
-    div.textContent = texto ?? '';
-    return div.innerHTML;
+    return String(texto ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 function formatarPreco(valor) {
@@ -55,6 +60,21 @@ async function carregarProduto() {
         return;
     }
 
+    // Skeleton: dá feedback imediato de que a página está trabalhando
+    // (o texto "Carregando produto..." simples parecia congelado).
+    if (!estaEmModoDemo()) {
+        caixa.innerHTML = `
+            <div class="produto-ml produto-esqueleto">
+                <div class="produto-foto esqueleto-bloco"></div>
+                <div>
+                    <div class="esqueleto-linha do-67"></div>
+                    <div class="esqueleto-linha do-100"></div>
+                    <div class="esqueleto-linha do-40"></div>
+                </div>
+                <div class="produto-vendedor esqueleto-bloco"></div>
+            </div>`;
+    }
+
     try {
         if (estaEmModoDemo()) return renderizarDemo();
 
@@ -65,6 +85,12 @@ async function carregarProduto() {
         ]);
         produtoAtual = produto;
         renderizar(produto, avaliacoes);
+        // coração de favoritar: carrega os IDs e liga o botão renderizado
+        if (window.PCForgeFavoritos) {
+            PCForgeFavoritos.carregarIds().then(() => {
+                PCForgeFavoritos.decorarBotoes(caixa);
+            });
+        }
     } catch (error) {
         caixa.innerHTML = `<p class="estado-vazio">
             Não foi possível abrir esse produto.<br>
@@ -133,8 +159,17 @@ function renderizar(p, rev) {
             </span>
 
             <div class="produto-acoes">
+                <span class="produto-qtd">
+                    <label for="qtd-produto" class="vendedor-meta">Quantidade</label>
+                    <div class="qtd-produto">
+                        <button type="button" class="qtd-btn" id="qtd-menos" aria-label="Diminuir quantidade">−</button>
+                        <input id="qtd-produto" class="qtd-num" type="number" min="1" max="99" step="1" value="1" inputmode="numeric" aria-live="polite">
+                        <button type="button" class="qtd-btn" id="qtd-mais" aria-label="Aumentar quantidade">+</button>
+                    </div>
+                </span>
                 <button type="button" class="produto-comprar" id="botao-comprar">Comprar agora</button>
                 <button type="button" class="produto-carrinho" id="botao-carrinho">Adicionar ao carrinho</button>
+                ${window.PCForgeFavoritos ? PCForgeFavoritos.coracaoHtml(p.ID) : ''}
             </div>
         </div>
 
@@ -187,8 +222,15 @@ function renderizar(p, rev) {
         ID_LOJA: p.ID_LOJA, CATEGORIA: p.CATEGORIA,
         TEM_IMAGEM: p.TEM_IMAGEM, IMG_VERSAO: p.IMG_VERSAO
     };
-    document.getElementById('botao-carrinho').addEventListener('click', (e) => adicionarAoCarrinho(itemCarrinho, e.currentTarget));
-    document.getElementById('botao-comprar').addEventListener('click', (e) => adicionarAoCarrinho(itemCarrinho, e.currentTarget));
+
+    // Selecionador de quantidade (botões ± e clamp do campo; handlers no fim do arquivo).
+    ligarSelecionadorQuantidade();
+
+    // "Comprar agora": adiciona e LEVA para o carrinho (final dali).
+    document.getElementById('botao-comprar').addEventListener('click', (e) =>
+        adicionarAoCarrinho(itemCarrinho, e.currentTarget, { aoTerminar: 'carrinho' }));
+    document.getElementById('botao-carrinho').addEventListener('click', (e) =>
+        adicionarAoCarrinho(itemCarrinho, e.currentTarget));
 
     notaEscolhida = 0;
     ligarEstrelasEscolha();
@@ -358,9 +400,34 @@ function renderizarDemo() {
 }
 
 // ------------------------------------------------------------
-// Adicionar ao carrinho (mesma lógica da vitrine)
+// Quantidade escolhida na página do produto (1..99, LIMITE_POR_ITEM do
+// backend). Se a página não tem selecionador (modo demo), vale 1.
 // ------------------------------------------------------------
-async function adicionarAoCarrinho(produto, botao) {
+function lerQuantidade() {
+    const campo = document.getElementById('qtd-produto');
+    if (!campo) return 1;
+    const n = Math.floor(Number(campo.value));
+    return Number.isFinite(n) && n >= 1 ? Math.min(n, 99) : 1;
+}
+
+function ligarSelecionadorQuantidade() {
+    const campo = document.getElementById('qtd-produto');
+    if (!campo) return;
+    document.getElementById('qtd-menos').addEventListener('click', () => {
+        campo.value = Math.max(1, lerQuantidade() - 1);
+    });
+    document.getElementById('qtd-mais').addEventListener('click', () => {
+        campo.value = Math.min(99, lerQuantidade() + 1);
+    });
+    campo.addEventListener('change', () => { campo.value = lerQuantidade(); });
+}
+
+// ------------------------------------------------------------
+// Adicionar ao carrinho (mesma lógica da vitrine)
+// opcoes.aoTerminar = 'carrinho' -> depois de adicionar, vai pra tela
+// do carrinho (é o que o botão "Comprar agora" promete).
+// ------------------------------------------------------------
+async function adicionarAoCarrinho(produto, botao, opcoes = {}) {
     if (!sessionStorage.getItem('cliente')) {
         sessionStorage.setItem('produtoPretendido', JSON.stringify({ id: produto.ID, nome: produto.NOME }));
         mostrarToast('Entre na sua conta pra levar esse produto pro carrinho.', 'aviso');
@@ -368,10 +435,18 @@ async function adicionarAoCarrinho(produto, botao) {
         return;
     }
 
+    const quantidade = lerQuantidade();
+
     botao.disabled = true;
     try {
-        await Carrinho.adicionar(produto);
-        mostrarToast(`"${produto.NOME}" foi pro seu carrinho.`, 'sucesso');
+        await Carrinho.adicionar(produto, quantidade);
+        const rótulo = quantidade > 1 ? `${quantidade}× ${produto.NOME}` : `"${produto.NOME}"`;
+        if (opcoes.aoTerminar === 'carrinho') {
+            mostrarToast('Adicionado! Revisando seu carrinho...', 'sucesso');
+            setTimeout(() => { window.location.href = 'carrinho.html'; }, 500);
+        } else {
+            mostrarToast(`${rótulo} foi pro seu carrinho.`, 'sucesso');
+        }
     } catch (error) {
         if (!error.sessaoExpirada) mostrarToast(error.message, 'erro');
     } finally {

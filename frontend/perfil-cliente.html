@@ -10,10 +10,12 @@
     <link rel="stylesheet" href="assets/css/forms.css">
     <link rel="stylesheet" href="assets/css/painel.css">
     <link rel="stylesheet" href="assets/css/perfil.css">
+    <link rel="stylesheet" href="assets/css/catalog.css">
     <link rel="stylesheet" href="assets/css/modal.css">
-    <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+    <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg?v=2">
     <title>Meu perfil | PC Forge — Peças de TI</title>
     <meta name="description" content="Gerencie seus dados, endereços e acompanhe os pedidos da sua conta de cliente na PC Forge.">
+    <script src="assets/js/acesso.js" data-exige="cliente"></script>
 </head>
 
 <body data-tipo-pagina="cliente">
@@ -58,7 +60,8 @@
                         <input type="email" id="perfil-campo-email" required>
 
                         <label for="perfil-campo-celular">Celular</label>
-                        <input type="tel" id="perfil-campo-celular" required>
+                        <input type="tel" id="perfil-campo-celular" data-mascara="celular" required>
+                        <p class="perfil-dica">CPF e data de nascimento não podem ser alterados.</p>
                         <p class="perfil-dica">CPF e data de nascimento não podem ser alterados.</p>
 
                         <label for="perfil-nova-senha">Nova senha <span class="campo-opcional">(deixe em branco pra manter)</span></label>
@@ -87,7 +90,7 @@
                         <div class="row">
                             <div class="col">
                                 <label for="cep">CEP</label>
-                                <input type="text" id="cep" placeholder="00000-000" maxlength="9" onblur="pesquisarCep(this.value);" required>
+                                <input type="text" id="cep" placeholder="00000-000" maxlength="9" data-mascara="cep" onblur="pesquisarCep(this.value);" required>
                             </div>
                             <div class="col">
                                 <label for="numero">Número</label>
@@ -119,6 +122,13 @@
                 </div>
             </div>
 
+            <div class="perfil-secao" id="favoritos">
+                <h2>Meus favoritos</h2>
+                <div class="grade-produtos grade-favoritos" id="lista-favoritos">
+                    <p class="estado-carregando">Carregando favoritos...</p>
+                </div>
+            </div>
+
             <div class="perfil-secao" id="pedidos">
                 <h2>Meus pedidos</h2>
                 <div id="lista-pedidos"><p class="estado-carregando">Carregando pedidos...</p></div>
@@ -132,6 +142,8 @@
     <script src="assets/js/demo.js"></script>
     <script src="assets/js/admin-modal.js"></script>
     <script src="assets/js/carrinho-api.js"></script>
+    <script src="assets/js/mascaras.js"></script>
+    <script src="assets/js/favoritos.js"></script>
     <script src="assets/js/navbar.js"></script>
     <script src="assets/js/cep.js"></script>
     <script src="assets/js/perfil-cliente.js"></script>

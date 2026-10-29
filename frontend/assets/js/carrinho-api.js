@@ -107,8 +107,12 @@
     }
 
     // "produto" precisa ao menos de { ID }. Se já está no carrinho, soma na quantidade.
-    async function adicionar(produto, quantidade) {
+    // opções = { grupo, montada } — usadas pelo "Monte seu PC" quando o cliente
+    // escolheu "Montado na loja": todas as peças da montagem recebem o MESMO
+    // grupo e entram como um cartão único de "PC Montado" no carrinho.
+    async function adicionar(produto, quantidade, opcoes) {
         const qtd = quantidade === undefined ? 1 : quantidade;
+        const opcoesLimpo = opcoes || {};
         if (emModoDemo()) {
             exigirCliente();
             const itens = lerLocal();
@@ -125,7 +129,10 @@
             return publicar(resumoLocal(itens));
         }
         const cliente = exigirCliente();
-        return publicar(await apiPost(`/carrinho/${cliente.id}/itens`, { id_produto: produto.ID, quantidade: qtd }));
+        const corpo = { id_produto: produto.ID, quantidade: qtd };
+        if (opcoesLimpo.grupo) corpo.grupo = String(opcoesLimpo.grupo).slice(0, 64);
+        if (opcoesLimpo.montada) corpo.montada = true;
+        return publicar(await apiPost(`/carrinho/${cliente.id}/itens`, corpo));
     }
 
     // Define a quantidade (não soma). 1 a 99.
@@ -149,6 +156,16 @@
         }
         const cliente = exigirCliente();
         return publicar(await apiDelete(`/carrinho/${cliente.id}/itens/${idProduto}`));
+    }
+
+    // Remove a montagem inteira (grupo). No modo demo, apenas avisa.
+    async function removerGrupo(grupo) {
+        if (emModoDemo()) {
+            if (typeof window.mostrarToast === 'function') window.mostrarToast('No modo visualização a montagem fica no carrinho até esvaziar.', 'aviso');
+            return obter();
+        }
+        const cliente = exigirCliente();
+        return publicar(await apiDelete(`/carrinho/${cliente.id}/grupos/${grupo}`));
     }
 
     async function esvaziar() {
@@ -194,6 +211,7 @@
         adicionar,
         alterarQuantidade,
         remover,
+        removerGrupo,
         esvaziar,
         finalizar,
         atualizarContador

@@ -1,60 +1,114 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap');
 
 /* ==========================================================
-   TOKENS — PC Forge (tema ESCURO de forja)
-   Aço escuro + âmbar derretido; detalhes em verde de destaque
+   TOKENS — PC Forge (tema CYBER-LIME)
+   Preto azulado + verde-limão; tipografia Space Grotesk
    ========================================================== */
 :root {
     /* fundo e superfície */
-    --bg-deep: #0a0a0c;          /* fundo geral da página */
-    --bg-court: #17161d;         /* cartões / superfícies */
-    --thumb-fundo: #211f28;      /* fundo do "sem foto" dos cartões */
+    --bg-deep: #08090d;          /* fundo geral da página */
+    --bg-court: #0e1016;         /* cartões / superfícies */
+    --thumb-fundo: #151821;      /* fundo do "sem foto" dos cartões */
 
     /* marcas de cor */
-    --amarelo-ml: #f59e0b;       /* destaque da marca ( formermente amarelo ML ) */
-    --amarelo-hover: #d97706;
-    --accent: #f59e0b;           /* âmbar: links, focos, valores de destaque */
-    --accent-dark: #d97706;
-    --accent-glow: #fbbf24;
-    --azul-suave: rgba(245, 158, 11, 0.12);  /* "focus halo" translúcido */
-    --mais-vendido: #22c55e;     /* verde: frete grátis, totais */
+    --amarelo-ml: #c6ff3d;       /* compat: chips/notas antigas apontam aqui */
+    --amarelo-hover: #a3e635;
+    --accent: #c6ff3d;           /* lime: links, focos, botões primários */
+    --accent-dark: #a3e635;
+    --accent-glow: #dbff7a;
+    --azul-suave: rgba(198, 255, 61, 0.14);   /* "focus halo" translúcido */
+    --mais-vendido: #c6ff3d;     /* frete grátis, totais */
 
     /* texto */
-    --chalk: #f5f0e8;            /* texto principal */
-    --texto-forte: #f5f0e8;      /* títulos / preços */
-    --muted: #a89f94;
-    --on-accent: #1a0f05;        /* texto sobre os botões âmbar */
+    --chalk: #f4f7f4;            /* texto principal */
+    --texto-forte: #ffffff;      /* títulos / preços */
+    --muted: #8b93a1;
+    --on-accent: #0a0c07;        /* texto sobre o lime */
 
     /* "superfície de vidro" (o site dark usa transparências) */
-    --glass-fill: rgba(255, 255, 255, 0.05);
-    --glass-fill-strong: rgba(255, 255, 255, 0.1);
-    --glass-border: rgba(245, 158, 11, 0.22);
-    --glass-border-neutro: rgba(255, 255, 255, 0.14);
+    --glass-fill: rgba(255, 255, 255, 0.04);
+    --glass-fill-strong: rgba(255, 255, 255, 0.08);
+    --glass-border: rgba(198, 255, 61, 0.3);
+    --glass-border-neutro: rgba(255, 255, 255, 0.09);
 
     /* estados */
-    --danger: #ef4444;
+    --danger: #ff5d5d;
 
     /* sombras */
-    --sombra-card: 0 3px 12px rgba(0, 0, 0, 0.4);
-    --sombra-card-hover: 0 10px 26px rgba(0, 0, 0, 0.55), 0 0 18px color-mix(in srgb, var(--accent) 22%, transparent);
+    --sombra-card: 0 3px 14px rgba(0, 0, 0, 0.5);
+    --sombra-card-hover: 0 8px 28px rgba(0, 0, 0, 0.6), 0 0 22px rgba(198, 255, 61, 0.22);
 
     /* padrões repetidos nas páginas (botões, chips, estrelas...)
        — trocar aqui muda o site inteiro */
-    --gradiente-turbo: linear-gradient(135deg, var(--accent), var(--accent-dark));
-    --raio-pastilha: 10px;                     /* botões/campos menores que o --radius */
-    --estrela-ouro: #f5c518;                   /* estrela "cheia" de avaliação */
-    --brilho-hover: brightness(1.12);          /* hover dos botões âmbar */
+    --gradiente-turbo: linear-gradient(135deg, #dbff7a, #c6ff3d 45%, #a3e635);
+    --raio-pastilha: 8px;                      /* botões/campos menores que o --radius */
+    --estrela-ouro: #c6ff3d;                   /* estrela "cheia" de avaliação */
+    --brilho-hover: brightness(1.06);          /* hover dos botões lime */
 
-    --radius: 14px;
+    /* tipografia da identidade */
+    --fonte-display: 'Space Grotesk', 'Inter', sans-serif;
+    --fonte-corpo: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --fonte-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+    --radius: 12px;
     --topo-altura: 64px;
 }
 
-/* Tema da loja: mesma paleta dark (identidade única) */
-body[data-tipo-pagina="loja"] {
-    --accent: #f59e0b;
-    --accent-dark: #d97706;
-    --amarelo-ml: #f59e0b;
+/* ==========================================================
+   SKELETON — blocos “cinza aceso” enquanto o carregamento rola.
+   Dá sensação de velocidade (o layout já existe) em vez de um
+   texto “Carregando...”.
+   ========================================================== */
+.esqueleto-bloco {
+    position: relative;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.07) !important;
+    border-radius: var(--radius);
 }
+
+.esqueleto-bloco::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.08) 50%, transparent 80%);
+    animation: esqueleto-varrer 1.4s ease-in-out infinite;
+}
+
+.esqueleto-linha {
+    height: 16px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.09);
+    margin: 10px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.esqueleto-linha::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.1) 50%, transparent 80%);
+    animation: esqueleto-varrer 1.4s ease-in-out infinite;
+}
+
+.esqueleto-linha.do-100 { width: 100%; }
+.esqueleto-linha.do-67 { width: 67%; }
+.esqueleto-linha.do-40 { width: 40%; }
+
+@keyframes esqueleto-varrer {
+    from { transform: translateX(-100%); }
+    to   { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .esqueleto-bloco::after,
+    .esqueleto-linha::after {
+        animation: none;
+    }
+}
+
+/* Toda a página usa a MESMA identidade (Cyber-Lime) — o bloco antigo
+   que dava paleta própria ao lado loja foi aposentado. */
 
 /* ==========================================================
    RESET / BASE
@@ -93,7 +147,7 @@ body {
 body {
     margin: 0;
     min-height: 100vh;
-    font-family: 'Nunito Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: var(--fonte-corpo);
     color: var(--chalk);
     display: flex;
     flex-direction: column;
@@ -101,23 +155,29 @@ body {
     transition: background-color 0.3s ease;
 }
 
-/* Fundo forja — brasas discretas + grade de aço */
+/* Hierarquia tipográfica da identidade: títulos em Space Grotesk */
+h1, h2, h3, h4 {
+    font-family: var(--fonte-display) !important;
+    letter-spacing: -0.02em;
+}
+
+/* Fundo Cyber-Lime — halo limão no topo + grade técnica sutil */
 body::before {
     content: "";
     position: fixed;
     inset: 0;
     z-index: -1;
     background-image:
-        radial-gradient(ellipse at 15% 5%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 48%),
-        radial-gradient(ellipse at 85% 95%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 42%),
-        linear-gradient(rgba(255, 255, 255, 0.014) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.014) 1px, transparent 1px),
-        linear-gradient(180deg, var(--bg-deep) 0%, #121016 45%, var(--bg-deep) 100%);
+        radial-gradient(ellipse at 18% -8%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 52%),
+        radial-gradient(ellipse at 88% 100%, color-mix(in srgb, var(--accent) 5%, transparent), transparent 44%),
+        linear-gradient(rgba(255, 255, 255, 0.012) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.012) 1px, transparent 1px),
+        linear-gradient(180deg, var(--bg-deep) 0%, #0a0c12 45%, var(--bg-deep) 100%);
     background-size:
         100% 100%,
         100% 100%,
-        40px 40px,
-        40px 40px,
+        44px 44px,
+        44px 44px,
         100% 100%;
 }
 
@@ -185,6 +245,21 @@ button {
 /* ==========================================================
    ANIMAÇÕES GLOBAIS
    ========================================================== */
+::selection {
+    background: var(--accent);
+    color: var(--on-accent);
+}
+
+/* scrollbar discreta na identidade escura */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb {
+    background: #232733;
+    border-radius: 999px;
+    border: 2px solid var(--bg-deep);
+}
+::-webkit-scrollbar-thumb:hover { background: #2c3140; }
+
 @keyframes surgir {
     from {
         opacity: 0;
@@ -204,5 +279,47 @@ button {
 @keyframes pop {
     0% { opacity: 0; transform: scale(0.92) translateY(8px); }
     100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ==========================================================
+   CORAÇÃO DE FAVORITAR (vitrine e página do produto)
+   ========================================================== */
+.cartao-favorito {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 3;
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+    font-size: 19px;
+    line-height: 1;
+    color: var(--danger);
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cartao-favorito:hover {
+    transform: scale(1.12);
+    background: #fff;
+}
+
+.cartao-favorito.favoritado {
+    background: #fff;
+    color: var(--danger);
+}
+
+.produto-acoes .cartao-favorito {
+    position: static;
+    width: 46px;
+    height: 46px;
+    font-size: 24px;
+    flex: none;
 }
 

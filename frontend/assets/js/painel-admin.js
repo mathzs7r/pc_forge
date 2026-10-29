@@ -24,7 +24,7 @@
         $('login-necessario').hidden = false;
         $('painel-conteudo').hidden = true;
         $('nome-admin').textContent = 'Acesso restrito';
-        setTimeout(() => { window.location.href = 'produtos.html'; }, 3200);
+        setTimeout(() => { window.location.href = 'login.html'; }, 3200);
         return;
     }
 
@@ -109,7 +109,7 @@
     $('botao-sair').addEventListener('click', function () {
         sessionStorage.removeItem('adm');
         mostrarToast('Sessão do administrador encerrada.', 'info');
-        setTimeout(() => { window.location.href = 'produtos.html'; }, 600);
+        setTimeout(() => { window.location.href = 'login.html'; }, 600);
     });
 
     carregar();

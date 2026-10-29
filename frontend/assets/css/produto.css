@@ -118,7 +118,7 @@
 }
 
 .produto-compra h1 {
-    font-family: 'Nunito Sans', sans-serif;
+    font-family: var(--fonte-corpo), sans-serif;
     font-weight: 900;
     font-size: clamp(20px, 2.6vw, 28px);
     color: var(--texto-forte);
@@ -165,7 +165,7 @@
 
 /* preço grande, estilo ML */
 .produto-preco {
-    font-family: 'Nunito Sans', sans-serif;
+    font-family: var(--fonte-corpo), sans-serif;
     font-size: clamp(30px, 3.6vw, 42px);
     font-weight: 300;
     color: var(--texto-forte);
@@ -193,7 +193,59 @@
     font-weight: 800;
     font-size: 15px;
     cursor: pointer;
-    font-family: 'Nunito Sans', sans-serif;
+    font-family: var(--fonte-corpo), sans-serif;
+}
+
+/* seletor de quantidade na página do produto */
+.produto-qtd {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.qtd-produto {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--glass-border-neutro);
+    border-radius: var(--raio-pastilha);
+    background: var(--glass-fill);
+    overflow: hidden;
+}
+
+.qtd-produto .qtd-btn {
+    width: 44px;
+    height: 44px;
+    border: none;
+    background: transparent;
+    color: var(--accent);
+    font-size: 20px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.qtd-produto .qtd-btn:hover {
+    background: var(--azul-suave);
+}
+
+.qtd-produto .qtd-num {
+    width: 56px;
+    height: 44px;
+    text-align: center;
+    border: none;
+    border-left: 1px solid var(--glass-border-neutro);
+    border-right: 1px solid var(--glass-border-neutro);
+    background: transparent;
+    color: var(--texto-forte);
+    font-weight: 800;
+    font-size: 15px;
+    font-family: var(--fonte-corpo), sans-serif;
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.qtd-produto .qtd-num::-webkit-outer-spin-button,
+.qtd-produto .qtd-num::-webkit-inner-spin-button {
+    -webkit-appearance: none;
 }
 
 /* Comprar agora: âmbar sólido */
@@ -314,7 +366,7 @@
 
 .produto-descricao h2,
 .produto-avaliacoes h2 {
-    font-family: 'Nunito Sans', sans-serif;
+    font-family: var(--fonte-corpo), sans-serif;
     font-weight: 800;
     font-size: 18px;
     color: var(--texto-forte);
@@ -348,7 +400,7 @@
 }
 
 .avaliacao-big {
-    font-family: 'Nunito Sans', sans-serif;
+    font-family: var(--fonte-corpo), sans-serif;
     font-size: 44px;
     font-weight: 300;
     color: var(--texto-forte);
@@ -503,7 +555,7 @@
     padding: 10px 12px;
     border-radius: var(--raio-pastilha);
     font-size: 13.5px;
-    font-family: 'Nunito Sans', sans-serif;
+    font-family: var(--fonte-corpo), sans-serif;
     outline: none;
     margin: 12px 0;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
