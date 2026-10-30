@@ -268,18 +268,30 @@ INSERT INTO PRECOS_BASE (PREFIXO, PRECO) VALUES
 ('Water Cooler 360mm', 599);
 
 -- ---------- ATUALIZAÇÃO ----------
--- Pega o prefixo mais longo que casa com o começo do nome; aplica a
--- variação de ID (-4% a +4%) e arredonda pro centavo.
+-- O MySQL não deixa abrir a MESMA tabela TEMPORARY duas vezes na mesma
+-- consulta (erro 1137 "Can't reopen table"), então o casamento é feito
+-- em dois passos:
+--   1. Aqui a PRECOS_BASE é referenciada UMA vez só: pega o prefixo mais
+--      longo que casa com o começo do nome, aplica a variação de ID
+--      (-4% a +4%) e arredonda pro centavo, guardando em PRECOS_NOVOS.
+--   2. O UPDATE seguinte só cruza PRODUTO com PRECOS_NOVOS.
+DROP TEMPORARY TABLE IF EXISTS PRECOS_NOVOS;
+CREATE TEMPORARY TABLE PRECOS_NOVOS AS
+SELECT ID, NOVO_PRECO FROM (
+    SELECT P.ID AS ID,
+           ROUND(B.PRECO * (1 + ((P.ID % 9) - 4) / 100.0), 2) AS NOVO_PRECO,
+           ROW_NUMBER() OVER (PARTITION BY P.ID
+                              ORDER BY LENGTH(B.PREFIXO) DESC) AS ORDEM
+    FROM PRODUTO P
+    JOIN PRECOS_BASE B ON P.NOME LIKE CONCAT(B.PREFIXO, '%')
+) RANKING
+WHERE ORDEM = 1;
+
 UPDATE PRODUTO P
-SET P.PRECO = ROUND(
-        (SELECT B.PRECO * (1 + ((P.ID % 9) - 4) / 100.0)
-         FROM PRECOS_BASE B
-         WHERE P.NOME LIKE CONCAT(B.PREFIXO, '%')
-         ORDER BY LENGTH(B.PREFIXO) DESC
-         LIMIT 1), 2)
-WHERE EXISTS (
-    SELECT 1 FROM PRECOS_BASE B2 WHERE P.NOME LIKE CONCAT(B2.PREFIXO, '%')
-);
+JOIN PRECOS_NOVOS N ON N.ID = P.ID
+SET P.PRECO = N.NOVO_PRECO;
+
+DROP TEMPORARY TABLE IF EXISTS PRECOS_NOVOS;
 
 -- ---------- Serviços: montagem R$ 0,10 + frete GRÁTIS ----------
 UPDATE PRODUTO SET PRECO = 0.10,

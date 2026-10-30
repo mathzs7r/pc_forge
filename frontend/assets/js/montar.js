@@ -448,92 +448,6 @@
     // ------------------------------------------------------------
     function renderTudo() { renderEtapas(); renderResumo(); }
 
-    // ------------------------------------------------------------
-    // KITS DE UPGRADE (presets em kits.js)
-    // ------------------------------------------------------------
-    // Aplicar um kit preenche só as etapas DELE (o resto das escolhas do
-    // cliente fica como está). Depois o wizard pausa na primeira etapa
-    // vazia — igual ao fluxo manual. Deep link: montar.html?kit=force.
-    async function aplicarKit(kitId, opcoes) {
-        const op = opcoes || {};
-        if (!window.PCForgeKits) return false;
-
-        const resolvido = await window.PCForgeKits.resolverKitPorId(kitId);
-        if (!resolvido) return false;
-
-        const faltando = Object.values(resolvido.pecas).filter((peca) => !peca);
-        if (faltando.length > 0) {
-            if (!op.semToast) window.mostrarToast('Este kit não está completo no catálogo agora. Volte mais tarde.', 'erro');
-            return false;
-        }
-
-        // já tem peças escolhidas? avisa que as etapas do kit serão substituídas
-        if (Object.keys(escolhas).length > 0 && !op.semConfirmar) {
-            const ok = await PCForgeUtil.confirmar(`Aplicar o kit "${resolvido.kit.nome}"? As peças marcadas por ele serão substituídas.`);
-            if (!ok) return false;
-        }
-
-        for (const [etapa, peca] of Object.entries(resolvido.pecas)) {
-            escolhas[etapa] = { ID: peca.ID, NOME: peca.NOME, PRECO: peca.PRECO, LOJA_NOME: peca.LOJA_NOME, CATEGORIA: peca.CATEGORIA };
-        }
-
-        // pausa na primeira etapa vazia (depois do último kit aplicado)
-        const indiceVazio = PCForgeKits.ORDEM.findIndex((e) => !escolhas[e]);
-        etapaAtual = indiceVazio === -1 ? PCForgeKits.ORDEM[PCForgeKits.ORDEM.length - 1] : PCForgeKits.ORDEM[indiceVazio];
-
-        salvarEstado();
-        renderTudo();
-        carregarEtapaAtual();
-        if (!op.semToast) {
-            window.mostrarToast(`Kit "${resolvido.kit.nome}" aplicado — ajuste o que quiser antes de enviar.`, 'sucesso');
-        }
-        return true;
-    }
-
-    // Cards "Começar de um kit" logo acima das etapas. Só entra se o kits.js
-    // estiver carregado (garante o script no HTML) — sem cards, nada quebra.
-    // Total e nº de peças vêm da resolução real (peça mais barata que casa).
-    async function montarBarraKits() {
-        if (!window.PCForgeKits) return;
-        const etapas = document.getElementById('montar-etapas');
-        if (!etapas || document.getElementById('montar-kits')) return;
-
-        const barra = document.createElement('div');
-        barra.id = 'montar-kits';
-        barra.className = 'montar-kits';
-        barra.innerHTML = `
-            <span class="montar-kits-titulo">Começar de um kit da forja:</span>
-            <div class="montar-kits-grade">
-                <p class="montar-carregando-kits">Buscando os kits de upgrade...</p>
-            </div>`;
-        etapas.parentNode.insertBefore(barra, etapas);
-
-        const resolvidos = await Promise.all(PCForgeKits.KITS.map((k) => PCForgeKits.resolverKit(k)));
-        const disponiveis = resolvidos.filter((r) => Object.values(r.pecas).every(Boolean));
-
-        // nenhum kit completo no catálogo agora: a barra inteira some
-        if (disponiveis.length === 0) {
-            barra.remove();
-            return;
-        }
-
-        const grade = barra.querySelector('.montar-kits-grade');
-        grade.innerHTML = disponiveis.map((resolvido) => {
-            const { qtd, total } = PCForgeKits.contarKit(resolvido);
-            const kit = resolvido.kit;
-            return `
-                <button type="button" class="kit-cartao" data-kit="${kit.id}" title="Pré-seleciona as peças deste kit no wizard">
-                    <span class="kit-cartao-icone" aria-hidden="true">${kit.icone}</span>
-                    <span class="kit-cartao-nome">${PCForgeKits.escapeHtml(kit.nome)}</span>
-                    <span class="kit-cartao-meta">${qtd} peça${qtd === 1 ? '' : 's'} · ${PCForgeKits.escapeHtml(PCForgeKits.preco(total))}</span>
-                </button>`;
-        }).join('');
-
-        grade.querySelectorAll('.kit-cartao').forEach((botao) => {
-            botao.addEventListener('click', function () { aplicarKit(this.dataset.kit); });
-        });
-    }
-
     async function carregarEtapaAtual() {
         const etapa = etapaPorId(etapaAtual);
         try {
@@ -571,22 +485,11 @@
 
     lerEstado();
 
-    // Deep link de kit (vitrine -> montar.html?kit=force): aplica UMA
-    // vez e limpa o parâmetro, senão o F5 reaplicaria o kit por cima
-    // de eventuais ajustes do cliente.
-    const kitNaUrl = (() => {
-        const url = new URLSearchParams(window.location.search);
-        const id = url.get('kit');
-        if (!id) return null;
-        history.replaceState(null, '', window.location.pathname);
-        return id;
-    })();
-
+    // Eliminada a barra de kits na página, o arranque fica
+    // apenas com o wizard normal.
     try {
         renderTudo();
-        montarBarraKits();
         carregarEtapaAtual();
-        if (kitNaUrl) aplicarKit(kitNaUrl);
     } catch (erro) {
         // se algo quebrar antes mesmo da primeira carga, a queda de lista já
         // nem acontece: mostra o problema no lugar da lista com o "tentar de novo"
