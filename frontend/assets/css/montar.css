@@ -14,12 +14,12 @@
 }
 
 .montar-titulo {
-    margin: 10px 0 12px;
+    margin: 10px 0 14px;
     font-family: var(--fonte-display);
-    font-size: clamp(30px, 4.4vw, 46px);
+    font-size: var(--titulo-secao);
     line-height: 1.02;
-    letter-spacing: -0.02em;
-    font-weight: 700;
+    letter-spacing: -0.035em;
+    font-weight: 800;
     color: var(--texto-forte);
 }
 
@@ -30,10 +30,10 @@
 }
 
 .montar-hero-texto {
-    max-width: 640px;
+    max-width: 56ch;
     color: var(--muted);
-    font-size: 14.5px;
-    line-height: 1.6;
+    font-size: var(--corpo-texto);
+    line-height: 1.65;
     margin: 0;
 }
 

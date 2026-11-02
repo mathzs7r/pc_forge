@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="assets/css/perfil.css">
     <link rel="stylesheet" href="assets/css/modal.css">
     <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg?v=2">
-    <title>Perfil da loja | PC Forge — Peças de TI</title>
+    <title>Perfil da loja | PC Forge | Peças de TI</title>
     <meta name="description" content="Dados, logo e descrição pública da sua loja parceira na PC Forge.">
     <script src="assets/js/acesso.js" data-exige="loja"></script>
 </head>
@@ -25,7 +25,6 @@
             <div class="perfil-topo">
                 <div class="perfil-avatar" id="perfil-avatar">?</div>
                 <div>
-                    <span class="vitrine-eyebrow">Perfil da loja</span>
                     <h1 id="perfil-nome">Minha loja</h1>
                     <span class="perfil-desde" id="perfil-desde"></span>
                 </div>
@@ -38,7 +37,7 @@
 
         <div class="painel-form-card aviso-demo-perfil" id="perfil-demo" hidden>
             <h2>Modo visualização</h2>
-            <p class="subtitulo" style="text-align:left">Nesse modo não há banco de dados, então o perfil mostra só o nome e o e-mail usados no login de teste e não dá pra editar. Clique em "Modo visualização — sair" (canto da tela), ligue a API e entre com uma loja de verdade.</p>
+            <p class="subtitulo" style="text-align:left">Nesse modo não há banco de dados, então o perfil mostra só o nome e o e-mail usados no login de teste e não dá pra editar. Clique em "Modo visualização: sair" (canto da tela), ligue a API e entre com uma loja de verdade.</p>
         </div>
 
         <div id="perfil-conteudo" hidden>
@@ -79,7 +78,11 @@
                         <label for="perfil-campo-logo">Logo da loja <span class="campo-opcional">(aparece na página pública)</span></label>
                         <div class="logo-editor">
                             <img class="logo-preview" id="logo-preview" alt="" hidden>
-                            <span class="logo-fallback" id="logo-fallback" aria-hidden="true">🔥</span>
+                            <span class="logo-fallback" id="logo-fallback" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" style="width: 34px; height: 34px;">
+                            <path d="M12 21c4 0 6.5-2.6 6.5-6 0-4.4-4-5.4-3.4-10.4C11.4 6 9.9 8.6 9.9 11c-1.2-.6-1.9-1.9-1.7-3.6C6 9 5.5 11.5 5.5 15c0 3.4 2.5 6 6.5 6z" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
                             <div class="logo-acoes">
                                 <input type="file" id="perfil-campo-logo" accept="image/jpeg,image/png,image/webp,image/gif">
                                 <button type="button" id="perfil-botao-remover-logo" class="painel-cancelar-edicao">Remover logo</button>
@@ -87,7 +90,7 @@
                         </div>
 
                         <label for="perfil-nova-senha">Nova senha <span class="campo-opcional">(deixe em branco pra manter)</span></label>
-                        <input type="password" id="perfil-nova-senha" autocomplete="new-password" placeholder="Mínimo 4 caracteres">
+                        <input type="password" id="perfil-nova-senha" autocomplete="new-password" placeholder="Mínimo 8 caracteres">
 
                         <label for="perfil-senha-atual">Senha atual <span class="campo-opcional">(obrigatória pra salvar)</span></label>
                         <input type="password" id="perfil-senha-atual" autocomplete="current-password" required>
@@ -107,6 +110,7 @@
 
     <script src="assets/js/api.js"></script>
     <script src="assets/js/util.js"></script>
+    <script src="assets/js/icones.js"></script>
     <script src="assets/js/toast.js"></script>
     <script src="assets/js/demo.js"></script>
     <script src="assets/js/admin-modal.js"></script>
@@ -115,6 +119,7 @@
     <script src="assets/js/mascaras.js"></script>
     <script src="assets/js/navbar.js"></script>
     <script src="assets/js/perfil-loja.js"></script>
+    <script src="assets/js/animacoes.js"></script>
 </body>
 
 </html>

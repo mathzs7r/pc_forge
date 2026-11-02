@@ -5,6 +5,9 @@
 //               util.js (PCForgeUtil), demo.js, toast.js.
 // ============================================================
 (function () {
+    // helper de ícones SVG (icones.js)
+    function ic(nome) { return window.PCForgeIcones ? PCForgeIcones.svg(nome) : ''; }
+
     // Acesso restrito: a montagem (e o envio pro carrinho) é ferramenta de
     // CLIENTE. Sem sessão de cliente, avisa e manda pro login — igual o
     // carrinho.html faz. O return impede manter o restante do IIFE rodando.
@@ -136,13 +139,15 @@
             const conflito = escolhida && Compat.resumo(escolhas).conflitos.some((c) => c.etapa === etapa.id); // eslint-disable-line
             const trancada = indice > primeiroVazio;
             const classe = ['etapa', etapa.id === etapaAtual ? 'atual' : '', escolhida ? 'feita' : '', conflito ? 'conflito' : '', trancada ? 'trancada' : ''].join(' ');
-            const estado = escolhida ? (conflito ? '✕' : '✓') : trancada ? '🔒' : String(indice + 1);
+            const estadoFlag = escolhida
+                ? (conflito ? PCForgeIcones.svg('aviso') : PCForgeIcones.svg('ok'))
+                : trancada ? PCForgeIcones.svg('cadeado') : String(indice + 1);
             return `
                 <button type="button" class="${classe}" data-id="${etapa.id}" ${trancada ? 'disabled title="escolha as peças anteriores primeiro"' : ''}>
-                    <span class="etapa-flag">${estado}</span>
+                    <span class="etapa-flag">${estadoFlag}</span>
                     <span class="etapa-textos">
                         <strong>${etapa.titulo}</strong>
-                        <em>${escolhida ? escapeHtml(escolhida.NOME) : trancada ? '🔒 escolha as anteriores' : etapa.desc}</em>
+                        <em>${escolhida ? escapeHtml(escolhida.NOME) : trancada ? 'escolha as anteriores' : etapa.desc}</em>
                     </span>
                 </button>`;
         }).join('');
@@ -174,8 +179,8 @@
 
         const cartao = (peca, incompativel) => {
             const teste = Compat.compativel(etapa.id, peca, escolhas);
-            const aviso = teste.aviso ? `<span class="peca-aviso">⚠ ${escapeHtml(teste.aviso)}</span>` : '';
-            const motivo = teste.motivo ? `<span class="peca-motivo">✕ ${escapeHtml(teste.motivo)}</span>` : '';
+            const aviso = teste.aviso ? `<span class="peca-aviso">${ic('aviso')} ${escapeHtml(teste.aviso)}</span>` : '';
+            const motivo = teste.motivo ? `<span class="peca-motivo">${ic('x')} ${escapeHtml(teste.motivo)}</span>` : '';
             const identica = escolhida && String(escolhida.ID) === String(peca.ID);
             return `
                 <button type="button" class="peca${identica ? ' escolhida' : ''}${incompativel ? ' fora' : ''}" data-id="${peca.ID}" ${incompativel ? 'disabled' : ''}>
@@ -201,9 +206,9 @@
             ${cheias.length === 0 && fora.length === 0 ? '<p class="estado-vazio">Nenhum resultado pra esse termo nesta categoria.</p>' : ''}
             ${cheias.map((p) => cartao(p, false)).join('')}
             ${mostrarIncompativeis ? fora.map((p) => cartao(p, true)).join('')
-                : fora.length ? `<button type="button" class="ver-incompativeis">mostrar ${fora.length} incompatível(is) ✕</button>` : ''}`;
+                : fora.length ? `<button type="button" class="ver-incompativeis">mostrar ${fora.length} incompatível(is)</button>` : ''}`;
 
-        // fotos: imagem quando o produto tem, ícone 📦 quando não
+        // fotos: imagem quando o produto tem, ícone vetorial quando não
         cont.querySelectorAll('.peca-foto').forEach((el) => {
             const url = el.dataset.imagem;
             if (url) {
@@ -243,7 +248,7 @@
         document.getElementById('montar-lista').innerHTML = `
             <div class="lista-cabecalho">
                 <h2>${etapa.titulo}</h2>
-                <p>${escolhida ? '<strong class="chip-escolhida">✓ escolhida:</strong> ' + escapeHtml(escolhida.NOME) : etapa.desc}</p>
+                <p>${escolhida ? '<strong class="chip-escolhida">' + ic('ok') + ' escolhida:</strong> ' + escapeHtml(escolhida.NOME) : etapa.desc}</p>
                 <input id="lista-busca" class="lista-busca" type="search" placeholder="buscar nesta lista..." value="${escapeHtml(buscaAtual)}" aria-label="Buscar peça na lista">
             </div>
             <div class="lista-pecas" id="lista-pecas"></div>
@@ -300,7 +305,7 @@
 
         const conflitos = [
             ...resumo.conflitos.map((c) => `<li><b>${escapeHtml(ETAPAS.find((e) => e.id === c.etapa).titulo)}:</b> ${escapeHtml(c.motivo)} <span class="conflito-fonte">(${escapeHtml(c.peca)})</span></li>`),
-            resumo.avisoFonte ? `<li>⚠ ${escapeHtml(resumo.avisoFonte)}</li>` : ''
+            resumo.avisoFonte ? `<li>${ic('aviso')} ${escapeHtml(resumo.avisoFonte)}</li>` : ''
         ].filter(Boolean).join('');
 
         document.getElementById('montar-resumo').innerHTML = `
@@ -311,13 +316,13 @@
                     <li>
                         <span class="resumo-nome">${escapeHtml(escolhas[k].NOME)}</span>
                         <span class="resumo-preco">${preco(escolhas[k].PRECO)}</span>
-                        <button type="button" class="resumo-remover" data-id="${k}" title="Remover">✕</button>
+                        <button type="button" class="resumo-remover" data-id="${k}" title="Remover" aria-label="Remover">${ic('x')}</button>
                     </li>
                 `).join('')}
             </ul>`}
             ${consumoBarra}
-            ${resumo.avisoFonte ? '<p class="resumo-aviso">⚠ ' + escapeHtml(resumo.avisoFonte) + '</p>' : ''}
-            ${chamados.length === 0 ? '' : conflitos ? `<ul class="resumo-conflitos">${conflitos}</ul>` : '<p class="resumo-ok">✓ Tudo compatível.</p>'}
+            ${resumo.avisoFonte ? '<p class="resumo-aviso">' + ic('aviso') + ' ' + escapeHtml(resumo.avisoFonte) + '</p>' : ''}
+            ${chamados.length === 0 ? '' : conflitos ? `<ul class="resumo-conflitos">${conflitos}</ul>` : `<p class="resumo-ok">${ic('ok')} Tudo compatível.</p>`}
 
             <!-- modalidade: montar sozinho ou levar montado -->
             <div class="resumo-modos" role="group" aria-label="Como você quer receber">
@@ -397,7 +402,7 @@
                                 await window.Carrinho.adicionar(extra, 1, opcoesDoEnvio);
                             }
                             if (extras.length) {
-                                window.mostrarToast('Serviço de montagem acertado — frete grátis, sistema já instalado. 🔧', 'sucesso');
+                                window.mostrarToast('Serviço de montagem acertado, frete grátis e sistema já instalado.', 'sucesso');
                             }
                         } catch (erro) {
                             if (!erro.sessaoExpirada) window.mostrarToast(`Montagem não reservada: ${erro.message}`, 'erro');
@@ -414,7 +419,7 @@
                         await Carrinho.atualizarContador();
                         document.getElementById('montar-lista').innerHTML = `
                             <div class="montagem-enviada">
-                                <span class="enviada-flag">✓</span>
+                                <span class="enviada-flag">${ic('ok')}</span>
                                 <h2>Montagem organizada!</h2>
                                 <p>Suas peças já estão no carrinho${montado ? ' — e a loja vai montar tudo pra você: teste, cabeamento e sistema instalado' : ''}. Falta só o endereço e o pagamento.</p>
                                 <div class="enviada-acoes">

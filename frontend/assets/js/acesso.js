@@ -41,5 +41,12 @@
 
     // pág+query que ele tentou abrir (só o nome do arquivo: guard vale por página)
     const voltar = window.location.pathname.split('/').pop() + window.location.search;
-    window.location.replace('login.html?voltar=' + encodeURIComponent(voltar));
+    // O login certo depende do tipo exigido: mandar usuário de LOJA pro login
+    // de CLIENTE (ou vice-versa) só gerava senhas erradas e confusão.
+    const destinos = { cliente: 'login.html', loja: 'loja-login.html' };
+    const destino = destinos[tipo] || 'login.html';
+    // Em páginas de admin o próprio painel mostra o formulário de login, então
+    // basta cair lá; nas demais, manda pro login do tipo com ?voltar=.
+    if (tipo === 'adm') return;
+    window.location.replace(destino + '?voltar=' + encodeURIComponent(voltar));
 })();

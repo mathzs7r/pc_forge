@@ -25,14 +25,9 @@ function formatarPreco(valor) {
     return Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-const ICONES = {
-    'processadores': '🔲', 'placas de vídeo': '🎮', 'placas de video': '🎮',
-    'memória ram': '💾', 'memoria ram': '💾', 'armazenamento': '📀',
-    'placas-mãe': '🖥️', 'placas-mae': '🖥️', 'fontes': '⚡',
-    'periféricos': '⌨️', 'perifericos': '⌨️', 'acessórios': '🎧', 'acessorios': '🎧'
-};
+// Ícones em SVG via icones.js (sem emoji; currentColor)
 function iconeDe(categoria) {
-    return ICONES[(categoria || '').toLowerCase()] || '💻';
+    return window.PCForgeIcones ? PCForgeIcones.categoria(categoria) : '';
 }
 
 // Desenha 5 estrelas (cheias/vazias) a partir de uma média 0–5
@@ -210,7 +205,7 @@ function renderizar(p, rev) {
         if (!fig.querySelector('.produto-foto-icone')) {
             const span = document.createElement('span');
             span.className = 'produto-foto-icone';
-            span.textContent = iconeDe(p.CATEGORIA);
+            span.innerHTML = iconeDe(p.CATEGORIA);
             fig.appendChild(span);
         }
         img.remove();
@@ -375,7 +370,7 @@ function renderizarDemo() {
             <span class="produto-categoria">${escapeHtml(p.CATEGORIA)}</span>
             <h1>${escapeHtml(p.NOME)}</h1>
             <div class="produto-preco">${formatarPreco(p.PRECO)}</div>
-            <span class="cartao-frete">🚚 Frete grátis</span>
+            <span class="cartao-frete">${window.PCForgeIcones ? PCForgeIcones.svg('caminhao') + ' ' : ''}Frete grátis</span>
             <div class="produto-acoes">
                 <button type="button" class="produto-carrinho" id="botao-carrinho">Adicionar ao carrinho</button>
             </div>

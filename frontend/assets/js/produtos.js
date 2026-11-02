@@ -31,26 +31,12 @@ const idLojaFiltro = document.body.dataset.pagina === 'loja-publica'
     ? new URLSearchParams(window.location.search).get('id')
     : null;
 
-const ICONES_POR_CATEGORIA = {
-    'processadores': '🔲',
-    'placas de vídeo': '🎮',
-    'placas de video': '🎮',
-    'memória ram': '💾',
-    'memoria ram': '💾',
-    'armazenamento': '📀',
-    'placas-mãe': '🖥️',
-    'placas-mae': '🖥️',
-    'fontes': '⚡',
-    'periféricos': '⌨️',
-    'perifericos': '⌨️',
-    'acessórios': '🎧',
-    'acessorios': '🎧',
-    'default': '💻'
-};
+// Ícones em SVG agora (icones.js): categorias sem foto continuam com uma
+// marca visual, mas vetorizada (currentColor, sem emoji).
 
 function iconeDe(categoria) {
     const chave = (categoria || '').toLowerCase();
-    return ICONES_POR_CATEGORIA[chave] || ICONES_POR_CATEGORIA.default;
+    return PCForgeIcones ? PCForgeIcones.categoria(chave) : '';
 }
 
 function formatarPreco(valor) {
@@ -133,9 +119,13 @@ async function carregarProdutos() {
         produtosCache = dados;
         totalResultados = Number(headers.get('x-resultados-total')) || produtosCache.length;
 
-        // Busca a lista de categorias uma única vez (pra montar os chips)
+        // Busca a lista de categorias uma única vez (pra montar os chips).
+        // Na página da loja (loja.html?id=N), pede só as categorias DESSA loja:
+        // senão aparecem chips que levam a busca vazia.
         if (categoriasCache === null) {
-            categoriasCache = await apiGet('/produtos/categorias');
+            categoriasCache = await apiGet(idLojaFiltro
+                ? `/produtos/categorias?loja=${encodeURIComponent(idLojaFiltro)}`
+                : '/produtos/categorias');
         }
 
         montarFiltros();
@@ -290,7 +280,9 @@ function montarFiltros() {
         botao.type = 'button';
         botao.className = 'filtro-chip filtro-cat';
         const rotulo = categoria === 'todas' ? 'Todas' : categoria;
-        const icone = categoria === 'todas' ? '🛒' : iconeDe(categoria);
+        const icone = categoria === 'todas'
+            ? (PCForgeIcones ? PCForgeIcones.svg('todas') : '')
+            : iconeDe(categoria);
         botao.innerHTML = `<span class="filtro-cat-icone" aria-hidden="true">${icone}</span>${escapeHtml(rotulo)}`;
         botao.setAttribute('aria-pressed',
             (categoria === 'todas'

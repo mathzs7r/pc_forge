@@ -18,19 +18,40 @@
     margin-bottom: 30px;
 }
 
-.painel-cabecalho .vitrine-eyebrow {
-    display: block;
-    margin-bottom: 8px;
-}
-
 .painel-cabecalho h1 {
-    font-family: var(--fonte-corpo), sans-serif;
-    font-size: clamp(24px, 4vw, 34px);
-    font-weight: 900;
-    letter-spacing: -0.5px;
+    font-family: var(--fonte-display), sans-serif;
+    font-size: var(--titulo-secao);
+    font-weight: 800;
+    letter-spacing: -0.03em;
     color: var(--texto-forte);
     margin: 0;
     text-align: left;
+    line-height: 1.05;
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+/* nome da loja como assinatura menor e apagada junto ao título */
+.painel-loja-nome {
+    font-family: var(--fonte-corpo), sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0;
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+.painel-loja-nome::before {
+    content: "";
+    display: inline-block;
+    width: 22px;
+    height: 2px;
+    background: var(--accent);
+    margin-right: 10px;
+    vertical-align: middle;
+}
 }
 
 .painel-sair {
@@ -87,7 +108,7 @@
 
 .painel-form-card h2 {
     font-family: var(--fonte-corpo), sans-serif;
-    font-weight: 900;
+    font-weight: 800;
     font-size: 19px;
     color: var(--texto-forte);
     margin: 4px 0 4px;
@@ -158,9 +179,10 @@ textarea:focus {
 }
 
 .painel-lista h2 {
-    font-family: var(--fonte-corpo), sans-serif;
-    font-weight: 900;
-    font-size: 19px;
+    font-family: var(--fonte-display), sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    font-size: var(--titulo-bloco);
     color: var(--texto-forte);
     margin: 4px 0 14px;
 }

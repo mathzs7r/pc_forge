@@ -12,7 +12,13 @@
 (function () {
     const DURACAO_PADRAO = 4500;
     const DURACAO_ERRO = 8000; // erro precisa de mais tempo pra ser lido
-    const ICONES = { sucesso: '✓', erro: '✕', aviso: '!', info: 'i' };
+    const ICONES = {
+        // SVG se o módulo de ícones estiver carregado; senão, texto puro
+        sucesso: window.PCForgeIcones ? PCForgeIcones.svg('ok') : '+',
+        erro: window.PCForgeIcones ? PCForgeIcones.svg('x') : 'x',
+        aviso: '!',
+        info: 'i'
+    };
 
     function garantirContainer() {
         let container = document.getElementById('toast-container');
@@ -41,7 +47,7 @@
 
         const icone = document.createElement('span');
         icone.className = 'toast-icone';
-        icone.textContent = ICONES[tipo] || ICONES.info;
+        icone.innerHTML = ICONES[tipo] || ICONES.info;
 
         const texto = document.createElement('span');
         texto.className = 'toast-texto';

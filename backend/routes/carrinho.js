@@ -118,7 +118,8 @@ router.post('/carrinho/:id/itens', doCliente, async (req, res) => {
             `INSERT INTO CARRINHO_ITEM (ID_CLIENTE, ID_PRODUTO, QUANTIDADE, GRUPO, MONTADA)
              VALUES (?, ?, ?, ?, ?)
              ON DUPLICATE KEY UPDATE QUANTIDADE = LEAST(QUANTIDADE + ?, ?),
-                                    GRUPO = VALUES(GRUPO), MONTADA = VALUES(MONTADA)`,
+                                    GRUPO = IF(VALUES(GRUPO) IS NULL, GRUPO, VALUES(GRUPO)),
+                                    MONTADA = IF(VALUES(GRUPO) IS NULL, MONTADA, VALUES(MONTADA))`,
             [idCliente, idProduto, quantidade, grupo, montada, quantidade, LIMITE_POR_ITEM]
         );
 

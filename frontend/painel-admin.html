@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="assets/css/perfil.css">
     <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg?v=2">
     <title>Acesso restrito | PC Forge</title>
-    <meta name="description" content="Área do administrador da PC Forge — supervisiona lojas parceiras, clientes, acessos e vendas.">
+    <meta name="description" content="Área do administrador da PC Forge: supervisiona lojas parceiras, clientes, acessos e vendas.">
     <script src="assets/js/acesso.js" data-exige="adm"></script>
 </head>
 
@@ -38,11 +38,15 @@
     <main class="painel">
         <div class="painel-cabecalho">
             <div class="perfil-topo">
-                <div class="perfil-avatar">⚠️</div>
+                <div class="perfil-avatar" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" style="width: 30px; height: 30px;">
+                        <path d="M12 4L2.8 19.5a1.2 1.2 0 0 0 1 1.8h16.4a1.2 1.2 0 0 0 1-1.8L12 4z" stroke-linejoin="round"/>
+                        <path d="M12 10v5"/>
+                    </svg>
+                </div>
                 <div>
-                    <span class="vitrine-eyebrow">Acesso restrito</span>
                     <h1 id="nome-admin">Administrador</h1>
-                    <span class="perfil-desde">O que manda em tudo — supervisiona parceiros, clientes e métricas</span>
+                    <span class="perfil-desde">O que manda em tudo: supervisiona parceiros, clientes e métricas</span>
                 </div>
             </div>
         </div>
@@ -71,7 +75,7 @@
 
             <div class="painel-form-card" style="margin-top: 18px;">
                 <h2>Acessos ao site</h2>
-                <p class="subtitulo">Carregamentos de página (anônimos — sem dados de quem acessou)</p>
+                <p class="subtitulo">Carregamentos de página (anônimos, sem dados de quem acessou)</p>
                 <dl class="dados-cadastro" id="acessos-detalhe"></dl>
             </div>
         </div>
@@ -79,8 +83,10 @@
 
     <script src="assets/js/api.js"></script>
     <script src="assets/js/util.js"></script>
+    <script src="assets/js/icones.js"></script>
     <script src="assets/js/toast.js"></script>
     <script src="assets/js/painel-admin.js"></script>
+    <script src="assets/js/animacoes.js"></script>
 </body>
 
 </html>

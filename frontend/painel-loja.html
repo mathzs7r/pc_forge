@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="assets/css/painel.css">
     <link rel="stylesheet" href="assets/css/modal.css">
     <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg?v=2">
-    <title>Meus produtos | PC Forge — Peças de TI</title>
+    <title>Meus produtos | PC Forge | Peças de TI</title>
     <meta name="description" content="Painel do vendedor da PC Forge: cadastre, edite e acompanhe os produtos da sua loja.">
     <script src="assets/js/acesso.js" data-exige="loja"></script>
 </head>
@@ -22,8 +22,7 @@
     <main class="painel">
         <div class="painel-cabecalho">
             <div>
-                <span class="vitrine-eyebrow">Painel de vendedor · <span id="nome-loja">sua loja</span></span>
-                <h1>Meus produtos</h1>
+                <h1>Meus produtos <span id="nome-loja" class="painel-loja-nome">sua loja</span></h1>
             </div>
             <button type="button" class="painel-sair" id="botao-sair">Sair</button>
         </div>
@@ -53,13 +52,17 @@
                         <option value="Fontes">Fontes</option>
                         <option value="Periféricos">Periféricos</option>
                         <option value="Acessórios">Acessórios</option>
+                        <option value="Gabinetes">Gabinetes</option>
+                        <option value="Refrigeração">Refrigeração</option>
+                        <option value="Sistemas Operacionais">Sistemas Operacionais (interno)</option>
+                        <option value="Serviços">Serviços (interno)</option>
                     </select>
 
                     <label for="preco-produto">Preço (R$)</label>
                     <input type="text" id="preco-produto" inputmode="decimal" data-mascara="moeda" placeholder="1.299,90" required>
 
                     <label for="descricao-produto">Descrição</label>
-                    <textarea id="descricao-produto" placeholder="Detalhes do produto: especificações, garantia, diferenciais..."></textarea>
+                    <textarea id="descricao-produto" placeholder="Detalhes do produto: especificações, garantia, diferenciais..." maxlength="2000"></textarea>
 
                     <label for="foto-produto">Foto do produto <span class="campo-opcional">(opcional)</span></label>
                     <input type="file" id="foto-produto" accept="image/jpeg,image/png,image/webp,image/gif">
@@ -98,6 +101,7 @@
 
     <script src="assets/js/api.js"></script>
     <script src="assets/js/util.js"></script>
+    <script src="assets/js/icones.js"></script>
     <script src="assets/js/imagem.js"></script>
     <script src="assets/js/toast.js"></script>
     <script src="assets/js/demo.js"></script>
@@ -106,6 +110,7 @@
     <script src="assets/js/mascaras.js"></script>
     <script src="assets/js/navbar.js"></script>
     <script src="assets/js/painel-loja.js"></script>
+    <script src="assets/js/animacoes.js"></script>
 </body>
 
 </html>

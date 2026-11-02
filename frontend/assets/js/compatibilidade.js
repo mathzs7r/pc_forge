@@ -22,8 +22,12 @@
             tdp = /ultra 9/.test(n) ? 125 : /ultra 7/.test(n) ? 65 : 100;
             marca = 'intel';
         } else if (/i[3579]-\d{4,5}/.test(n)) {
-            socket = 'LGA1700';
             marca = 'intel';
+            // A geração vem do número do modelo: 12xxx-14xxx = LGA1700,
+            // 10xxx/11xxx = LGA1200, 9xxx e antes = LGA1151. Antes TUDO virava
+            // LGA1700, o que casava errado CPUs de 10ª/11ª geração.
+            const modelo = Number((/i[3579]-(\d{4,5})/.exec(n) || [])[1]);
+            socket = modelo >= 12000 ? 'LGA1700' : modelo >= 10000 ? 'LGA1200' : 'LGA1151';
             const k = /\d{4,5}k(x)?(\s|$)/.test(n);
             tdp = k ? 125 : 65;
         } else if (/ryzen/.test(n)) {
@@ -54,7 +58,9 @@
             chipset = /(h610|b660|b760|z690|z790)/.exec(n)[1].toUpperCase();
             socket = 'LGA1700';
             ddr = /ddr4/.test(n) ? 'DDR4' : /ddr5/.test(n) ? 'DDR5' : null;
-            if (!ddr) { ddr = 'DDR4'; } // guess conservador p/ 12ª-14ª sem menção
+            // Sem menção a DDR no nome: fica null (desconhecido). O "chute"
+            // pra DDR4 bloqueava memória DDR5 de placas que aceitam os dois.
+            // Filtrar errado é pior que não filtrar.
         }
         // form factor: sufixo M (= micro) ou "m" após chipset
         form = /(\w+?m\b|m$)/.test(n) ? 'mATX'
@@ -172,7 +178,10 @@
                 if (!escolhida) return { ok: true };
                 const m = analisar(escolhida);
                 if (!a.socket) return { ok: true, semDados: 'soquete do processador não identificado' };
-                if (m.socket && m.socket !== a.socket) {
+                // Placa com soquete desconhecido não filtra ninguém — mas avisa
+                // que o teste não rodou, em vez de passar em silêncio.
+                if (!m.socket) return { ok: true, semDados: 'soquete da placa-mãe não identificado' };
+                if (m.socket !== a.socket) {
                     return { ok: false, motivo: `Soquete ${m.socket} da placa-mãe ≠ ${a.socket} deste processador` };
                 }
                 return { ok: true };
@@ -183,7 +192,8 @@
                 if (!escolhida) return { ok: true };
                 const m = analisar(escolhida);
                 if (!a.ddr) return { ok: true, semDados: 'padrão DDR não identificado' };
-                if (m.ddr && m.ddr !== a.ddr) {
+                if (!m.ddr) return { ok: true, semDados: 'padrão DDR da placa-mãe não identificado' };
+                if (m.ddr !== a.ddr) {
                     return { ok: false, motivo: `${m.ddr} exige memória ${m.ddr}, esta é ${a.ddr}` };
                 }
                 return { ok: true };

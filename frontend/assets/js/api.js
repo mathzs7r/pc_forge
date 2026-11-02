@@ -110,6 +110,14 @@ async function apiGetComMeta(caminho, opcoes) {
         }
         const response = await fetch(`${API_URL}${caminho}`, controle ? { signal: controle.signal } : undefined);
         const dados = await response.json().catch(() => ({}));
+        // Sem este check, um 400/500 da API voltava como objeto comum e a página
+        // quebrava depois ("filtrados.map is not a function") ou mostrava lista
+        // vazia sem explicar o porquê.
+        if (!response.ok) {
+            const erro = new Error(dados.resposta || `Erro na requisição (${response.status}).`);
+            erro.status = response.status;
+            throw erro;
+        }
         return { dados, headers: response.headers };
     } finally {
         if (cronometro) clearTimeout(cronometro);

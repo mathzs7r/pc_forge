@@ -39,7 +39,6 @@ window.PCForgeKits = (function () {
     const KITS = [
         {
             id: 'basico',
-            icone: '🧱',
             nome: 'Upgrade Básico',
             tagline: 'Sai do PC antigo pra uma plataforma LGA1700 completa por pouco.',
             pecas: [
@@ -50,7 +49,6 @@ window.PCForgeKits = (function () {
         },
         {
             id: 'force',
-            icone: '⚡',
             nome: 'Upgrade Force',
             tagline: 'Plataforma AM5 zerada: RTX 4060, SSD NVMe e fonte 650W.',
             pecas: [
@@ -64,7 +62,6 @@ window.PCForgeKits = (function () {
         },
         {
             id: 'forja',
-            icone: '🔨',
             nome: 'O Melhor Upgrade da Forja',
             tagline: 'O topo da forja: RTX 4090, Ryzen 9 e tudo em dia — Windows 10 inclusa.',
             pecas: [

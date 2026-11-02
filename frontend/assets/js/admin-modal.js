@@ -6,21 +6,6 @@
 // Com a sessão ativa, a logo leva direto ao painel (painel-admin.html),
 // o que supervisiona lojas parceiras, clientes, acessos e vendas.
 (function () {
-function ligarFoco(modal, abrirAposFechar) {
-    modal.addEventListener('keydown', (evento) => {
-        if (evento.key !== 'Tab') return;
-        const focaveis = modal.querySelectorAll('button, input, a[href]');
-        const primeiro = focaveis[0];
-        const ultimo = focaveis[focaveis.length - 1];
-        if (evento.shiftKey && document.activeElement === primeiro) {
-            evento.preventDefault();
-            ultimo.focus();
-        } else if (!evento.shiftKey && document.activeElement === ultimo) {
-            evento.preventDefault();
-            primeiro.focus();
-        }
-    });
-}
     // Focus trap: segura o Tab DENTRO do modal enquanto ele estiver visível
     // (sem isso, quem navega por teclado saía para os elementos da página atrás).
     function ligarFocoNoTab(evento) {

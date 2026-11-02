@@ -124,7 +124,7 @@
                 <span class="loja-emblema" aria-hidden="true">
                     ${urlImagemLoja(loja)
                         ? `<img src="${U.escapeHtml(urlImagemLoja(loja))}" alt="" onerror="this.parentElement.classList.add('sem-foto');this.remove()">`
-                        : '<span class="loja-emblema-fallback">🔥</span>'}
+                        : `<span class="loja-emblema-fallback">${window.PCForgeIcones ? PCForgeIcones.svg('fogo') : ''}</span>`}
                 </span>
                 <span class="loja-nome-texto">${U.escapeHtml(loja.NOME)}</span>
                 ${blocoNota(loja.NOTA_MEDIA, loja.AVALIACOES_QTD)}

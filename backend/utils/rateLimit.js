@@ -18,8 +18,11 @@ const registros = new Map();
 
 // IPs atrás de um proxy (que é o caso comum em publicação) chegam aqui;
 // o Express preenche req.ip com o cliente REAL quando se confia no proxy.
+// A rota entra na chave: sem isso, login de cliente/loja/admin dividiam
+// o MESMO contador (mesmo método POST + mesmo IP), e tentativas num login
+// podiam bloquear o outro.
 function chaveDaRequisicao(req) {
-    return `${req.method}:${req.ip}`;
+    return `${req.method}:${req.baseUrl || ''}${req.path || ''}:${req.ip}`;
 }
 
 // Devolve o middleware. Use UMA instância por proteção que você quiser

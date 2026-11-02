@@ -64,7 +64,7 @@
             <div class="item-carrinho item-montagem" data-grupo="${U.escapeHtml(grupo)}">
                 <div class="item-principal">
                     <div class="item-thumb com-foto montagem-thumb">
-                        <span class="item-thumb-icone">🖥️</span>
+                        <span class="item-thumb-icone">${PCForgeIcones ? PCForgeIcones.icone('gabinetes') : ''}</span>
                     </div>
                     <div>
                         <span class="item-nome">PC Montado ${U.escapeHtml(pecas[0] && pecas[0].LOJA_NOME ? '· ' + pecas[0].LOJA_NOME : '')}</span>
@@ -92,7 +92,7 @@
                     <div class="item-principal">
                         <div class="item-thumb${urlFoto ? ' com-foto' : ''}">
                             ${urlFoto ? `<img src="${U.escapeHtml(urlFoto)}" alt="" loading="lazy">` : ''}
-                            <span class="item-thumb-icone">📦</span>
+                            <span class="item-thumb-icone">${PCForgeIcones ? PCForgeIcones.categoria(item.CATEGORIA) : ''}</span>
                         </div>
                         <div>
                             <span class="item-nome">${U.escapeHtml(item.NOME)}</span>

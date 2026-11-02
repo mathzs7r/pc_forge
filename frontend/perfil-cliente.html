@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="assets/css/catalog.css">
     <link rel="stylesheet" href="assets/css/modal.css">
     <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg?v=2">
-    <title>Meu perfil | PC Forge — Peças de TI</title>
+    <title>Meu perfil | PC Forge | Peças de TI</title>
     <meta name="description" content="Gerencie seus dados, endereços e acompanhe os pedidos da sua conta de cliente na PC Forge.">
     <script src="assets/js/acesso.js" data-exige="cliente"></script>
 </head>
@@ -26,7 +26,6 @@
             <div class="perfil-topo">
                 <div class="perfil-avatar" id="perfil-avatar">?</div>
                 <div>
-                    <span class="vitrine-eyebrow">Perfil do cliente</span>
                     <h1 id="perfil-nome">Meu perfil</h1>
                     <span class="perfil-desde" id="perfil-desde"></span>
                 </div>
@@ -39,7 +38,7 @@
 
         <div class="painel-form-card aviso-demo-perfil" id="perfil-demo" hidden>
             <h2>Modo visualização</h2>
-            <p class="subtitulo" style="text-align:left">Nesse modo não há banco de dados, então o perfil mostra só o nome e o e-mail usados no login de teste e não dá pra editar. Clique em "Modo visualização — sair" (canto da tela), ligue a API e entre com uma conta de verdade.</p>
+            <p class="subtitulo" style="text-align:left">Nesse modo não há banco de dados, então o perfil mostra só o nome e o e-mail usados no login de teste e não dá pra editar. Clique em "Modo visualização: sair" (canto da tela), ligue a API e entre com uma conta de verdade.</p>
         </div>
 
         <div id="perfil-conteudo" hidden>
@@ -62,10 +61,9 @@
                         <label for="perfil-campo-celular">Celular</label>
                         <input type="tel" id="perfil-campo-celular" data-mascara="celular" required>
                         <p class="perfil-dica">CPF e data de nascimento não podem ser alterados.</p>
-                        <p class="perfil-dica">CPF e data de nascimento não podem ser alterados.</p>
 
                         <label for="perfil-nova-senha">Nova senha <span class="campo-opcional">(deixe em branco pra manter)</span></label>
-                        <input type="password" id="perfil-nova-senha" autocomplete="new-password" placeholder="Mínimo 4 caracteres">
+                        <input type="password" id="perfil-nova-senha" autocomplete="new-password" placeholder="Mínimo 8 caracteres">
 
                         <label for="perfil-senha-atual">Senha atual <span class="campo-opcional">(obrigatória pra salvar)</span></label>
                         <input type="password" id="perfil-senha-atual" autocomplete="current-password" required>
@@ -138,6 +136,7 @@
 
     <script src="assets/js/api.js"></script>
     <script src="assets/js/util.js"></script>
+    <script src="assets/js/icones.js"></script>
     <script src="assets/js/toast.js"></script>
     <script src="assets/js/demo.js"></script>
     <script src="assets/js/admin-modal.js"></script>
@@ -147,6 +146,7 @@
     <script src="assets/js/navbar.js"></script>
     <script src="assets/js/cep.js"></script>
     <script src="assets/js/perfil-cliente.js"></script>
+    <script src="assets/js/animacoes.js"></script>
 </body>
 
 </html>

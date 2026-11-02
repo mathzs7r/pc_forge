@@ -545,10 +545,12 @@ router.put('/produtos/:id', exigirLoja, async (req, res) => {
         ];
 
         if (foto) {
-            trechoFoto = ', IMAGEM = ?, IMAGEM_TIPO = ?';
+            // A URL externa tem prioridade sobre o BLOB na hora de exibir — então
+            // trocar a foto PRECISA zerar IMAGEM_URL, senão a foto nova nunca aparece.
+            trechoFoto = ', IMAGEM = ?, IMAGEM_TIPO = ?, IMAGEM_URL = NULL';
             parametros.push(foto.buffer, foto.tipo);
         } else if (remover_imagem === true) {
-            trechoFoto = ', IMAGEM = NULL, IMAGEM_TIPO = NULL';
+            trechoFoto = ', IMAGEM = NULL, IMAGEM_TIPO = NULL, IMAGEM_URL = NULL';
         }
 
         parametros.push(id, id_loja);

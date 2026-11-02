@@ -94,9 +94,13 @@
 }
 
 .produto-foto-icone {
-    font-size: 120px;
-    filter: drop-shadow(0 0 26px color-mix(in srgb, var(--accent) 35%, transparent));
+    color: var(--muted);
     animation: pulsar-suave 2.4s ease-in-out infinite;
+}
+
+.produto-foto-icone .icone-svg {
+    width: 84px;
+    height: 84px;
 }
 
 /* ------------------------------------------------------------
@@ -118,13 +122,13 @@
 }
 
 .produto-compra h1 {
-    font-family: var(--fonte-corpo), sans-serif;
-    font-weight: 900;
-    font-size: clamp(20px, 2.6vw, 28px);
+    font-family: var(--fonte-display), sans-serif;
+    font-weight: 800;
+    font-size: clamp(22px, 2.8vw, 32px);
     color: var(--texto-forte);
-    line-height: 1.25;
+    line-height: 1.15;
     margin: 0;
-    letter-spacing: -0.4px;
+    letter-spacing: -0.03em;
 }
 
 .produto-nota-resumo {
@@ -703,8 +707,9 @@
         max-height: 340px;
     }
 
-    .produto-foto-icone {
-        font-size: 88px;
+    .produto-foto-icone .icone-svg {
+        width: 64px;
+        height: 64px;
     }
 
     .produto-descricao,

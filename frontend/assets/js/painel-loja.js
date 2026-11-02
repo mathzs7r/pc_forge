@@ -7,7 +7,19 @@
         return;
     }
 
-    const loja = JSON.parse(lojaSalva);
+    // Sem try/catch, um valor corrompido no sessionStorage quebrava a página
+    // inteira; agora a sessão inválida só leva pro login.
+    let loja = null;
+    try {
+        loja = JSON.parse(lojaSalva);
+    } catch {
+        loja = null;
+    }
+    if (!loja || !loja.id || !loja.token) {
+        sessionStorage.removeItem('loja');
+        window.location.href = 'loja-login.html';
+        return;
+    }
     let produtosLoja = [];
     let proximoIdDemo = 9000;
     let produtoEmEdicaoId = null; // null = formulário está cadastrando; senão, é o ID sendo editado
@@ -138,7 +150,7 @@
                 <div class="item-principal">
                     <div class="item-thumb${urlFoto ? ' com-foto' : ''}">
                         ${urlFoto ? `<img src="${escapeHtml(urlFoto)}" alt="" loading="lazy">` : ''}
-                        <span class="item-thumb-icone">📦</span>
+                        <span class="item-thumb-icone">${PCForgeIcones ? PCForgeIcones.categoria(produto.CATEGORIA) : ''}</span>
                     </div>
                     <div>
                         <span class="item-categoria">${escapeHtml(produto.CATEGORIA)}</span>
@@ -215,19 +227,10 @@
         }
 
         try {
-            // DELETE agora exige o token da loja (a rota era pública antes).
-            const resposta = await fetch(`${API_URL}/produtos/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${loja.token}`
-                },
-                body: JSON.stringify({ id_loja: loja.id }) // ignorado no servidor; id vem do token
-            });
-            const dados = await resposta.json().catch(() => ({}));
-            if (!resposta.ok) {
-                throw new Error(dados.resposta || 'Não foi possível excluir o produto.');
-            }
+            // apiDelete em vez de fetch cru: cuida do token no cabeçalho E do
+            // 401 de sessão expirada (limpa a sessão e leva ao login), igual
+            // todas as outras chamadas do painel.
+            await apiDelete(`/produtos/${id}`);
             if (String(produtoEmEdicaoId) === String(id)) cancelarEdicao();
             await carregarProdutos();
             mostrarToast('Produto excluído com sucesso.', 'sucesso');

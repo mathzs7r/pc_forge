@@ -198,7 +198,7 @@
         try {
             const favoritos = await PCForgeFavoritos.listar();
             if (favoritos.length === 0) {
-                el.innerHTML = '<p class="estado-vazio">Nenhum favorito ainda. Toque no coração ♡ dos produtos pra guardar aqui.</p>';
+                el.innerHTML = '<p class="estado-vazio">Nenhum favorito ainda. Toque no coração dos produtos pra guardar aqui.</p>';
                 return;
             }
             // cards iguais aos da vitrine (catalog.css); clicar no coração tira da lista
@@ -210,6 +210,7 @@
                         <div class="cartao-thumb${urlFoto ? ' com-foto' : ''}">
                             ${urlFoto ? `<img src="${U.escapeHtml(urlFoto)}" alt="${U.escapeHtml(produto.NOME)}" loading="lazy">` : ''}
                             <span class="cartao-categoria">${U.escapeHtml(produto.CATEGORIA)}</span>
+                            ${PCForgeFavoritos.coracaoHtml(produto.ID)}
                         </div>
                     </a>
                     <div class="cartao-corpo">
@@ -228,8 +229,11 @@
                 const id = botao.dataset.favoritar;
                 PCForgeFavoritos.tem(id); // estado no cache
                 botao.classList.add('favoritado');
-                botao.textContent = '♥';
-                botao.addEventListener('click', async () => {
+                botao.innerHTML = window.PCForgeIcones ? PCForgeIcones.svg('coracao_cheio') : '';
+                botao.addEventListener('click', async (evento) => {
+                    // o coração fica dentro do link do card: precisa impedir a navegação
+                    evento.preventDefault();
+                    evento.stopPropagation();
                     botao.disabled = true;
                     try {
                         const r = await PCForgeFavoritos.alternar(id);

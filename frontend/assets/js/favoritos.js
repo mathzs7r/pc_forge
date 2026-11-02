@@ -93,14 +93,19 @@ window.PCForgeFavoritos = (function () {
         });
     }
 
+    // helper: módulo de ícones (pode não ter carregado em alguma página)
+    const jotinha = () =>
+        (window.PCForgeIcones || { svg: () => '' });
+
     function pintar(botao, ativo) {
         botao.classList.toggle('favoritado', ativo);
         botao.setAttribute('aria-pressed', String(ativo));
         botao.setAttribute('aria-label', ativo ? 'Remover dos favoritos' : 'Adicionar aos favoritos');
-        botao.textContent = ativo ? '♥' : '♡';
+        botao.innerHTML = jotinha().svg(ativo ? 'coracao_cheio' : 'coracao');
     }
 
-    const htmlBase = '<button type="button" class="cartao-favorito" data-favoritar="__ID__" aria-label="Adicionar aos favoritos">♡</button>';
+    const htmlBase =
+        '<button type="button" class="cartao-favorito" data-favoritar="__ID__" aria-label="Adicionar aos favoritos">' + jotinha().svg('coracao') + '</button>';
     function coracaoHtml(idProduto) {
         if (!logado()) return '';
         return htmlBase.replace('__ID__', Number(idProduto));

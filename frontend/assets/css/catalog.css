@@ -18,53 +18,59 @@
     0. HERO DA VITRINE (só produtos.html) — abertura da página
    ------------------------------------------------------------ */
 .hero-vitrine {
-    padding: 30px 24px 0;
+    padding: 26px 24px 0;
     animation: surgir 0.5s ease backwards;
 }
 
+/* duas colunas DESIGUAIS: texto domina (1.1fr), visual fecha (0.9fr) */
 .hero-vitrine-conteudo {
     max-width: 1180px;
     margin: 0 auto;
-    padding: 34px 30px;
+    padding: 44px 40px 0;
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    align-items: end;
+    gap: 40px;
     background:
         radial-gradient(ellipse at 0% 0%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 55%),
         var(--bg-court);
     border: 1px solid var(--glass-border-neutro);
-    border-radius: var(--radius);
+    border-bottom: none;
+    border-radius: var(--radius) var(--radius) 0 0;
     position: relative;
     overflow: hidden;
 }
 
-/* linha limão diagonal como assinatura do hero */
-.hero-vitrine-conteudo::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 42%;
-    height: 100%;
-    background: linear-gradient(100deg, transparent 30%, color-mix(in srgb, var(--accent) 16%, transparent) 78%, var(--accent) 130%);
-    clip-path: polygon(58% 0, 100% 0, 100% 100%, 20% 100%);
-    pointer-events: none;
+.hero-vitrine-texto {
+    padding-bottom: 40px;
+    position: relative;
+    z-index: 1;
 }
 
-.hero-eyebrow {
-    margin: 0 0 10px;
-    font-family: var(--fonte-mono);
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--accent);
+/* lado visual do hero: composição geométrica em SVG (assinatura lime).
+   O ::before diagonal antigo foi aposentado junto com a centralização. */
+.hero-vitrine-visual {
+    margin: 0;
+    height: 300px;
+    position: relative;
+    z-index: 1;
+    padding-bottom: 40px;
+}
+
+.hero-vitrine-visual svg {
+    width: 100%;
+    height: 100%;
+    display: block;
 }
 
 .hero-titulo {
     margin: 0;
-    font-size: clamp(26px, 4.5vw, 44px);
-    font-weight: 700;
-    line-height: 1.08;
+    font-size: var(--titulo-hero);
+    font-weight: 800;
+    line-height: 1.02;
+    letter-spacing: -0.035em;
     color: var(--texto-forte);
-    max-width: 21ch;
+    max-width: 16ch;
 }
 
 .hero-titulo span {
@@ -72,11 +78,11 @@
 }
 
 .hero-sub {
-    margin: 14px 0 0;
-    max-width: 52ch;
+    margin: 20px 0 0;
+    max-width: 46ch;
     color: var(--muted);
-    font-size: 15px;
-    line-height: 1.55;
+    font-size: 16px;
+    line-height: 1.65;
 }
 
 /* CTA "Monte seu PC" no hero */
@@ -84,16 +90,16 @@
     display: inline-flex;
     align-items: center;
     gap: 9px;
-    margin-top: 18px;
-    padding: 11px 20px;
+    margin-top: 24px;
+    padding: 13px 24px;
     border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
-    border-radius: 999px;
+    border-radius: var(--raio-pastilha);
     color: var(--accent);
     font-weight: 800;
-    font-size: 13.5px;
+    font-size: 14px;
     text-decoration: none;
     background: rgba(198, 255, 61, 0.07);
-    transition: box-shadow 0.2s ease, background 0.2s ease;
+    transition: box-shadow 0.2s ease, background 0.2s ease, transform 0.2s ease;
 }
 
 .hero-cta svg {
@@ -113,21 +119,35 @@
     display: none;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     .hero-vitrine { padding: 18px 14px 0; }
-    .hero-vitrine-conteudo { padding: 24px 20px; }
+    .hero-vitrine-conteudo {
+        grid-template-columns: 1fr;
+        padding: 26px 20px 0;
+        align-items: start;
+    }
+    .hero-titulo { font-size: clamp(34px, 9vw, 48px); }
+    .hero-vitrine-texto { padding-bottom: 20px; }
+    .hero-vitrine-visual { height: 190px; }
 }
 
 /* ------------------------------------------------------------
-   1. CHIPS DE CATEGORIA (com ícone; estilo do botão Filtrar)
+   1. CHIPS DE CATEGORIA
    ------------------------------------------------------------ */
+/* faixa alternada de fundo: separa hero e grade, cria ritmo */
 .filtros {
     display: flex;
     flex-wrap: wrap;
     gap: 8px 18px;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
-    padding: 0 24px 34px;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 18px 24px;
+    width: 100%;
+    background: var(--bg-alt);
+    border-top: 1px solid var(--glass-border-neutro);
+    border-bottom: 1px solid var(--glass-border-neutro);
 }
 
 .filtro-chip {
@@ -165,9 +185,14 @@
 }
 
 .filtro-cat-icone {
-    font-size: 15px;
-    line-height: 1;
-    filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 40%, transparent));
+    display: inline-flex;
+    align-items: center;
+    color: var(--accent);
+}
+
+.filtro-cat-icone .icone-svg {
+    width: 16px;
+    height: 16px;
 }
 
 /* ------------------------------------------------------------
@@ -177,17 +202,13 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 10px;
     width: 100%;
-    max-width: 900px;
-    margin: 0 auto 14px;
     padding: 14px 16px;
-    background: var(--bg-court);
-    border: 1px solid var(--glass-border);
+    background: color-mix(in srgb, var(--bg-court) 70%, transparent);
+    border: 1px solid var(--glass-border-neutro);
     border-radius: var(--radius);
-    box-shadow: var(--sombra-card);
-    animation: surgir 0.4s ease backwards;
 }
 
 .filtro-input {
@@ -269,8 +290,29 @@
 
 .grade-produtos {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(6, 1fr);
     gap: 16px;
+}
+
+/* mosaico editorial: card comum ocupa 2 colunas; a cada 8, um destaque
+   de 4 colunas entra. O ritmo (4+2 / 2+2+2) quebra a uniformidade. */
+.cartao-produto { grid-column: span 2; }
+
+.grade-produtos > .cartao-produto:nth-child(8n + 1) { grid-column: span 4; }
+
+.grade-produtos > .cartao-produto:nth-child(8n + 1) .cartao-thumb {
+    height: 240px;
+}
+
+@media (max-width: 960px) {
+    .grade-produtos { grid-template-columns: repeat(2, 1fr); }
+    .cartao-produto { grid-column: span 1; }
+    .grade-produtos > .cartao-produto:nth-child(8n + 1) { grid-column: span 2; }
+}
+
+@media (max-width: 560px) {
+    .grade-produtos { grid-template-columns: 1fr; }
+    .grade-produtos > .cartao-produto:nth-child(8n + 1) { grid-column: span 1; }
 }
 
 /* card fantasma do carregamento: sem interação e com blocos de brilho */
@@ -292,7 +334,6 @@
     flex-direction: column;
     transition: box-shadow 0.2s ease, transform 0.25s ease, border-color 0.25s ease;
     box-shadow: var(--sombra-card);
-    animation: surgir 0.45s ease backwards;
 }
 
 /* riscalha limão fina no topo do corpo — assinatura do tema */
@@ -309,17 +350,8 @@
 
 .cartao-produto:hover::after { opacity: 1; }
 
-/* entrada em cascata: cada cartão aparece um tiquinho depois do anterior */
-.cartao-produto:nth-child(1) { animation-delay: 0.02s; }
-.cartao-produto:nth-child(2) { animation-delay: 0.06s; }
-.cartao-produto:nth-child(3) { animation-delay: 0.1s; }
-.cartao-produto:nth-child(4) { animation-delay: 0.14s; }
-.cartao-produto:nth-child(5) { animation-delay: 0.18s; }
-.cartao-produto:nth-child(6) { animation-delay: 0.22s; }
-.cartao-produto:nth-child(7) { animation-delay: 0.26s; }
-.cartao-produto:nth-child(8) { animation-delay: 0.3s; }
-.cartao-produto:nth-child(9) { animation-delay: 0.34s; }
-.cartao-produto:nth-child(10) { animation-delay: 0.38s; }
+/* entrada em cascata: o stagger agora é responsabilidade do
+   IntersectionObserver (animacoes.js) via --atraso, não daqui. */
 
 /* ML: o cartão ganha borda âmbar suave e sombra maior no hover */
 .cartao-produto:hover {
@@ -356,6 +388,12 @@
 
 .cartao-thumb.com-foto .cartao-icone {
     display: none;
+}
+
+.cartao-icone .icone-svg {
+    width: 44px;
+    height: 44px;
+    color: color-mix(in srgb, var(--muted) 70%, transparent);
 }
 
 .cartao-categoria {
@@ -714,32 +752,30 @@
 .loja-cabecalho {
     max-width: 1180px;
     margin: 28px auto 0;
-    padding: 30px 24px;
-    text-align: center;
-    background: var(--bg-court);
+    padding: 34px 34px;
+    text-align: left;
+    background:
+        radial-gradient(ellipse at 100% 0%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 55%),
+        var(--bg-court);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius);
     box-shadow: var(--sombra-card);
     width: calc(100% - 48px);
 }
 
-.loja-cabecalho .vitrine-eyebrow {
-    margin-bottom: 10px;
-}
-
 /* nome + estrelas ao lado (estrelas clicáveis, descem pra avaliações) */
 .loja-cabecalho h1 {
     display: flex;
     align-items: center;
-    justify-content: center;
     flex-wrap: wrap;
     gap: 6px 26px;
-    font-family: var(--fonte-corpo), sans-serif;
-    font-weight: 900;
-    font-size: clamp(26px, 4vw, 38px);
+    font-family: var(--fonte-display), sans-serif;
+    font-weight: 800;
+    font-size: var(--titulo-secao);
     color: var(--texto-forte);
-    margin: 0 0 10px;
-    letter-spacing: -0.5px;
+    margin: 0;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
 }
 
 /* logo circular ao lado do nome (fallback: chama de forja) */
@@ -793,7 +829,7 @@
 .loja-publica-meta {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 10px 22px;
     margin-top: 18px;
     color: var(--muted);
@@ -807,6 +843,11 @@
 
 .loja-descricao {
     white-space: pre-line;
+    color: var(--muted);
+    font-size: 15.5px;
+    line-height: 1.65;
+    max-width: 62ch;
+    margin: 10px 0 18px;
 }
 
 /* seção de avaliações da loja, abaixo dos produtos */
